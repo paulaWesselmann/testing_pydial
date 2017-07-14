@@ -61,6 +61,14 @@ class DomainsSimulatedUser(object):
         '''
         self.um = UserModel.UM(domainString)
         self.error_simulator = ErrorSimulator.DomainsErrorSimulator(domainString, conf_scorer_name, error_rate)
+        
+        self.randomLearning = False
+        if Settings.config.has_option("mogp_"+domainString, "randomweightlearning"):
+            self.randomLearning = Settings.config.getboolean("mogp_"+domainString, "randomweightlearning")
+            
+        if self.randomLearning:
+            import policy.morl.WeightGenerator as wg
+            self.weightGen = wg.WeightGenerator(domainString)
  
     def restart(self, otherDomainsConstraints):
         '''Resets all components (**User Model**) that are statefull.
@@ -70,6 +78,9 @@ class DomainsSimulatedUser(object):
         :returns: None
         '''
         self.um.init(otherDomainsConstraints) 
+        
+        if self.randomLearning:
+            self.weightGen.updateWeights()
         
     def act_on(self, sys_act_string):
         '''Thru the UserModel member, receives the system action and then responds.

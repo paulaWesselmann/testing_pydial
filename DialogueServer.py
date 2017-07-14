@@ -238,7 +238,7 @@ def make_request_handler_class(dialServer):
                         asr_info=dialServer.cleaningCNet(data)
                         logger.info("ASR: "+ str(asr_info))
                         sys_act = dialServer.agent_factory.continue_call(agent_id, asr_info, domainString=start_domain)
-                        prompt_str = sys_act
+                        prompt_str = sys_act.prompt
                         
                         # Are we ENDING the dialog here? 
                         if not dialServer.agent_factory.query_ENDING_DIALOG(agent_id):

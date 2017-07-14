@@ -63,13 +63,14 @@ class Evaluator(object):
         self.rewards = []
         self.outcomes = []
         self.turns = []
+        self.finalrewards = []
         
         self.outcome = False
         self.num_turns = 0
         self.total_reward = 0    
         
         self.evaluator_label = "{}".format(type(self))
-        self.evaluator_shor_label = self.evaluator_label[0:3]
+        self.evaluator_short_label = self.evaluator_label[0:3]
         
     def turnReward(self, turnInfo):
         '''
