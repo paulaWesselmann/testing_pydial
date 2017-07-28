@@ -84,7 +84,7 @@ logger = ContextLogger.getLogger('')
 #                        'NoAfterReqmore':        0.7}
 
 # # from eddy
-rand_decision_probs = {'InformCombination':     0.3,
+rand_decision_probs = {'InformCombination':     0.6,
                        'AddSlotToReq':          0.333,
                        'NoAfterReqmore':        0.7,
                        'YesAfterReqmore':       0.25,
@@ -109,7 +109,7 @@ rand_decision_probs = {'InformCombination':     0.3,
                        'CorrectingAct2':        0.4,
                        'ThankAck1':             0.1,
                        'ThankAck2':             0.1,
-                       'AffirmCombination':     0.3}
+                       'AffirmCombination':     1.0}
 
 # from david
 # rand_decision_probs = {'InformCombination':     0.6,

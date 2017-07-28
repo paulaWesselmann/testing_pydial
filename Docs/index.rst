@@ -7,6 +7,7 @@ PyDial: the CUED Python Statistical Dialog System
 *************************************************
 
 
+
 Tutorials
 ====================
 
@@ -17,6 +18,7 @@ To get familiar with usage of PyDial, you can use the following tutorials:
 - `Spoken Language Understanding <tutorials/Spoken%20Language%20Understanding.html>`_
 - `Natural Language Generation <tutorials/Natural%20Language%20Generation%20Module.html>`_
 - `How to add your own module <tutorials/How%20to%20add%20your%20own%20module.html>`_
+- `How to add a new domain <tutorials/How%20to%20add%20a%20new%20domain.html>`_
 
 
 System Documentation
@@ -49,6 +51,13 @@ System Documentation
    Ontology
    Tests
    Utilities
+   
+--------------------
+
+.. toctree::
+   :maxdepth: 1
+   
+   Acknowledgements
 
 Indices and tables
 ==================

@@ -38,6 +38,7 @@ Copyright CUED Dialogue Systems Group 2017
 '''
 
 from utils.ContextLogger import ContextLogger
+import pprint as pp
 logger = ContextLogger()
 
 
@@ -113,6 +114,13 @@ class DialogueState(object):
             return self.lastSystemAct[dstring]
         else:
             return None
+
+
+    def __str__(self):
+        if self.currentdomain is not None:
+            pp.pprint(self.getDomainState(self.currentdomain))
+
+
             
     
         

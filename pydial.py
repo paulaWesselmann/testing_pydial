@@ -199,6 +199,7 @@ def initialise(configId,config_file, seed, mode, trainerrorrate=None, trainsourc
     global gnumtrainbatches, gtraindialogsperbatch, gnumbatchtestdialogs, gnumtestdialogs
     global gtrainerrorrate, gtesterrorrate, gtrainsourceiteration
     global taskID, domain, domains, policytype, gtesteverybatch, gpscale
+    global gdeleteprevpolicy
 
 
     if seed:
@@ -285,6 +286,7 @@ def initialise(configId,config_file, seed, mode, trainerrorrate=None, trainsourc
 
     gnumbatchtestdialogs = getOptionalConfigInt("numbatchtestdialogs", 20)
     gtesteverybatch = getOptionalConfigBool("testeverybatch",True)
+    gdeleteprevpolicy = getOptionalConfigBool("deleteprevpolicy", False)
     if mode=="train":
         if gnumtrainbatches>1:
             enditeration = gtrainsourceiteration+gnumtrainbatches
@@ -336,7 +338,7 @@ def trainBatch(domain, configId, trainerr, ndialogs, source_iteration):
         mess = "*** Training Iteration %s->%s: iter=%d, error-rate=%d, num-dialogs=%d ***" % (
             inpolicy, outpolicy, source_iteration, trainerr, ndialogs)
         if tracedialog > 0: print mess
-        logger.dial(mess)
+        logger.results(mess)
         # make sure that learning is switched on
         Settings.config.set("policy_" + domain, "learning", 'True')
         # if gp, make sure to reset scale to config setting
@@ -348,7 +350,7 @@ def trainBatch(domain, configId, trainerr, ndialogs, source_iteration):
         mess = "*** Training Iteration: iter=%d, error-rate=%d, num-dialogs=%d ***" % (
             source_iteration, trainerr, ndialogs)
         if tracedialog > 0: print mess
-        logger.dial(mess)
+        logger.results(mess)
         for dom in domain:
             setupPolicy(dom, configId, trainerr, source_iteration, source_iteration + 1)
             # make sure that learning is switched on
@@ -367,6 +369,13 @@ def trainBatch(domain, configId, trainerr, ndialogs, source_iteration):
     # run the system
     simulator = Simulate.SimulationSystem(error_rate=error)
     simulator.run_dialogs(ndialogs)
+    if gdeleteprevpolicy:
+        if isSingleDomain:
+            if inpolicy[-1] != '0':
+                print 'rm {}/*{}*'.format(Settings.config.get('policy_{}'.format(domain),'policydir'),inpolicy)
+                os.system('rm {}/*{}*'.format(Settings.config.get('policy_{}'.format(domain),'policydir'),inpolicy))
+
+
 
 def setEvalConfig(domain, configId, evalerr, ndialogs, iteration):
     (_, policy) = setupPolicy(domain, configId, gtrainerrorrate, iteration, iteration)
@@ -376,7 +385,7 @@ def setEvalConfig(domain, configId, evalerr, ndialogs, iteration):
         mess = "*** Evaluating %s: error-rate=%d num-dialogs=%d ***" % (policy.replace('Multidomain', domain),
                                                                         evalerr, ndialogs)
     if tracedialog > 0: print mess
-    logger.dial(mess)
+    logger.results(mess)
     # make sure that learning is switched off
     Settings.config.set("policy_" + domain, "learning", 'False')
     # if gp, make sure to reset scale to 1 for evaluation
@@ -685,7 +694,7 @@ def train_command(configfile, seed=None, trainerrorrate=None,trainsourceiteratio
                 else:
                     evalPolicy(domains, configId, gtrainerrorrate, gnumbatchtestdialogs, i + 1)
 
-            logger.info("*** Training complete - final policy is %s-%02d-%02d" % (configId,gtrainerrorrate,i+1))
+            logger.results("*** Training complete - final policy is %s-%02d-%02d" % (configId,gtrainerrorrate,i+1))
     except clog.ExceptionRaisedByLogger:
         print "Command Aborted - see Log file for error:",logfile
         exit(0)
@@ -740,7 +749,7 @@ def test_command(configfile, iteration, seed=None, testerrorrate=None, trainerro
                             stErr += stepErr
                     else:
                         evalPolicy(domain, configId, gtesterrorrate, gnumtestdialogs, i)
-                    logger.dial("*** Testing complete - policy %s evaluated" % policyname)
+                    logger.results("*** Testing complete - policy %s evaluated" % policyname)
                 else:
                     print "Cannot find policy iteration %s in %s" % (policyname, policy_dir)
             else:
@@ -757,7 +766,7 @@ def test_command(configfile, iteration, seed=None, testerrorrate=None, trainerro
                             stErr += stepErr
                     else:
                         evalPolicy(domain, configId, gtesterrorrate, gnumtestdialogs, i)
-                    logger.dial("*** Testing complete - policy %s evaluated" % policyname)
+                    logger.results("*** Testing complete - policy %s evaluated" % policyname)
         else:
             print "Policy folder %s does not exist" % policy_dir
     except clog.ExceptionRaisedByLogger:

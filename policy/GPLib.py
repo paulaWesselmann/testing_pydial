@@ -153,18 +153,16 @@ class GPSARSAPrior(LearnerInterface):
         """
         Reads input policy parameters
         """
-        pkl_file = open(self._inputParamFile, 'rb')
-        self._alpha_tilda = pkl.load(pkl_file)
-        pkl_file.close()
+        with open(self._inputParamFile, 'rb') as pkl_file:
+            self._alpha_tilda = pkl.load(pkl_file)
 
     def readDictionary(self):
         """
         Reads input policy dictionary file
         """
-        pkl_file = open(self._inputDictFile, 'rb')
-        self._dictionary = pkl.load(pkl_file)
-        logger.info("In Prior class: Read dictionary of size "+str(len(self._dictionary)))   
-        pkl_file.close()
+        with open(self._inputDictFile, 'rb') as pkl_file:
+            self._dictionary = pkl.load(pkl_file)
+        logger.info("In Prior class: Read dictionary of size "+str(len(self._dictionary)))
 
     def DictionarySize(self):
         """
@@ -735,11 +733,11 @@ class GPSARSA(GPSARSAPrior):
         Reads dictionary
         """
         if self._inputDictFile not in  ["",".dct"]:
-            pkl_file = open(self._inputDictFile,'rb')
-            self._dictionary = pkl.load(pkl_file)
-            #logger.info("Read dictionary of size "+str(len(self._dictionary)))
-            logger.info("in SARSA class: Read dictionary of size "+str(len(self._dictionary)))
-            pkl_file.close()                            
+            logger.info("Loading dictionary file " + self._inputDictFile)
+            with open(self._inputDictFile,'rb') as pkl_file:
+                self._dictionary = pkl.load(pkl_file)
+                #logger.info("Read dictionary of size "+str(len(self._dictionary)))
+                logger.info("in SARSA class: Read dictionary of size "+str(len(self._dictionary)))
         else:
             logger.warning("Dictionary file not given")
 
@@ -747,32 +745,31 @@ class GPSARSA(GPSARSAPrior):
         """
         Reads parameter file
         """
-        pkl_file = open(self._inputParamFile,'rb')
-        if self.numpyFileFormat:
-            npzfile = np.load(pkl_file)
-            try:
-                self._K_tilda_inv = npzfile['_K_tilda_inv']
-                self._C_tilda = npzfile['_C_tilda']
-                self._c_tilda = npzfile['_c_tilda']
-                self._a = npzfile['_a']
-                self._alpha_tilda = npzfile['_alpha_tilda']
-                self._d = npzfile['_d']
-                self._s = npzfile['_s']
-            except Exception as e:
-                print npzfile.files
-                raise e
-                
-        else:
-            # ORDER MUST BE THE SAME HERE AS WRITTEN IN saveParameters() below.
-            self._K_tilda_inv = pkl.load(pkl_file)
-            self._C_tilda = pkl.load(pkl_file)
-            self._c_tilda = pkl.load(pkl_file)
-            self._a = pkl.load(pkl_file)
-            self._alpha_tilda = pkl.load(pkl_file)
-            self._d = pkl.load(pkl_file)
-            self._s = pkl.load(pkl_file)
-            #-------------------------------
-        pkl_file.close()
+        with open(self._inputParamFile,'rb') as pkl_file:
+            if self.numpyFileFormat:
+                npzfile = np.load(pkl_file)
+                try:
+                    self._K_tilda_inv = npzfile['_K_tilda_inv']
+                    self._C_tilda = npzfile['_C_tilda']
+                    self._c_tilda = npzfile['_c_tilda']
+                    self._a = npzfile['_a']
+                    self._alpha_tilda = npzfile['_alpha_tilda']
+                    self._d = npzfile['_d']
+                    self._s = npzfile['_s']
+                except Exception as e:
+                    print npzfile.files
+                    raise e
+
+            else:
+                # ORDER MUST BE THE SAME HERE AS WRITTEN IN saveParameters() below.
+                self._K_tilda_inv = pkl.load(pkl_file)
+                self._C_tilda = pkl.load(pkl_file)
+                self._c_tilda = pkl.load(pkl_file)
+                self._a = pkl.load(pkl_file)
+                self._alpha_tilda = pkl.load(pkl_file)
+                self._d = pkl.load(pkl_file)
+                self._s = pkl.load(pkl_file)
+                #-------------------------------
 
     def saveDictionary(self):
         """
@@ -781,9 +778,8 @@ class GPSARSA(GPSARSAPrior):
         :returns None:
         """
         PolicyUtils.checkDirExistsAndMake(self._outputDictFile)
-        pkl_file = open(self._outputDictFile,'wb')
-        pkl.dump(self._dictionary,pkl_file)
-        pkl_file.close()
+        with open(self._outputDictFile,'wb') as pkl_file:
+            pkl.dump(self._dictionary,pkl_file)
 
 
     def saveParameters(self):
@@ -791,34 +787,30 @@ class GPSARSA(GPSARSAPrior):
         Save parameter file
         """
         PolicyUtils.checkDirExistsAndMake(self._outputParamFile)
-        pkl_file = open(self._outputParamFile,'wb') 
-        if self.numpyFileFormat:
-            np.savez(pkl_file,_K_tilda_inv=self._K_tilda_inv,_C_tilda=self._C_tilda,_c_tilda=self._c_tilda,_a=self._a,_alpha_tilda=self._alpha_tilda,_d=self._d,_s=self._s)
-        else:
-            # ORDER MUST BE THE SAME HERE AS IN readParameters() above.
-            pkl.dump(self._K_tilda_inv,pkl_file)
-            pkl.dump(self._C_tilda,pkl_file)
-            pkl.dump(self._c_tilda,pkl_file)
-            pkl.dump(self._a,pkl_file)
-            pkl.dump(self._alpha_tilda,pkl_file)
-            pkl.dump(self._d,pkl_file)
-            pkl.dump(self._s,pkl_file)
-            #-------------------------------
-        pkl_file.close()
-
+        with open(self._outputParamFile,'wb') as pkl_file:
+            if self.numpyFileFormat:
+                np.savez(pkl_file,_K_tilda_inv=self._K_tilda_inv,_C_tilda=self._C_tilda,_c_tilda=self._c_tilda,_a=self._a,_alpha_tilda=self._alpha_tilda,_d=self._d,_s=self._s)
+            else:
+                # ORDER MUST BE THE SAME HERE AS IN readParameters() above.
+                pkl.dump(self._K_tilda_inv,pkl_file)
+                pkl.dump(self._C_tilda,pkl_file)
+                pkl.dump(self._c_tilda,pkl_file)
+                pkl.dump(self._a,pkl_file)
+                pkl.dump(self._alpha_tilda,pkl_file)
+                pkl.dump(self._d,pkl_file)
+                pkl.dump(self._s,pkl_file)
+                #-------------------------------
 
     def savePrior(self, priordictfile, priorparamfile):
         """
         Saves the current GP as a prior (these are only the parameters needed to estimate the mean)
         """
         PolicyUtils.checkDirExistsAndMake(priordictfile)
-        pkl_file = open(priordictfile, 'wb')
-        pkl.dump(self._dictionary, pkl_file)
-        pkl_file.close()
+        with open(priordictfile, 'wb') as pkl_file:
+            pkl.dump(self._dictionary, pkl_file)
         PolicyUtils.checkDirExistsAndMake(priorparamfile)
-        pkl_file = open(priorparamfile, 'wb')
-        pkl.dump(self._alpha_tilda, pkl_file)
-        pkl_file.close()
+        with open(priorparamfile, 'wb') as pkl_file:
+            pkl.dump(self._alpha_tilda, pkl_file)
 
     def savePolicy(self):
         """Saves the GP dictionary (.dct) and parameters (.prm). Saves as a prior if self.save_as_prior is True.

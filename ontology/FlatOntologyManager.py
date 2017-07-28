@@ -42,6 +42,7 @@ __author__ = "cued_dialogue_systems_group"
 import copy, math, json
 import numpy as np
 
+import os
 import DataBaseSQLite
 from ontology import OntologyUtils
 from utils import Settings, ContextLogger
@@ -107,6 +108,13 @@ class FlatDomainOntology(object):
         logger.info('Loading database: '+db_fname+'db')
         try:
             #self.db = DataBase.DataBase(db_fname+'txt')
+            dbprefix = None
+            if Settings.config.has_option("exec_config", "dbprefix"):
+                dbprefix = Settings.config.get("exec_config", "dbprefix")
+                if dbprefix.lower() == 'none':
+                    dbprefix = None
+            if dbprefix:
+                db_fname = os.path.join(dbprefix, db_fname.split('/')[-1])
             self.db = DataBaseSQLite.DataBase_SQLite(dbfile=db_fname+'db', dstring=self.domainString)
         except IOError:
             print IOError

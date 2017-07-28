@@ -150,6 +150,12 @@ def _collectColumns(columns, prompt, state = None):
             if _query_yes_no('Did you select all slots correctly (marked with a *)?'):
                 return selection
         
+
+def _setValuesToLower(columns, domainString, cursor):
+    for column in columns:
+        query = "UPDATE {} SET {} = LOWER({})".format(domainString,column,column)
+        _customQuery(cursor, query)
+
 def _dict_factory(cursor, row):
     d = {}
     for idx, col in enumerate(cursor.description):
@@ -188,8 +194,8 @@ def createNewOntology(dbFile, domainName, t, forceOverwrite):
     
     query_getColumns = "PRAGMA table_info({});".format(domainName)
     result = _customQuery(cursor,query_getColumns)
-    columns = [r['name'].lower() for r in result]
-    
+    columns = sorted([r['name'].lower() for r in result])
+
     informable = None
     sys_requestable = None
     requestable = None
@@ -223,16 +229,15 @@ def createNewOntology(dbFile, domainName, t, forceOverwrite):
     for slot in informable:
         query_getValues = "SELECT DISTINCT {} FROM {};".format(slot, domainName)
         result = _customQuery(cursor,query_getValues)
-        onto['informable'][slot] = sorted([r[slot] for r in result if r[slot] != 'not available'])
-    
+        onto['informable'][slot] = sorted([r[slot].lower() for r in result if r[slot] != 'not available'])
     
     onto['requestable'] = list(requestable)
     onto['system_requestable'] = list(sys_requestable)
     
     if t is not None:
         onto['type'] = t
-    
-    
+
+    db_connection.close()
     
     with open(ontologyFile,"w") as f:
         f.write(json.dumps(onto, indent=4, sort_keys=True))
@@ -242,14 +247,21 @@ def createNewOntology(dbFile, domainName, t, forceOverwrite):
     newDbFileName = '{}-dbase.db'.format(domainName)
     copyfile(dbFile,os.path.join(pathToOntologies,newDbFileName))
 
+    # change values of new db file to lower
+    try:
+        db_connection2 = sqlite3.connect(os.path.join(pathToOntologies,newDbFileName))
+        db_connection2.row_factory = _dict_factory   # for getting entities back as python dict's
+    except Exception as e:
+        print e
+        print 'Could not load database file: %s' % dbFile
+        return False
     
-#     print json.dumps(onto, indent=4, sort_keys=True)
+    cursor2 = db_connection2.cursor()   
 
-#     query_getColumns = "SELECT * FROM {}".format(domainName)
-#     result = _customQuery(cursor,query_getColumns)
-    
-#     print result
-    
+    _setValuesToLower(columns,domainName,cursor2)
+
+    db_connection2.commit()
+    db_connection2.close()
 
     return False
 

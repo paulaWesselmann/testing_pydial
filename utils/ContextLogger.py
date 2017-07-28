@@ -77,6 +77,7 @@ class NOcolors:
     ENDC = ''
     BOLD = ''
     CYAN = ''
+    MAGENTA = ''
 
 
 class bcolors:
@@ -91,6 +92,7 @@ class bcolors:
     ENDC = '\033[0m'
     BOLD = "\033[1m"
     CYAN = '\033[96m'
+    MAGENTA = '\033[95m'
 
 class ConsoleFormatter(logging.Formatter):
     '''
@@ -109,7 +111,8 @@ class ConsoleFormatter(logging.Formatter):
             logging.ERROR: self.color_choice.FAIL,
             logging.INFO: self.color_choice.OKGREEN,
             logging.DEBUG: self.color_choice.OKBLUE,
-            25: self.color_choice.CYAN    # logging.DIAL
+            25: self.color_choice.CYAN,  # logging.DIAL
+            35: self.color_choice.MAGENTA  # logging.RESULTS
         }
         
     def format(self, record):
@@ -183,9 +186,12 @@ def createLoggingHandlers(config=None, screen_level = "INFO", \
     StreamHandler now sends to sys.stdout 
     """
     logging.addLevelName(25, "DIAL")
+    logging.addLevelName(35, "RESULTS")
     ch = logging.StreamHandler(sys.stdout)  # NB: originally took no arguments
     if screen_level == "DIAL":
         ch.setLevel(25)
+    elif screen_level == "RESULTS":
+        ch.setLevel(35)
     else:
         ch.setLevel(getattr(logging, screen_level.upper()))
     ch.setFormatter(ConsoleFormatter(colors=use_color))
@@ -208,7 +214,13 @@ def createLoggingHandlers(config=None, screen_level = "INFO", \
         if file_append:
             file_mode = 'a'
         fh = logging.FileHandler(log_file, mode=file_mode)
-        fh.setLevel(getattr(logging, file_level.upper()))
+        if file_level.upper() == 'DIAL':
+            lvl = 25
+        elif file_level.upper() == 'RESULTS':
+            lvl = 35
+        else:
+            lvl = getattr(logging, file_level.upper())
+        fh.setLevel(lvl)
         fh.setFormatter(formatter)
         top_logger.addHandler(fh)
     
@@ -362,6 +374,10 @@ class ContextLogger:
     def dial(self, msg, *args, **kwargs):
         msg = self._convertMsg(msg)
         self.logger.log(25,msg,*args,**kwargs)
+
+    def results(self, msg, *args, **kwargs):
+        msg = self._convertMsg(msg)
+        self.logger.log(35,msg,*args,**kwargs)
 
 def getLogger(name):
     """

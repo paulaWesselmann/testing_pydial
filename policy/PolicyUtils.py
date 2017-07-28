@@ -250,7 +250,7 @@ def _getInformRequestedSlots(acceptanceList80, requestedSlots, name, domainStrin
         # We found exactly one or more matching entities. Use the first one
         ent = result[0]
 #         return SummaryUtils._getInformRequestedSlotsForEntity(acceptedValues, requestedSlots, ent) CHECK
-        return SummaryUtils._getInformRequestedSlotsForEntity(requestedSlots, ent)
+        return SummaryUtils._getInformRequestedSlotsForEntity(requestedSlots, ent, domainString)
     else:
         logger.debug('Couldn\'t find the provided name ' + name)
         # We have not informed about an entity yet, or there are too many entities.

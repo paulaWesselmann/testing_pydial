@@ -36,6 +36,7 @@ Copyright CUED Dialogue Systems Group 2015 - 2017
 
     NB: This was just a tool I wrote for developing DialogueServer, but it is actually pretty useful so i've put it in the repo and it
     is also used by nosetests now to execute some basic testing of DialogueServer.
+
 ************************
 
 '''

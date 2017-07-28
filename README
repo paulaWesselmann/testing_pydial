@@ -19,7 +19,7 @@ otherwise exectued directly
 
 To check that you have a fully functioning system, run the PyDial functional tests
 
-> testPyDial
+> sh testPyDial
 
 You should see output similar to the following:
 

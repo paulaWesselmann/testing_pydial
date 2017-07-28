@@ -77,8 +77,8 @@ master_doc = 'Docs/index'
 
 # General information about the project.
 project = u'PyDial'
-copyright = u'2015-2017, Dongho Kim, David Vandyke, Lina Rojas, Milica Gasic, Stefan Ultes, Steve Young'
-author = u'Dongho Kim, David Vandyke, Lina Rojas, Milica Gasic, Stefan Ultes, Steve Young'
+copyright = u'2015-2017, Dialogue Systems Group, University of Cambridge'
+author = u'Dialogue Systems Group, University of Cambridge'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -277,7 +277,7 @@ latex_elements = {
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
   (master_doc, 'Python_DMan.tex', u'Python\\_DMan Documentation',
-   u'Dongho Kim, David Vandyke, Lina Rojas, Milica Gasic, Stefan Ultes, Steve Young', 'manual'),
+   u'Dialogue Systems Group, University of Cambridge', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of

@@ -343,13 +343,13 @@ def getInformRequestedSlots(requested_slots, name, domainString):
 
     if len(result) > 0:
         ent = result[0]
-        return _getInformRequestedSlotsForEntity(requested_slots, ent)
+        return _getInformRequestedSlotsForEntity(requested_slots, ent, domainString)
     else:
         logger.warning('Couldn\'t find the provided name: ' + name)
         return getInformNoneVenue({'name': name})
 
 
-def _getInformRequestedSlotsForEntity(requested_slots, ent):
+def _getInformRequestedSlotsForEntity(requested_slots, ent, domainString):
     '''
     Converts the list of requested slots and the entity into a inform_requested dialogue act
 
@@ -364,11 +364,11 @@ def _getInformRequestedSlotsForEntity(requested_slots, ent):
             slotvaluepair.append('type="{}"'.format(ent['type']))
         else:
             # type is not part of some ontologies. in this case just add a random slot-value
-            slots = copy.deepcopy(ent)
-            del slots['name']
-            del slots['id'] #TODO: define the set of requestable slots better
-            slot = slots.keys()[Settings.random.randint(len(slots))]
-            slotvaluepair.append('{}="{}"'.format(slot, slots[slot]))
+            slots = Ontology.global_ontology.get_requestable_slots(domainString)
+            if 'name' in slots:
+                slots.remove('name')
+            slot = slots[Settings.random.randint(len(slots))]
+            slotvaluepair.append('{}="{}"'.format(slot, ent[slot]))
 
     else:
         max_num_feats = 5

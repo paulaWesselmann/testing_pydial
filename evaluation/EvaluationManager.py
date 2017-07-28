@@ -171,9 +171,12 @@ class Evaluator(object):
 # print methods
 ######################################################################    
 
-    def _prstr(self, tracelevel, s):
+    def _prstr(self, tracelevel, s, lvl='dial'):
         if self.traceDialog >= tracelevel: print s
-        logger.dial(s)
+        if lvl == 'dial':
+            logger.dial(s)
+        if lvl == 'results':
+            logger.results(s)
         return
 
     def print_dialog_summary(self):
@@ -193,7 +196,7 @@ class Evaluator(object):
         assert(len(self.outcomes) == num_dialogs)
         assert(len(self.turns) == num_dialogs)
         if self.traceDialog > 1: print '-' * 20
-        self._prstr(1, "Results for domain: " + self.domainString + ' --evaluated by: ' + self.evaluator_label)
+        self._prstr(1, "Results for domain: " + self.domainString + ' --evaluated by: ' + self.evaluator_label, 'results')
         
         # computing t-value for confidence interval of 95%
         from scipy import stats
@@ -202,13 +205,13 @@ class Evaluator(object):
         else:
             tinv = stats.t.ppf(1 - 0.025, num_dialogs - 1)
 
-        self._prstr(1, '# of dialogues  = %d' % num_dialogs)
+        self._prstr(1, '# of dialogues  = %d' % num_dialogs, 'results')
         if num_dialogs:
             self._prstr(1, 'Average reward  = %.2f +- %.2f' % (np.mean(self.rewards), \
-                                                            tinv * np.std(self.rewards) / np.sqrt(num_dialogs)))
-            self._prstr(1, self._getResultString())
+                                                            tinv * np.std(self.rewards) / np.sqrt(num_dialogs)), 'results')
+            self._prstr(1, self._getResultString(), 'results')
             self._prstr(1, 'Average turns   = %.2f +- %.2f' % (np.mean(self.turns), \
-                                                            tinv * np.std(self.turns) / np.sqrt(num_dialogs)))
+                                                            tinv * np.std(self.turns) / np.sqrt(num_dialogs)), 'results')
         return
     
     
