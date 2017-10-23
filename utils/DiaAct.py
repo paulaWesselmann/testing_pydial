@@ -218,12 +218,15 @@ class DiaAct(object):
             if slot == 'name' or value == 'dontcare':
                 continue
 
-            if op == '!=':
-                logger.error('!= constraint exists: ' + str(const))
-
             this_value = self.get_value(slot, negate=False)
-            if this_value not in [None, value]:
-                return True
+            if op == '!=':
+                if this_value in [value]:
+                    return True
+            elif op == '=':
+                if this_value not in [None, value]:
+                    return True
+            else:
+                logger.error('unknown constraint operator exists: ' + str(const))
         return False
 
     def getDiaItemFormat(self):

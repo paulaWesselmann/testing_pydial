@@ -1,21 +1,17 @@
 {
     "real2abstract": {
-        "kind": "slot02", 
-        "booktime": "infoslot00", 
+        "kind": "slot02",
         "name": "name", 
         "area": "slot01", 
-        "price": "infoslot02", 
-        "hasinternet": "infoslot04", 
+        "price": "infoslot01",
+        "hasinternet": "infoslot03",
         "hasparking": "slot04", 
-        "phone": "infoslot03", 
+        "phone": "infoslot02",
         "pricerange": "slot00", 
-        "postcode": "infoslot01", 
-        "stars": "slot03", 
-        "booknumber": "infoslot05", 
-        "bookdate": "infoslot06", 
-        "type": "type", 
-        "bookname": "infoslot07", 
-        "addr": "infoslot08"
+        "postcode": "infoslot00",
+        "stars": "slot03",
+        "type": "type",
+        "addr": "infoslot04"
     }, 
     "abstract2real": {
         "slot02": "kind", 
@@ -24,15 +20,11 @@
         "slot01": "area", 
         "name": "name", 
         "slot04": "hasparking", 
-        "infoslot02": "price", 
-        "infoslot03": "phone", 
-        "infoslot00": "booktime", 
-        "infoslot01": "postcode", 
-        "infoslot06": "bookdate", 
-        "infoslot07": "bookname", 
-        "infoslot04": "hasinternet", 
-        "infoslot05": "booknumber", 
-        "infoslot08": "addr", 
+        "infoslot01": "price",
+        "infoslot02": "phone",
+        "infoslot00": "postcode",
+        "infoslot03": "hasinternet",
+        "infoslot04": "addr",
         "type": "type"
     }
 }

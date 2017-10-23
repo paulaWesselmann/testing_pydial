@@ -90,7 +90,7 @@ class FlatDomainOntology(object):
         """Just loads json file -- No class for ontology representation at present. 
         """
         ontology_fname = OntologyUtils.get_ontology_path(self.domainString)
-        logger.info('Loading ontology: '+ontology_fname)
+        logger.results('Loading ontology: '+ontology_fname) # ic340: pydial.py uses this line in the log to create the list of domains
         try:
             self.ontology = json.load(open(ontology_fname))
         except IOError:
@@ -247,7 +247,43 @@ class FlatDomainOntology(object):
         # TODO
         #logger.warning('Currently not implemented: always return False.')
         return False
+    
+    def constraintsCanBeDiscriminated(self, constraints):
+        '''
+        Checks if the given constraints list returns a list of values which can be 
+        discriminated between - i.e. there is a question which we could ask which 
+        would give differences between the values.
+        '''
+        real_constraints = {}
+        dontcare_slots = []
+        for slot, value, belief in constraints:
+            if value != 'dontcare':
+                real_constraints[slot] = value
+            else:
+                dontcare_slots.append(slot)
+        
+        entries = self.db.entity_by_features(constraints=real_constraints)
+        
+        discriminable = False
+        if len(entries) < 2:
+            return discriminable
+        else:
+            discriminating_slots = list(self.informable_slots)
+            discriminating_slots.remove('name')
+            if 'price' in discriminating_slots: #TODO: ic340 why is price in informable slots (SFR)?
+                discriminating_slots.remove('price')
+            for slot in discriminating_slots:
+                if slot not in dontcare_slots:
+                    values = []
+                    for ent in entries:
+                        values.append(ent[slot])
+                    if len(set(values)) > 1:
+                        discriminable = True
+            return discriminable
 
+    def get_length_entity_by_features(self, constraints): 
+        return self.db.get_length_entity_by_features(constraints=constraints)
+        
 
 
 class FlatOntologyManager(object):
@@ -290,7 +326,7 @@ class FlatOntologyManager(object):
             self._bootup(dstring)
     
     def _bootup(self, dstring):
-        self.ontologyManagers[dstring] = FlatDomainOntology(domainString=dstring)
+        self.ontologyManagers[dstring] = self._load_domains_ontology(dstring)
     
     def _checkDomainString(self, dstring):        
         if dstring not in self.ontologyManagers:
@@ -333,7 +369,9 @@ class FlatOntologyManager(object):
         return {}
     
     def get_length_entity_by_features(self, dstring, constraints): 
-        return len(self.ontologyManagers[dstring].db.entity_by_features(constraints=constraints))
+        if self.ontologyManagers[dstring] is not None:
+            return self.ontologyManagers[dstring].get_length_entity_by_features(constraints=constraints)
+        return 0
     
     def getSlotsToExpress(self, dstring, slot, value):
         return self.ontologyManagers[dstring].getSlotsToExpress(slot=slot, value=value)
@@ -480,6 +518,50 @@ class FlatOntologyManager(object):
             return self.ontologyManagers[dstring].sorted_system_requestable_slots
         else:
             logger.error('Mode %s is not valid' % mode)
+            
+    def constraintsCanBeDiscriminated(self, domainString, constraints):
+        '''
+        Checks if the given constraints list returns a list of values which can be 
+        discriminated between - i.e. there is a question which we could ask which 
+        would give differences between the values.
+        '''
+        if self.ontologyManagers[domainString] is not None:
+            return self.ontologyManagers[domainString].constraintsCanBeDiscriminated(constraints=constraints)
+        return False
+    
+    def _load_domains_ontology(self, domainString):
+        '''
+        Loads and instantiates the respective ontology object as configured in config file. The new object is added to the internal
+        dictionary. 
+        
+        Default is FlatDomainOntology.
+        
+        .. Note:
+            To dynamically load a class, the __init__() must take one argument: domainString.
+        
+        :param domainString: the domain the ontology will be loaded for.
+        :type domainString: str
+        :returns: None
+        '''
+        
+        ontologyClass = None
+        
+        if Settings.config.has_option('ontology_' + domainString, 'handler'):
+            ontologyClass = Settings.config.get('ontology_' + domainString, 'handler')
+        
+        if ontologyClass is None:
+            return FlatDomainOntology(domainString)
+        else:
+            try:
+                # try to view the config string as a complete module path to the class to be instantiated
+                components = ontologyClass.split('.')
+                packageString = '.'.join(components[:-1]) 
+                classString = components[-1]
+                mod = __import__(packageString, fromlist=[classString])
+                klass = getattr(mod, classString)
+                return klass(domainString)
+            except ImportError:
+                logger.error('Unknown domain ontology class "{}" for domain "{}"'.format(ontologyClass, domainString))
     
 
 #END OF FILE

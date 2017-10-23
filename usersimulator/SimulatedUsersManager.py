@@ -44,7 +44,7 @@ Copyright CUED Dialogue Systems Group 2015 - 2017
 __author__ = "cued_dialogue_systems_group"
 
 import UserModel
-import ErrorSimulator
+import ErrorModel
 from utils import DiaAct, Settings, ContextLogger
 from ontology import Ontology, OntologyUtils
 logger = ContextLogger.getLogger('')
@@ -56,11 +56,11 @@ class DomainsSimulatedUser(object):
 
     :param str: domain string
     '''
-    def __init__(self, domainString, conf_scorer_name, error_rate):
+    def __init__(self, domainString, error_rate):
         '''
         '''
         self.um = UserModel.UM(domainString)
-        self.error_simulator = ErrorSimulator.DomainsErrorSimulator(domainString, conf_scorer_name, error_rate)
+        self.error_simulator = ErrorModel.DomainsErrorSimulator(domainString, error_rate)
         
         self.randomLearning = False
         if Settings.config.has_option("mogp_"+domainString, "randomweightlearning"):
@@ -102,6 +102,10 @@ class SimulatedUsersManager(object):
     """
     def __init__(self, error_rate):
         self.possible_domains = Ontology.global_ontology.possible_domains
+        if Settings.config.has_option("GENERAL", "testdomains"):
+            self.possible_domains = Settings.config.get("GENERAL", "testdomains").split(',')
+        if Settings.config.has_option("GENERAL", "traindomains"):
+            self.possible_domains = Settings.config.get("GENERAL", "traindomains").split(',')
         self.error_rate = error_rate
         logger.info('Simulating with error rate: ' + str(error_rate))
         self.simUserManagers = dict.fromkeys(OntologyUtils.available_domains, None)
@@ -112,7 +116,6 @@ class SimulatedUsersManager(object):
         self.MAX_DOMAINS_PER_DIALOG = 3
         self.INCLUDE_DOMAIN_PROB = 0.6
         self.CONDITIONAL_BEHAVIOUR = False
-        self.conf_scorer_name = 'additive'
         self.forceNullPositive = False
         self.traceDialog = 2
         self.temp_domains = []
@@ -120,8 +123,6 @@ class SimulatedUsersManager(object):
         # CONFIG OPTIONS: 
         if Settings.config.has_option("simulate", "forcenullpositive"):
             self.forceNullPositive = Settings.config.getboolean("simulate", "forcenullpositive")
-        if Settings.config.has_option('simulate', 'confscorer'):
-            self.conf_scorer_name = Settings.config.get('simulate', 'confscorer')
         if Settings.config.has_option("simulate","includedomainprob"):
             self.INCLUDE_DOMAIN_PROB = Settings.config.getfloat("simulate","includedomainprob")
             assert(self.INCLUDE_DOMAIN_PROB <= 1.0 and self.INCLUDE_DOMAIN_PROB > 0)
@@ -186,7 +187,7 @@ class SimulatedUsersManager(object):
             self.using_domains.append(Settings.random.choice(self.possible_domains))  # must have at least 1 element
             root_domain = self.using_domains[0] # the first chosen domain - will affect which codomains can be partnered with
             self.set_allowed_codomains(ROOTDOMAIN=root_domain)
-            shuffled_possible_domains = list(self.possible_domains)         # list performs a copy operation here.
+            shuffled_possible_domains = list(self.possible_domains)
             Settings.random.shuffle(shuffled_possible_domains)
 
             for dstring in shuffled_possible_domains:
@@ -210,6 +211,12 @@ class SimulatedUsersManager(object):
             logger.info('Order sim user will execute goals:'+str(self.using_domains))
 
         elif self.domainSampling == "roundrobin":
+            if self.MIN_DOMAINS_PER_DIALOG > 1:
+                logger.warning('With "roundrobin" domains ampling "mindomainsperdialog" cannot be larger than 1, setting it to 1')
+                self.MIN_DOMAINS_PER_DIALOG = 1
+            if self.MAX_DOMAINS_PER_DIALOG > 1:
+                logger.warning('With "roundrobin" domain sampling "maxdomainsperdialog" cannot be larger than 1, setting it to 1')
+                self.MAX_DOMAINS_PER_DIALOG = 1
             if self.temp_domains == []:
                 self.temp_domains = list(self.possible_domains)
                 Settings.random.shuffle(self.temp_domains)
@@ -235,7 +242,7 @@ class SimulatedUsersManager(object):
         for dstring in self.using_domains: # doing this way to generate goals/behaviour in an order.
             # fire up or check if it is running
             if self.simUserManagers[dstring] is None:
-                self.simUserManagers[dstring] = DomainsSimulatedUser(dstring, self.conf_scorer_name, self.error_rate)
+                self.simUserManagers[dstring] = DomainsSimulatedUser(dstring, self.error_rate)
             self.simUserManagers[dstring].restart(otherDomainsConstraints)
             
             # DEBUG prints to inspect goals we have generated:

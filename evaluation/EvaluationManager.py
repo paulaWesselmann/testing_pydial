@@ -69,7 +69,7 @@ class Evaluator(object):
         self.num_turns = 0
         self.total_reward = 0    
         
-        self.evaluator_label = "{}".format(type(self))
+        self.evaluator_label = "{}".format(type(self).__name__)
         self.evaluator_short_label = self.evaluator_label[0:3]
         
     def turnReward(self, turnInfo):
@@ -147,15 +147,15 @@ class Evaluator(object):
         '''
         return 0
     
-    def _getResultString(self):
-        num_dialogs = len(self.outcomes)
+    def _getResultString(self, outcomes):
+        num_dialogs = len(outcomes)
         from scipy import stats
         if num_dialogs < 2:
             tinv = 1
         else:
             tinv = stats.t.ppf(1 - 0.025, num_dialogs - 1)
-        return 'Average success = {0:0.2f} +- {1:0.2f}'.format(100 * np.mean(self.outcomes), \
-                                                            100 * tinv * np.std(self.outcomes) / np.sqrt(num_dialogs))
+        return 'Average success = {0:0.2f} +- {1:0.2f}'.format(100 * np.mean(outcomes), \
+                                                            100 * tinv * np.std(outcomes) / np.sqrt(num_dialogs))
     
     def doTraining(self):
         '''
@@ -209,7 +209,7 @@ class Evaluator(object):
         if num_dialogs:
             self._prstr(1, 'Average reward  = %.2f +- %.2f' % (np.mean(self.rewards), \
                                                             tinv * np.std(self.rewards) / np.sqrt(num_dialogs)), 'results')
-            self._prstr(1, self._getResultString(), 'results')
+            self._prstr(1, self._getResultString(self.outcomes), 'results')
             self._prstr(1, 'Average turns   = %.2f +- %.2f' % (np.mean(self.turns), \
                                                             tinv * np.std(self.turns) / np.sqrt(num_dialogs)), 'results')
         return
@@ -322,7 +322,8 @@ class EvaluationManager(object):
         '''
         
         evaluator = 'objective'
-        
+        if Settings.config.has_option('eval', 'successmeasure'):
+            evaluator = Settings.config.get('eval', 'successmeasure')
         if Settings.config.has_option('eval_' + domainString, 'successmeasure'):
             evaluator = Settings.config.get('eval_' + domainString, 'successmeasure')
         

@@ -209,7 +209,7 @@ class DialogueAgent(object):
         return sys_act
     
     
-    def continue_call(self, asr_info, domainString=None, domainSimulatedUsers=None, user_act=None):
+    def continue_call(self, asr_info, domainString=None, domainSimulatedUsers=None):
         '''
         Works through topictracking > semi belief > policy > semo > evaluation -- for turns > 0
         
@@ -224,9 +224,6 @@ class DialogueAgent(object):
         :param domainSimulatedUsers: simulated users in different domains
         :type domainSimulatedUsers: dict
         
-        :param user_act: master dialogue act
-        :type user_act: string
-               
         :return: DiaAct -- the system's reponse dialogue act with verbalization
         ''' 
 
@@ -274,15 +271,15 @@ class DialogueAgent(object):
         # 2. Policy -- Determine system act/response
         sys_act = self.policy_manager.act_on(dstring=currentDomain, 
                                                   state=state)
-        
+
+        # Check ending the call:
+        sys_act = self._check_ENDING_CALL(state, sys_act)  # NB: this may change the self.prompt_str
+
         self._print_sys_act(sys_act)
-        
+
         # SEMO:
         self.prompt_str = self._agents_semo(sys_act)
         sys_act.prompt = self.prompt_str
-        
-        # Check ending the call:
-        self._check_ENDING_CALL(user_act, state, sys_act)    # NB: this may change the self.prompt_str
         
         
         # 3. TURN ENDING
@@ -604,12 +601,9 @@ class DialogueAgent(object):
         '''
         if self.traceDialog>2: state.printUserActs(currentDomain)
     
-    def _check_ENDING_CALL(self, user_act=None, state = None, sys_act = None):
+    def _check_ENDING_CALL(self, state = None, sys_act = None):
         '''
         Sets self.ENDING_DIALOG as appropriate -- checks if USER ended FIRST, then considers SYSTEM. 
-
-        :param user_act: user's dialogue act
-        :type user_act: string
 
         :param state: system's state (belief)
         :type state: :class:`~utils.DialgoueState.DialgoueState`
@@ -619,10 +613,11 @@ class DialogueAgent(object):
 
         :return: bool -- whether to end the dialogue or not
         '''
-        self._check_USER_ending(user_act, state)
+        sys_act = self._check_USER_ending(state, sys_act=sys_act)
         if not self.ENDING_DIALOG:
             # check if the system can end the call
             self._check_SYSTEM_ending(sys_act)
+        return sys_act
     
     def _check_SYSTEM_ending(self, sys_act):
         ''' 
@@ -644,13 +639,10 @@ class DialogueAgent(object):
                 self.ENDING_DIALOG = True   # SYSTEM ENDS
             
     
-    def _check_USER_ending(self, user_act=None, state = None, sys_act = None):
+    def _check_USER_ending(self, state = None, sys_act = None):
         '''Sets boolean self.ENDING_DIALOG if user has ended call. 
         
         .. note:: can change the semo str if user ended.
-
-        :param user_act: user's dialogue act
-        :type user_act: string
 
         :param state: system's state (belief)
         :type state: :class:`~utils.DialgoueState.DialgoueState`
@@ -660,21 +652,17 @@ class DialogueAgent(object):
 
         :return: bool -- whether to end the dialogue or not
         '''
-        assert(not self.ENDING_DIALOG)
+#         assert(not self.ENDING_DIALOG)
 
-        if self.hub_id == 'simulate':
-            assert(user_act is not None)
-            if 'bye' == user_act.act:
-                self.ENDING_DIALOG = True
-        else:
-            self.ENDING_DIALOG = state.check_user_ending()
+        self.ENDING_DIALOG = state.check_user_ending()
         if self.ENDING_DIALOG:  
             if self.semo_manager is not None:   
                 if 'bye' not in self.prompt_str:
                     logger.warning('Ignoring system act: %s and saying goodbye as user has said bye' % sys_act)
                     self.prompt_str = 'Goodbye. '       # TODO - check how system can say bye --otherwise user has said bye,
                     #  and we get some odd reply like 'in the south. please enter the 5 digit id ...'
-        return self.ENDING_DIALOG
+            sys_act = DiaAct('bye()')
+        return sys_act
 
     def _agents_semo(self, sys_act):
         '''

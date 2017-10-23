@@ -80,11 +80,16 @@ class DataBaseINTERFACE(object):
         '''
         pass
     
+    def get_length_entity_by_features(self, constraints):
+        pass
+    
     def query_entity_property(self, entity, slot, value):
         '''This method is needed just because we only pass entity name around at present -- would be better to pass entity id around
         and retireive name when needed - as could wuickly access properties rather than searching ... TODO 
         '''
         pass
+    
+    
 
 
 

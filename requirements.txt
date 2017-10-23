@@ -5,3 +5,4 @@ scipy>=0.16.0
 nose>=1.3.7
 theano>=0.8.2
 nltk>=3.0.0
+scriptine>=0.2.1

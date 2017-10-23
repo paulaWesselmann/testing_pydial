@@ -50,6 +50,7 @@ class PolicyManager(object):
     def __init__(self):
         self.domainPolicies = dict.fromkeys(OntologyUtils.available_domains, None)
         self.committees = self._load_committees()
+        self.shared_params = None
         
         self.SPECIAL_DOMAINS = ['topicmanager','wikipedia']
         
@@ -78,7 +79,14 @@ class PolicyManager(object):
         '''Loads a policy for a given domain. 
         '''
         # with BCM if domain was in a committee -- then its policy can have already been loaded. check first:
-        if self.domainPolicies[domainString] is not None:
+        if Settings.config.has_option('policycommittee', 'singlemodel') \
+                and Settings.config.getboolean('policycommittee', 'singlemodel'):
+            if self.shared_params is None:
+                self.shared_params = {}
+            self._load_domains_policy(domainString)
+            self.domainPolicies[domainString].restart()
+
+        elif self.domainPolicies[domainString] is not None:
             logger.warning('{} policy is already loaded'.format(domainString))
         else:
             self._load_domains_policy(domainString)
@@ -102,7 +110,7 @@ class PolicyManager(object):
             systemAct = self.committees[dstring].act_on(state=state, domainInControl=dstring)
         else:
             systemAct = self.domainPolicies[dstring].act_on(state=state)
-           
+
         return systemAct
     
     def train(self, training_vec = None):
@@ -210,15 +218,38 @@ class PolicyManager(object):
         
         # 1. get type:
         policy_type = 'hdc'  # domain+resource independent default
+        in_policy_file = ''
+        out_policy_file = ''
         learning = False
+        useconfreq = False
         
         
         if not Settings.config.has_section('policy_'+domainString):
-            logger.warning("No policy section specified for domain: "+domainString+" - defaulting to HDC")
+            if not Settings.config.has_section('policy'):
+                logger.warning("No policy section specified for domain: "+domainString+" - defaulting to HDC")
+            else:
+                logger.info("No policy section specified for domain: " + domainString + " - using values from 'policy' section")
+        if Settings.config.has_option('policy', 'policytype'):
+            policy_type = Settings.config.get('policy', 'policytype')
+        if Settings.config.has_option('policy', 'learning'):
+            learning = Settings.config.getboolean('policy', 'learning')
+        if Settings.config.has_option('policy', 'useconfreq'):
+            useconfreq = Settings.config.getboolean('policy', 'useconfreq')
+        if Settings.config.has_option('policy', 'inpolicyfile'):
+            in_policy_file = Settings.config.get('policy', 'inpolicyfile')
+        if Settings.config.has_option('policy', 'outpolicyfile'):
+            out_policy_file = Settings.config.get('policy', 'outpolicyfile')
+
         if Settings.config.has_option('policy_'+domainString, 'policytype'):
-            policy_type = Settings.config.get('policy_'+domainString, 'policytype') 
+            policy_type = Settings.config.get('policy_'+domainString, 'policytype')
         if Settings.config.has_option('policy_'+domainString, 'learning'):
             learning = Settings.config.getboolean('policy_'+domainString, 'learning')
+        if Settings.config.has_option('policy_'+domainString, 'useconfreq'):
+            useconfreq = Settings.config.getboolean('policy_'+domainString, 'useconfreq')
+        if Settings.config.has_option('policy_'+domainString, 'inpolicyfile'):
+            in_policy_file = Settings.config.get('policy_'+domainString, 'inpolicyfile')
+        if Settings.config.has_option('policy_'+domainString, 'outpolicyfile'):
+            out_policy_file = Settings.config.get('policy_'+domainString, 'outpolicyfile')
 
         if domainString in self.SPECIAL_DOMAINS:
             if domainString == 'topicmanager':
@@ -235,7 +266,25 @@ class PolicyManager(object):
                 self.domainPolicies[domainString] = HDCPolicy.HDCPolicy(domainString)
             elif policy_type == 'gp':
                 from policy import GPPolicy
-                self.domainPolicies[domainString] = GPPolicy.GPPolicy(domainString, learning)
+                self.domainPolicies[domainString] = GPPolicy.GPPolicy(domainString, learning, self.shared_params)
+            elif policy_type == 'dqn':
+                from policy import DQNPolicy
+                self.domainPolicies[domainString] = DQNPolicy.DQNPolicy(in_policy_file, out_policy_file, domainString, learning)
+            elif policy_type == 'a2c':
+                from policy import A2CPolicy
+                self.domainPolicies[domainString] = A2CPolicy.A2CPolicy(in_policy_file, out_policy_file, domainString, learning)
+            elif policy_type == 'enac':
+                from policy import ENACPolicy
+                self.domainPolicies[domainString] = ENACPolicy.ENACPolicy(in_policy_file, out_policy_file, domainString, learning)
+            elif policy_type == 'bdqn':
+                from policy import BDQNPolicy
+                self.domainPolicies[domainString] = BDQNPolicy.BDQNPolicy(in_policy_file, out_policy_file, domainString, learning)
+            elif policy_type == 'acer':
+                from policy import ACERPolicy
+                self.domainPolicies[domainString] = ACERPolicy.ACERPolicy(in_policy_file, out_policy_file, domainString, learning)
+            elif policy_type == 'tracer':
+                from policy import TRACERPolicy
+                self.domainPolicies[domainString] = TRACERPolicy.TRACERPolicy(in_policy_file, out_policy_file, domainString, learning)
             else:
                 try:
                     # try to view the config string as a complete module path to the class to be instantiated

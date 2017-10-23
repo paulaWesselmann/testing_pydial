@@ -66,10 +66,14 @@ class HDCPolicy(Policy.Policy):
         
         self.use_confreq = False
         
+        if Settings.config.has_option('policy', 'useconfreq'):
+            self.use_confreq = Settings.config.getboolean('policy', 'useconfreq')
         if Settings.config.has_option('policy_'+domainString, 'useconfreq'):
             self.use_confreq = Settings.config.getboolean('policy_'+domainString, 'useconfreq')
         
         inpolicyfile = ''
+        if Settings.config.has_option('policy', 'inpolicyfile'):
+            inpolicyfile = Settings.config.get('policy', 'inpolicyfile')
         if Settings.config.has_option('policy_'+domainString, 'inpolicyfile'):
             inpolicyfile = Settings.config.get('policy_'+domainString, 'inpolicyfile')
         if inpolicyfile == '':

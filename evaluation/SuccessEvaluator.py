@@ -19,6 +19,7 @@
 # limitations under the License.
 #
 ###############################################################################
+from utils.dact import DactItem
 
 '''
 SuccessEvaluator.py - module for determining objective and subjective dialogue success 
@@ -40,9 +41,10 @@ Copyright CUED Dialogue Systems Group 2016
 __author__ = "cued_dialogue_systems_group"
 
 from EvaluationManager import Evaluator
-from utils import Settings, ContextLogger, DiaAct
+from utils import Settings, ContextLogger, DiaAct, dact
 from ontology import Ontology
 import numpy as np
+import copy
 logger = ContextLogger.getLogger('')
 
 class ObjectiveSuccessEvaluator(Evaluator):
@@ -56,6 +58,7 @@ class ObjectiveSuccessEvaluator(Evaluator):
         
         # only for nice prints
         self.evaluator_label = "objective success evaluator"
+        self.evaluator_short_label = "suc"
                
         # DEFAULTS:
         self.reward_venue_recommended = 0  # we dont use this. 100
@@ -65,6 +68,7 @@ class ObjectiveSuccessEvaluator(Evaluator):
         self.successReward = 20
         self.using_tasks = False
         self.failPenalty = 0
+        self.user_goal = None
         
         # CONFIG:
         if Settings.config.has_option('eval', 'rewardvenuerecommended'):
@@ -75,10 +79,14 @@ class ObjectiveSuccessEvaluator(Evaluator):
             self.wrong_venue_penalty = Settings.config.getint('eval', 'wrongvenuepenalty')
         if Settings.config.has_option('eval', 'notmentionedvaluepenalty'):
             self.not_mentioned_value_penalty = Settings.config.getint('eval', 'notmentionedvaluepenalty')
-        if Settings.config.has_option("eval_"+domainString, "successreward"):
-            self.successReward = Settings.config.getint("eval_"+domainString, "successreward")
+        if Settings.config.has_option("eval", "failpenalty"):
+            self.failPenalty = Settings.config.getint("eval", "failpenalty")
+        if Settings.config.has_option("eval", "successreward"):
+            self.successReward = Settings.config.getint("eval", "successreward")
         if Settings.config.has_option("eval_"+domainString, "failpenalty"):
             self.failPenalty = Settings.config.getint("eval_"+domainString, "failpenalty")
+        if Settings.config.has_option("eval_"+domainString, "successreward"):
+            self.successReward = Settings.config.getint("eval_"+domainString, "successreward")
             
             
         if Settings.config.has_option("dialogueserver","tasksfile"):
@@ -103,6 +111,7 @@ class ObjectiveSuccessEvaluator(Evaluator):
         """
         super(ObjectiveSuccessEvaluator, self).restart()
         self.venue_recommended = False
+        self.last_venue_recomended = None
         self.mentioned_values = {}      # {slot: set(values), ...}
         sys_reqestable_slots = Ontology.global_ontology.get_system_requestable_slots(self.domainString)
         for slot in sys_reqestable_slots:
@@ -126,20 +135,28 @@ class ObjectiveSuccessEvaluator(Evaluator):
         if turnInfo is not None and isinstance(turnInfo, dict):
             if 'usermodel' in turnInfo and 'sys_act' in turnInfo:
                 um = turnInfo['usermodel']
+                self.user_goal = um.goal.constraints
                 
                 # unpack input user model um.
-                prev_consts = um.prev_goal.constraints 
+                #prev_consts = um.prev_goal.constraints
+                prev_consts = copy.deepcopy(um.goal.constraints)
+                for item in prev_consts:
+                    if item.slot == 'name' and item.op == '=':
+                        item.val = 'dontcare'
                 requests = um.goal.requests
                 sys_act = DiaAct.DiaAct(turnInfo['sys_act'])
                 user_act = um.lastUserAct
                 
                 # Check if the most recent venue satisfies constraints.
                 name = sys_act.get_value('name', negate=False)
+                lvr = self.last_venue_recomended if hasattr(self, 'last_venue_recomended') else 'not existing'
                 if name not in ['none', None]:
                     # Venue is recommended.
-                    possible_entities = Ontology.global_ontology.entity_by_features(self.domainString, constraints=prev_consts)
-                    match = name in [e['name'] for e in possible_entities]
-                    if match:
+                    #possible_entities = Ontology.global_ontology.entity_by_features(self.domainString, constraints=prev_consts)
+                    #is_valid_venue = name in [e['name'] for e in possible_entities]
+                    self.last_venue_recomended = name
+                    is_valid_venue = self._isValidVenue(name, prev_consts)
+                    if is_valid_venue:
                         # Success except if the next user action is reqalts.
                         if user_act.act != 'reqalts':
                             logger.debug('Correct venue is recommended.')
@@ -150,6 +167,7 @@ class ObjectiveSuccessEvaluator(Evaluator):
                         # Previous venue did not match.
                         logger.debug('Venue is not correct.')
                         self.venue_recommended = False
+                        logger.debug('Goal constraints: {}'.format(prev_consts))
                         reward -= self.wrong_venue_penalty
         
                 # If system inform(name=none) but it was not right decision based on wrong values.
@@ -181,7 +199,44 @@ class ObjectiveSuccessEvaluator(Evaluator):
                 self.DM_history.append(turnInfo['sys_act'])
                 
         return reward
+
+    def _isValidVenue(self, name, constraints):    
+        constraints2 = None
+        if isinstance(constraints, list):
+            constraints2 = copy.deepcopy(constraints)
+            for const in constraints2:
+                if const.slot == 'name':
+                    if const.op == '!=':
+                        if name == const.val and const.val != 'dontcare':
+                            return False
+                        else:
+                            constraints2.remove(const)
+                    elif const.op == '=':
+                        if name != const.val and const.val != 'dontcare':
+                            return False
+            constraints2.append(DactItem('name','=',name))
+        elif isinstance(constraints, dict): # should never be the case, um has DActItems as constraints
+            constraints2 = copy.deepcopy(constraints)
+            for slot in constraints:
+                if slot == 'name' and name != constraints[slot]:
+                    return False
+            constraints2['name'] = name
+        entities = Ontology.global_ontology.entity_by_features(self.domainString, constraints2)
+
+#         is_valid_list = []
+#         for ent in entities:
+#             is_valid = True
+#             for const in constraints:
+#                 if const.op == '=':
+#                     if const.val != ent[const.slot] and const.val != 'dontcare':
+#                         is_valid = False
+#                 elif const.op == '!=':
+#                     if const.val == ent[const.slot]:
+#                         is_valid = False
+#             is_valid_list.append(is_valid)
         
+        return any(entities)
+
     def _getFinalReward(self,finalInfo):
         '''
         Computes the final reward using finalInfo. Should be overridden by sub-class if values others than 0 should be returned.
@@ -199,8 +254,26 @@ class ObjectiveSuccessEvaluator(Evaluator):
                     self.outcome = False
                 else:
                     requests = um[self.domainString].goal.requests
-                    if self.venue_recommended and None not in requests.values():
-                        self.outcome = True
+                    '''if self.last_venue_recomended is None:
+                        logger.dial('Fail :( User requests: {}, Venue recomended: {}'.format(requests, self.venue_recommended))
+                    else:
+                        if self.venue_recommended and None not in requests.values():
+                            self.outcome = True
+                            logger.dial('Success! User requests: {}, Venue recomended: {}'.format(requests, self.venue_recommended))
+                        else:
+                            logger.dial('Fail :( User requests: {}, Venue recomended: {}'.format(requests, self.venue_recommended))'''
+                    if None not in requests.values():
+                        valid_venue = self._isValidVenue(requests['name'], self.user_goal)
+                        if valid_venue:
+                            self.outcome = True
+                            logger.dial(
+                                'Success! User requests: {}'.format(requests))
+                        else:
+                            logger.dial(
+                                'Fail :( User requests: {}'.format(requests))
+                    else:
+                        logger.dial(
+                            'Fail :( User requests: {}'.format(requests))
             elif 'task' in finalInfo: # dialogue server with tasks
                 task = finalInfo['task']
                 if self.DM_history is not None:
@@ -270,15 +343,15 @@ class ObjectiveSuccessEvaluator(Evaluator):
                 self.mentioned_values[item.slot].add(item.val)
                 
                 
-    def _getResultString(self):
-        num_dialogs = len(self.outcomes)
+    def _getResultString(self, outcomes):
+        num_dialogs = len(outcomes)
         from scipy import stats
         if num_dialogs < 2:
             tinv = 1
         else:
             tinv = stats.t.ppf(1 - 0.025, num_dialogs - 1)
-        return 'Average success = {0:0.2f} +- {1:0.2f}'.format(100 * np.mean(self.outcomes), \
-                                                            100 * tinv * np.std(self.outcomes) / np.sqrt(num_dialogs))
+        return 'Average success = {0:0.2f} +- {1:0.2f}'.format(100 * np.mean(outcomes), \
+                                                            100 * tinv * np.std(outcomes) / np.sqrt(num_dialogs))
                 
 class SubjectiveSuccessEvaluator(Evaluator):
     '''
@@ -299,8 +372,10 @@ class SubjectiveSuccessEvaluator(Evaluator):
         # CONFIG:
         if Settings.config.has_option('eval', 'penaliseallturns'):
             self.penalise_all_turns = Settings.config.getboolean('eval', 'penaliseallturns')
-        if Settings.config.has_option("eval_"+domainString, "successreward"):
-            self.successReward = Settings.config.getint("eval_"+domainString, "successreward")
+        if Settings.config.has_option("eval", "successreward"):
+            self.successReward = Settings.config.getint("eval", "successreward")
+        if Settings.config.has_option("eval_" + domainString, "successreward"):
+            self.successReward = Settings.config.getint("eval_" + domainString, "successreward")
 
         
     def restart(self):
@@ -341,14 +416,14 @@ class SubjectiveSuccessEvaluator(Evaluator):
 
         return self.outcome * self.successReward
     
-    def _getResultString(self):
-        num_dialogs = len(self.outcomes)
+    def _getResultString(self, outcomes):
+        num_dialogs = len(outcomes)
         from scipy import stats
         if num_dialogs < 2:
             tinv = 1
         else:
             tinv = stats.t.ppf(1 - 0.025, num_dialogs - 1)
-        return 'Average subj success = {0:0.2f} +- {1:0.2f}'.format(100 * np.mean(self.outcomes), \
-                                                            100 * tinv * np.std(self.outcomes) / np.sqrt(num_dialogs))
+        return 'Average subj success = {0:0.2f} +- {1:0.2f}'.format(100 * np.mean(outcomes), \
+                                                            100 * tinv * np.std(outcomes) / np.sqrt(num_dialogs))
     
 #END OF FILE

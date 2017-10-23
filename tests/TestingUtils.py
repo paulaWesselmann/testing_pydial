@@ -32,5 +32,8 @@ def get_loop_over_domains():
     domains.remove('topicmanager')
     domains.remove('wikipedia')
     domains.remove('ood')
-    domains.remove('Booking')
+    if 'Booking' in domains:
+        domains.remove('Booking')
+    if 'letsgo' in domains:
+        domains.remove('letsgo')
     return domains

@@ -38,7 +38,7 @@ Copyright CUED Dialogue Systems Group 2016
 '''
 __author__ = "cued_dialogue_systems_group"
 
-from EvaluationManager import Evaluator
+from evaluation.EvaluationManager import Evaluator
 from utils import Settings, ContextLogger, DiaAct
 from ontology import Ontology
 logger = ContextLogger.getLogger('')

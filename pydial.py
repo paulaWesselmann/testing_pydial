@@ -67,11 +67,13 @@ gpscale = 1
 
 gplotnum=1
 
-isSingleDomain = True
+isSingleDomain = False
 taskID = ""
 domain = ""
 domains = []
-policytype = ""
+policytype = "hdc"
+
+policytypes = {}
 
 def help_command():
     """ Provide an overview of pydial functionality
@@ -193,48 +195,68 @@ def getOptionalConfigBool(configvarname, default='False', section='exec_config')
 
 def initialise(configId,config_file, seed, mode, trainerrorrate=None, trainsourceiteration=None,
                numtrainbatches=None, traindialogsperbatch=None, numtestdialogs=None,
-               testerrorrate=None, testenderrorrate=None, iteration=None):
+               testerrorrate=None, testenderrorrate=None, iteration=None, traindomains=None, testdomains=None,
+               dbprefix=None):
     global logger, logfile, traceDialog, isSingleDomain
     global policy_dir, conf_dir, log_dir
     global gnumtrainbatches, gtraindialogsperbatch, gnumbatchtestdialogs, gnumtestdialogs
     global gtrainerrorrate, gtesterrorrate, gtrainsourceiteration
     global taskID, domain, domains, policytype, gtesteverybatch, gpscale
-    global gdeleteprevpolicy
+    global gdeleteprevpolicy, isSingleModel
+    global policytypes
 
 
-    if seed:
+    if seed is not None:
         seed = int(seed)
     seed = Settings.init(config_file, seed)
     taskID='ID'
 
-    isSingleDomain = getOptionalConfigBool("isSingleDomain", isSingleDomain, "GENERAL")
+    isSingleDomain = getOptionalConfigBool("singledomain", isSingleDomain, "GENERAL")
+    isSingleModel = getOptionalConfigBool("singlemodel", False, "policycommittee")
     traceDialog    = getOptionalConfigInt("tracedialog", tracedialog, "GENERAL")
-    domain         = getOptionalConfigVar("domain")
+    domain         = getOptionalConfigVar("domain", '', "GENERAL")
+    if len(domain.split(',')) > 1 and isSingleDomain:
+        logger.error('It cannot be singledomain and have several domains defined, Check config file.')
     if isSingleDomain:
-        policytype = getOptionalConfigVar('policytype', policytype, 'policy_' + domain)
+        if Settings.config.has_section('policy_' + domain):
+            policytype = getOptionalConfigVar('policytype', policytype, 'policy_' + domain)
+        else:
+            policytype = getOptionalConfigVar('policytype', policytype, 'policy')
         conventionCheck(configId)
     else:
         domains = getOptionalConfigVar("domains", "", "GENERAL").split(',')
         policytypes = {}
         for domain in domains:
-            policytypes[domain] = getOptionalConfigVar('policytype', policytype, 'policy_' + domain)
+            if Settings.config.has_section('policy_' + domain):
+                policytypes[domain] = getOptionalConfigVar('policytype', policytype, 'policy_' + domain)
+            else:
+                policytypes[domain] = getOptionalConfigVar('policytype', policytype, 'policy')
 
     # if gp, make sure to save required scale before potentially overriding
     if isSingleDomain:
         if policytype == "gp":
-            gpscale = Settings.config.getint("gpsarsa_" + domain, "scale")
-        else:
-            gpscales = {}
-            for domain in domains:
-                if policytypes[domain] == "gp":
-                    gpscales[domain] = Settings.config.getint("gpsarsa_" + domain, "scale")
+            if Settings.config.has_section("gpsarsa_" + domain):
+                gpscale = Settings.config.getint("gpsarsa_" + domain, "scale")
+            else:
+                gpscale = Settings.config.getint("gpsarsa", "scale")
+    else:
+        gpscales = {}
+        for domain in domains:
+            if policytypes[domain] == "gp":
+                if Settings.config.has_section("gpsarsa_" + domain):
+                    gpscales[domain] = Settings.config.getint("gpsarsa_"+ domain, "scale")
+                else:
+                    gpscales[domain] = Settings.config.getint("gpsarsa", "scale")
 
     # Get required folders and create if necessary
     log_dir    = getRequiredDirectory("logfiledir")
     conf_dir   = getRequiredDirectory("configdir")
     if isSingleDomain:
         if policytype != 'hdc':
-            policy_dir = getRequiredDirectory("policydir","policy_"+domain)
+            if Settings.config.has_section("policy_"+domain):
+                policy_dir = getRequiredDirectory("policydir","policy_"+domain)
+            else:
+                policy_dir = getRequiredDirectory("policydir", "policy")
             pd = path(policy_dir)
             if not pd.isdir():
                 print "Policy dir %s does not exist, creating it" % policy_dir
@@ -242,7 +264,10 @@ def initialise(configId,config_file, seed, mode, trainerrorrate=None, trainsourc
     else:
         for domain in domains:
             if policytypes[domain] != 'hdc':
-                policy_dir = getRequiredDirectory("policydir", "policy_" + domain)
+                if Settings.config.has_section("policy_" + domain):
+                    policy_dir = getRequiredDirectory("policydir", "policy_" + domain)
+                else:
+                    policy_dir = getRequiredDirectory("policydir", "policy")
                 pd = path(policy_dir)
                 if not pd.isdir():
                     print "Policy dir %s does not exist, creating it" % policy_dir
@@ -287,37 +312,61 @@ def initialise(configId,config_file, seed, mode, trainerrorrate=None, trainsourc
     gnumbatchtestdialogs = getOptionalConfigInt("numbatchtestdialogs", 20)
     gtesteverybatch = getOptionalConfigBool("testeverybatch",True)
     gdeleteprevpolicy = getOptionalConfigBool("deleteprevpolicy", False)
+    if seed is not None and not 'seed' in configId:
+        seed_string = 'seed{}-'.format(seed)
+    else:
+        seed_string = ''
     if mode=="train":
         if gnumtrainbatches>1:
             enditeration = gtrainsourceiteration+gnumtrainbatches
-            logfile = "%s-%02d.%d-%d.train.log" % (configId,gtrainerrorrate,gtrainsourceiteration+1,enditeration)
+            logfile = "%s-%s%02d.%d-%d.train.log" % (configId, seed_string,gtrainerrorrate,gtrainsourceiteration+1,enditeration)
         else:
-            logfile = "%s-%02d.%d.train.log" % (configId, gtrainerrorrate, gtrainsourceiteration + 1)
+            logfile = "%s-%s%02d.%d.train.log" % (configId, seed_string, gtrainerrorrate, gtrainsourceiteration + 1)
     elif mode=="eval":
         if testenderrorrate:
-            logfile = "%s-%02d.%d.eval.%02d-%02d.log" % (configId,gtrainerrorrate,iteration,
+            logfile = "%s-%s%02d.%d.eval.%02d-%02d.log" % (configId, seed_string,gtrainerrorrate,iteration,
                                                          gtesterrorrate,testenderrorrate)
         else:
-            logfile = "%s-%02d.%d.eval.%02d.log" % (configId, gtrainerrorrate, iteration, gtesterrorrate)
+            logfile = "%s-%s%02d.%d.eval.%02d.log" % (configId, seed_string, gtrainerrorrate, iteration, gtesterrorrate)
     elif mode=="chat":
-        logfile = "%s-%02d.%d.chat.log" % (configId, gtrainerrorrate, gtrainsourceiteration)
+        logfile = "%s-%s%02d.%d.chat.log" % (configId, seed_string, gtrainerrorrate, gtrainsourceiteration)
     else:
         print "Unknown initialisation mode:",mode
         exit(0)
-
+    print '*** logfile: {} ***'.format(logfile)
     Settings.config.set("logging", "file", log_dir + logfile)
-    ContextLogger.createLoggingHandlers(config=Settings.config)
-    logger = ContextLogger.getLogger('')
-    Ontology.init_global_ontology()
+    if traindomains:
+        Settings.config.set("GENERAL", "traindomains", traindomains)
+    if testdomains:
+        Settings.config.set("GENERAL", "testdomains", testdomains)
+    if dbprefix:
+        Settings.config.set("exec_config", "dbprefix", dbprefix)
+    if not Ontology.global_ontology:
+        ContextLogger.createLoggingHandlers(config=Settings.config)
+        logger = ContextLogger.getLogger('')
+        Ontology.init_global_ontology()
+    else:
+        ContextLogger.resetLoggingHandlers()
+        ContextLogger.createLoggingHandlers(config=Settings.config)
+        logger = ContextLogger.getLogger('')
+
+    Settings.random.seed(int(seed))
     if Settings.root=='':
         Settings.root = os.getcwd()
     logger.info("Seed = %d", seed)
     logger.info("Root = %s", Settings.root)
 
-def setupPolicy(domain, configId, trainerr, source_iteration,target_iteration):
-    policy_section = "policy_" + domain
-    inpolicyfile = "%s-%02d.%d" % (configId, trainerr, source_iteration)
-    outpolicyfile = "%s-%02d.%d" % (configId, trainerr, target_iteration)
+def setupPolicy(domain, configId, trainerr, source_iteration,target_iteration, seed=None):
+    if Settings.config.has_section("policy_" + domain):
+        policy_section = "policy_" + domain
+    else:
+        policy_section = "policy"
+    if seed is not None:
+        inpolicyfile = "%s-seed%s-%02d.%d" % (configId, seed, trainerr, source_iteration)
+        outpolicyfile = "%s-seed%s-%02d.%d" % (configId, seed, trainerr, target_iteration)
+    else:
+        inpolicyfile = "%s-%02d.%d" % (configId, trainerr, source_iteration)
+        outpolicyfile = "%s-%02d.%d" % (configId, trainerr, target_iteration)
     if isSingleDomain:
         Settings.config.set(policy_section, "inpolicyfile", policy_dir + inpolicyfile)
         Settings.config.set(policy_section, "outpolicyfile", policy_dir + outpolicyfile)
@@ -332,18 +381,24 @@ def setupPolicy(domain, configId, trainerr, source_iteration,target_iteration):
     return (inpolicyfile,outpolicyfile)
 
 
-def trainBatch(domain, configId, trainerr, ndialogs, source_iteration):
+def trainBatch(domain, configId, trainerr, ndialogs, source_iteration,seed=None):
     if isSingleDomain:
-        (inpolicy, outpolicy) = setupPolicy(domain, configId, trainerr, source_iteration, source_iteration + 1)
+        (inpolicy, outpolicy) = setupPolicy(domain, configId, trainerr, source_iteration, source_iteration + 1,seed=seed)
         mess = "*** Training Iteration %s->%s: iter=%d, error-rate=%d, num-dialogs=%d ***" % (
             inpolicy, outpolicy, source_iteration, trainerr, ndialogs)
         if tracedialog > 0: print mess
         logger.results(mess)
         # make sure that learning is switched on
-        Settings.config.set("policy_" + domain, "learning", 'True')
+        if Settings.config.has_section("policy_" + domain):
+            Settings.config.set("policy_" + domain, "learning", 'True')
+        else:
+            Settings.config.set("policy", "learning", 'True')
         # if gp, make sure to reset scale to config setting
         if policytype == "gp":
-            Settings.config.set("gpsarsa_" + domain, "scale", str(gpscale))
+            if Settings.config.has_section("gpsarsa_" + domain):
+                Settings.config.set("gpsarsa_" + domain, "scale", str(gpscale))
+            else:
+                Settings.config.set("gpsarsa", "scale", str(gpscale))
         # Define the config file for this iteration
         confsavefile = conf_dir + outpolicy + ".train.cfg"
     else:
@@ -352,9 +407,12 @@ def trainBatch(domain, configId, trainerr, ndialogs, source_iteration):
         if tracedialog > 0: print mess
         logger.results(mess)
         for dom in domain:
-            setupPolicy(dom, configId, trainerr, source_iteration, source_iteration + 1)
+            setupPolicy(dom, configId, trainerr, source_iteration, source_iteration + 1, seed=seed)
             # make sure that learning is switched on
-            Settings.config.set("policy_" + dom, "learning", 'True')
+            if Settings.config.has_section("policy_" + dom):
+                Settings.config.set("policy_" + dom, "learning", 'True')
+            else:
+                Settings.config.set("policy", "learning", 'True')
             # if gp, make sure to reset scale to config setting
             if policytype == "gp":
                 Settings.config.set("gpsarsa_" + dom, "scale", str(gpscale))
@@ -372,13 +430,18 @@ def trainBatch(domain, configId, trainerr, ndialogs, source_iteration):
     if gdeleteprevpolicy:
         if isSingleDomain:
             if inpolicy[-1] != '0':
-                print 'rm {}/*{}*'.format(Settings.config.get('policy_{}'.format(domain),'policydir'),inpolicy)
-                os.system('rm {}/*{}*'.format(Settings.config.get('policy_{}'.format(domain),'policydir'),inpolicy))
+                if Settings.config.has_section("policy_" + domain):
+                    for f in os.listdir(Settings.config.get('policy_{}'.format(domain),'policydir')):
+                        if re.search(inpolicy, f):
+                            os.remove(os.path.join(Settings.config.get('policy_{}'.format(domain),'policydir'), f))
+                else:
+                    for f in os.listdir(Settings.config.get('policy','policydir')):
+                        if re.search(inpolicy, f):
+                            os.remove(os.path.join(Settings.config.get('policy','policydir'), f))
 
 
-
-def setEvalConfig(domain, configId, evalerr, ndialogs, iteration):
-    (_, policy) = setupPolicy(domain, configId, gtrainerrorrate, iteration, iteration)
+def setEvalConfig(domain, configId, evalerr, ndialogs, iteration, seed=None):
+    (_, policy) = setupPolicy(domain, configId, gtrainerrorrate, iteration, iteration,seed=seed)
     if isSingleDomain:
         mess = "*** Evaluating %s: error-rate=%d num-dialogs=%d ***" % (policy, evalerr, ndialogs)
     else:
@@ -387,21 +450,27 @@ def setEvalConfig(domain, configId, evalerr, ndialogs, iteration):
     if tracedialog > 0: print mess
     logger.results(mess)
     # make sure that learning is switched off
-    Settings.config.set("policy_" + domain, "learning", 'False')
+    if Settings.config.has_section("policy_" + domain):
+        Settings.config.set("policy_" + domain, "learning", 'False')
+    else:
+        Settings.config.set("policy", "learning", 'False')
     # if gp, make sure to reset scale to 1 for evaluation
     if policytype == "gp":
-        Settings.config.set("gpsarsa_" + domain, "scale", "1")
+        if Settings.config.has_section("gpsarsa_" + domain):
+            Settings.config.set("gpsarsa_" + domain, "scale", "1")
+        else:
+            Settings.config.set("gpsarsa", "scale", "1")
     # Save a copy of config file
     confsavefile = conf_dir + "%s.eval.%02d.cfg" % (policy, evalerr)
     cf = open(confsavefile, 'w')
     Settings.config.write(cf)
 
-def evalPolicy(domain, configId, evalerr, ndialogs, iteration):
+def evalPolicy(domain, configId, evalerr, ndialogs, iteration, seed=None):
     if isSingleDomain:
-        setEvalConfig(domain, configId, evalerr, ndialogs, iteration)
+        setEvalConfig(domain, configId, evalerr, ndialogs, iteration, seed=seed)
     else:
         for dom in domains:
-            setEvalConfig(dom, configId, evalerr, ndialogs, iteration)
+            setEvalConfig(dom, configId, evalerr, ndialogs, iteration, seed=seed)
 
     error = float(evalerr) / 100.0
     # finally run the system
@@ -429,13 +498,17 @@ def extractEvalData(lines):
     evalData = {}
     training = False
     domain_list = []
+    #domain_list = ['SFRestaurants','SFHotels','Laptops11']
+    #for dom in domain_list:
+    #    evalData[dom] = {}
     cur_domain = None
     for l in lines:
         if l.find('Loading ontology') >= 0:
             # get the list of domains from the log by reading the lines where the ontologies are loaded
             domain = getDomainFromLog(l)
-            domain_list.append(domain)
-            evalData[domain] = {}
+            if domain not in domain_list:
+                domain_list.append(domain)
+                evalData[domain] = {}
         if l.find('*** Training Iteration')>=0:
             iteration = getIntParam(l,'iter')+1
             if iteration in evalData.keys():
@@ -484,24 +557,33 @@ def plotTrain(dname,rtab,stab,block=True,saveplot=False):
     for policy in policylist:
         tab = rtab[policy]
         plt.subplot(211)
-        plt.errorbar(tab['x'],tab['y'],yerr=tab['var'],label=policy)
+        if len(tab['x']) < 2:
+            plt.axhline(y=tab['y'][0], linestyle='--')
+        else:
+            #plt.errorbar(tab['x'],tab['y'], yerr=tab['var'], label=policy)
+            plt.errorbar(tab['x'], tab['y'], label=policy)
         tab = stab[policy]
         plt.subplot(212)
-        plt.errorbar(tab['x'],tab['y'],yerr=tab['var'],label=policy)
+        if len(tab['x']) < 2:
+            plt.axhline(y=tab['y'][0], linestyle='--')
+        else:
+            #plt.errorbar(tab['x'],tab['y'],yerr=tab['var'],label=policy)
+            plt.errorbar(tab['x'], tab['y'], label=policy)
     plt.subplot(211)
     plt.grid()
-    plt.legend(loc='lower right',fontsize=12-ncurves)
+    plt.legend(loc='lower right',fontsize=10)
     plt.title(dname+" Performance vs Num Train Dialogs")
     plt.ylabel('Reward')
     plt.subplot(212)
     plt.grid()
-    plt.legend(loc='lower right',fontsize=12-ncurves)
+    plt.legend(loc='lower right',fontsize=10)
     plt.xlabel('Num Dialogs')
     plt.ylabel('Success')
     if saveplot:
         if not os.path.exists('_plots'):
             os.mkdir('_plots')
         plt.savefig('_plots/' + dname + '.png', bbox_inches='tight')
+        print 'plot saved as', dname
     else:
         plt.show(block=block)
 
@@ -660,7 +742,7 @@ def tabulateTest(dataSet):
     return (rtab,stab,ttab)
 
 def train_command(configfile, seed=None, trainerrorrate=None,trainsourceiteration=None,
-                  numtrainbatches=None,traindialogsperbatch=None):
+                  numtrainbatches=None,traindialogsperbatch=None,traindomains=None,dbprefix=None):
     """ Train a policy according to the supplied configfile.
         Results are stored in the directories specified in the [exec_config] section of the config file.
         Optional parameters over-ride the corresponding config parameters of the same name.
@@ -669,7 +751,11 @@ def train_command(configfile, seed=None, trainerrorrate=None,trainsourceiteratio
         if seed and seed.startswith('('):
             seeds = seed.replace('(','').replace(')','').split(',')
             for seed in seeds:
-                pass #TODO implement multiseed training
+                print '*** Seed {} ***'.format(seed)
+                train_command(configfile, seed=seed, trainerrorrate=trainerrorrate,
+                              trainsourceiteration=trainsourceiteration,
+                              numtrainbatches=numtrainbatches, traindialogsperbatch=traindialogsperbatch,
+                              traindomains=traindomains, dbprefix=dbprefix)
 
         else:
             configId = getConfigId(configfile)
@@ -677,22 +763,22 @@ def train_command(configfile, seed=None, trainerrorrate=None,trainsourceiteratio
                 seed = int(seed)
             initialise(configId,configfile,seed,"train",trainerrorrate=trainerrorrate,
                        trainsourceiteration=trainsourceiteration,numtrainbatches=numtrainbatches,
-                       traindialogsperbatch=traindialogsperbatch)
+                       traindialogsperbatch=traindialogsperbatch,traindomains=traindomains,dbprefix=dbprefix)
             for i in range(gtrainsourceiteration,gtrainsourceiteration+gnumtrainbatches):
                 if isSingleDomain:
-                    trainBatch(domain, configId, gtrainerrorrate, gtraindialogsperbatch, i)
+                    trainBatch(domain, configId, gtrainerrorrate, gtraindialogsperbatch, i, seed=seed)
                 else:
-                    trainBatch(domains, configId, gtrainerrorrate, gtraindialogsperbatch, i)
+                    trainBatch(domains, configId, gtrainerrorrate, gtraindialogsperbatch, i, seed=seed)
                 if gtesteverybatch and gnumbatchtestdialogs>0 and i+1 < gtrainsourceiteration+gnumtrainbatches:
                     if isSingleDomain:
-                        evalPolicy(domain, configId, gtrainerrorrate, gnumbatchtestdialogs, i + 1)
+                        evalPolicy(domain, configId, gtrainerrorrate, gnumbatchtestdialogs, i + 1, seed=seed)
                     else:
-                        evalPolicy(domains, configId, gtrainerrorrate, gnumbatchtestdialogs, i + 1)
+                        evalPolicy(domains, configId, gtrainerrorrate, gnumbatchtestdialogs, i + 1, seed=seed)
             if gnumbatchtestdialogs>0:
                 if isSingleDomain:
-                    evalPolicy(domain, configId, gtrainerrorrate, gnumbatchtestdialogs, i + 1)
+                    evalPolicy(domain, configId, gtrainerrorrate, gnumbatchtestdialogs, i + 1, seed=seed)
                 else:
-                    evalPolicy(domains, configId, gtrainerrorrate, gnumbatchtestdialogs, i + 1)
+                    evalPolicy(domains, configId, gtrainerrorrate, gnumbatchtestdialogs, i + 1, seed=seed)
 
             logger.results("*** Training complete - final policy is %s-%02d-%02d" % (configId,gtrainerrorrate,i+1))
     except clog.ExceptionRaisedByLogger:
@@ -702,7 +788,7 @@ def train_command(configfile, seed=None, trainerrorrate=None,trainsourceiteratio
         print "\nCommand Aborted from Keyboard"
 
 def test_command(configfile, iteration, seed=None, testerrorrate=None, trainerrorrate=None,
-                 numtestdialogs=None):
+                 numtestdialogs=None, testdomains=None, dbprefix=None):
     """ Test a specific policy iteration trained at a specific error rate according to the supplied configfile.
         Results are embedded in the logfile specified in the config file.
         Optional parameters over-ride the corresponding config parameters of the same name.
@@ -735,7 +821,7 @@ def test_command(configfile, iteration, seed=None, testerrorrate=None, trainerro
             seed = int(seed) + 100 # To have a different seed during training and testing
         initialise(configId, configfile, seed, "eval", iteration=i, testerrorrate=testerrorrate,
                    testenderrorrate=enErr, trainerrorrate=trainerrorrate,
-                   numtestdialogs=numtestdialogs)
+                   numtestdialogs=numtestdialogs,testdomains=testdomains, dbprefix=dbprefix)
         policyname = "%s-%02d.%d" % (configId, gtrainerrorrate, i)
         poldirpath = path(policy_dir)
         if poldirpath.isdir():
@@ -745,10 +831,10 @@ def test_command(configfile, iteration, seed=None, testerrorrate=None, trainerro
                 if policyname in policynamelist:
                     if errStepping:
                         while stErr <= enErr:
-                            evalPolicy(domain, configId, stErr, gnumtestdialogs, i)
+                            evalPolicy(domain, configId, stErr, gnumtestdialogs, i, seed=seed)
                             stErr += stepErr
                     else:
-                        evalPolicy(domain, configId, gtesterrorrate, gnumtestdialogs, i)
+                        evalPolicy(domain, configId, gtesterrorrate, gnumtestdialogs, i, seed=seed)
                     logger.results("*** Testing complete - policy %s evaluated" % policyname)
                 else:
                     print "Cannot find policy iteration %s in %s" % (policyname, policy_dir)
@@ -756,6 +842,8 @@ def test_command(configfile, iteration, seed=None, testerrorrate=None, trainerro
                 allPolicyFiles = True
                 for dom in domains:
                     multi_policyname = dom+policyname
+                    if isSingleModel:
+                        multi_policyname = 'singlemodel'+policyname
                     if not multi_policyname in policynamelist:
                         print "Cannot find policy iteration %s in %s" % (multi_policyname, policy_dir)
                         allPolicyFiles = False
@@ -819,7 +907,7 @@ def plotTrainLogs(logfilelist,printtab,noplot,saveplot,datasetname,block=True):
                     for domain in domains:
                         if curveName in resultset[domain].keys():
                             curve = resultset[domain][curveName]
-                            for iteration in results.keys():
+                            for iteration in results[domain].keys():
                                 curve[iteration] = results[domain][iteration]
                         else:
                             resultset[domain][curveName] = results[domain]
@@ -958,13 +1046,20 @@ def chat_command(configfile, seed=None, trainerrorrate=None, trainsourceiteratio
             initialise(configId, configfile, seed, "chat", trainerrorrate=trainerrorrate,
                        trainsourceiteration=trainsourceiteration)
             for dom in domains:
-                setupPolicy(dom, configId, gtrainerrorrate,
-                            gtrainsourceiteration, gtrainsourceiteration)
-                # make sure that learning is switched off
-                Settings.config.set("policy_" + dom, "learning", 'False')
-                # if gp, make sure to reset scale to 1 for evaluation
-                if policytype == "gp":
-                    Settings.config.set("gpsarsa_" + dom, "scale", "1")
+                if policytypes[dom] != 'hdc':
+                    setupPolicy(dom, configId, gtrainerrorrate,
+                                gtrainsourceiteration, gtrainsourceiteration)
+                    # make sure that learning is switched off
+                    if Settings.config.has_section("policy_" + dom):
+                        Settings.config.set("policy_" + dom, "learning", 'False')
+                    else:
+                        Settings.config.set("policy", "learning", 'False')
+                    # if gp, make sure to reset scale to 1 for evaluation
+                    if policytypes[dom] == "gp":
+                        if Settings.config.has_section("gpsarsa_" + dom):
+                            Settings.config.set("gpsarsa_" + dom, "scale", "1")
+                        else:
+                            Settings.config.set("gpsarsa", "scale", "1")
             mess = "*** Chatting with policies %s: ***" % str(domains)
             if tracedialog > 0: print mess
             logger.dial(mess)

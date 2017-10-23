@@ -57,26 +57,32 @@ class MultiEvaluator(Evaluator):
     def __init__(self, domainString):
         super(MultiEvaluator, self).__init__(domainString)
         
-        self.evaluators = [ObjectiveSuccessEvaluator(domainString),SubjectiveSuccessEvaluator(domainString)]
+        self.evaluators = [ObjectiveSuccessEvaluator(domainString), SubjectiveSuccessEvaluator(domainString)]
         
-        evaluatorList = None
+        self.evaluatorList = None
+        if Settings.config.has_option('eval', 'multievaluatorlist'):
+            self.evaluatorList = Settings.config.get('eval', 'multievaluatorlist').split(',')
         if Settings.config.has_option('eval_'+domainString, 'multievaluatorlist'):
-            evaluatorList = Settings.config.getint('eval_'+domainString, 'multievaluatorlist').split(',')
+            self.evaluatorList = Settings.config.get('eval_'+domainString, 'multievaluatorlist').split(',')
         if self.evaluatorList is not None:
             self.evaluators = []
-            for e in evaluatorList:
+            for e in self.evaluatorList:
                 e = e.strip()
                 self.evaluators.append(self._load_evaluator(e, domainString))
         
-        self.evaluator_label = "multi evaluator ("
-        for e in self.evaluators:
-            self.evaluator_label += e.evaluator_label + " "
+        self.evaluator_label = "multi evaluator (" + ", ".join([e.evaluator_label for e in self.evaluators]) + ")"
+#         for e in self.evaluators:
+#             self.evaluator_label += e.evaluator_label + " "
         
         self.mainEvaluator = 0
+        if Settings.config.has_option('eval', 'mainevaluator'):
+            self.mainEvaluator = Settings.config.getint('eval', 'mainevaluator')
         if Settings.config.has_option('eval_'+domainString, 'mainevaluator'):
             self.mainEvaluator = Settings.config.getint('eval_'+domainString, 'mainevaluator')
             
         self.compareEvaluator = None
+        if Settings.config.has_option('eval', 'compareevaluator'):
+            self.compareEvaluator = Settings.config.getint('eval', 'compareevaluator')
         if Settings.config.has_option('eval_'+domainString, 'compareevaluator'):
             self.compareEvaluator = Settings.config.getint('eval_'+domainString, 'compareevaluator')
         
@@ -154,7 +160,7 @@ class MultiEvaluator(Evaluator):
             self._prstr(2, "Evaluation of domain: {} --evaluated by: {}".format(self.domainString, self.evaluator_label))
             l = []
             for i in range(0,len(self.evaluators)):
-                l.append(self.evaluators[i].evaluator_shor_label + '{} = {}'.format('*' if self.mainEvaluator == i else '', int(self.outcome[i])))
+                l.append(self.evaluators[i].evaluator_short_label + '{} = {}'.format('*' if self.mainEvaluator == i else '', int(self.outcome[i])))
             s = ', '.join(l)
             s += ', rew = {}, turn = {}'.format(self.total_reward[self.mainEvaluator], self.num_turns)
             self._prstr(2, s)
@@ -180,9 +186,9 @@ class MultiEvaluator(Evaluator):
         self._prstr(1, '# of dialogues  = %d' % num_dialogs)
         if num_dialogs:
             for i in range(0,len(self.evaluators)):
-                o = [outcome[0] for outcome in self.outcomes if outcome[0] is not None]
+                o = [outcome[i] for outcome in self.outcomes if outcome[i] is not None]
                 if len(o):
-                    self._prstr(1, self.evaluators[i]._getResultString())
+                    self._prstr(1, self.evaluators[i]._getResultString(o))
             self._prstr(1, 'Average reward  = %.2f +- %.2f' % (np.mean([reward[self.mainEvaluator] for reward in self.rewards]), \
                                                             tinv * np.std([reward[self.mainEvaluator] for reward in self.rewards]) / np.sqrt(num_dialogs)))    
             self._prstr(1, 'Average turns   = %.2f +- %.2f' % (np.mean(self.turns), \
@@ -218,8 +224,9 @@ class MultiEvaluator(Evaluator):
             classString = components[-1]
             mod = __import__(packageString, fromlist=[classString])
             klass = getattr(mod, classString)
-            self.domainEvaluators[domainString] = klass(domainString)
-        except ImportError:
+            return klass(domainString)
+        except ImportError as e:
+            print e
             logger.error('Unknown domain evaluator "{}" for domain "{}"'.format(configString, domainString))
             
         

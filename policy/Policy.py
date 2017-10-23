@@ -48,7 +48,7 @@ class Policy(object):
     '''
     Interface class for a single domain policy. Responsible for selecting the next system action and handling the learning of the policy.
     
-    To create your own reward model, derive from this class.
+    To create your own policy model or to change the state representation, derive from this class.
     '''
     def __init__(self, domainString, learning=False, specialDomain=False): 
         """
@@ -67,10 +67,14 @@ class Policy(object):
         self.domainString = domainString
         
         self.startwithhello = False
+        if Settings.config.has_option('policy', 'startwithhello'):
+            self.startwithhello = Settings.config.getboolean('policy', 'startwithhello')
         if Settings.config.has_option('policy_'+domainString, 'startwithhello'):
             self.startwithhello = Settings.config.getboolean('policy_'+domainString, 'startwithhello')
         
         self.useconfreq = False
+        if Settings.config.has_option('policy', 'useconfreq'):
+            self.useconfreq = Settings.config.getboolean('policy', 'useconfreq')
         if Settings.config.has_option('policy_'+domainString, 'useconfreq'):
             self.useconfreq = Settings.config.getboolean('policy_'+domainString, 'useconfreq')
         
@@ -79,6 +83,8 @@ class Policy(object):
         self.episode_stack = None
         self.USE_STACK = False
         self.PROCESS_EPISODE_STACK = 0 # and process them whenever stack gets this high. 
+        if Settings.config.has_option("policy", "usestack"):
+            self.USE_STACK = Settings.config.getboolean("policy", "usestack")
         if Settings.config.has_option("policy_"+domainString, "usestack"):
             self.USE_STACK = Settings.config.getboolean("policy_"+domainString, "usestack")
         if self.USE_STACK:
@@ -86,7 +92,9 @@ class Policy(object):
             self.episode_stack = EpisodeStack()  
             # and process them in sequential batches of size: 
             self.PROCESS_EPISODE_STACK = 5   
-            if Settings.config.has_option("policy_"+domainString, "processstack"):
+            if Settings.config.has_option("policy", "processstack"):
+                self.PROCESS_EPISODE_STACK = Settings.config.getint("policy_"+domainString, "processstack")
+            if Settings.config.has_option("policy", "processstack"):
                 self.PROCESS_EPISODE_STACK = Settings.config.getint("policy_"+domainString, "processstack")
         
         empty = specialDomain
@@ -252,6 +260,8 @@ class Policy(object):
         
         self.episodes = dict.fromkeys(OntologyUtils.available_domains, None)
         self.episodes[self.domainString] = Episode(dstring=self.domainString)
+
+        self.actions.reset() # ic340: this should be called from every restart impelmentation
 
 
 #########################################################

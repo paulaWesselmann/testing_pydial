@@ -149,9 +149,10 @@ class DataBase_SQLite(DataBaseINTERFACE):
         
         if doRand:
             Settings.random.shuffle(results)
-            if len(results) > self.limit:
-                results = results[:self.limit]
         return results
+    
+    def get_length_entity_by_features(self, constraints):
+        return len(self.entity_by_features(constraints))
     
     def query_entity_property(self, name, slot, value):
         '''

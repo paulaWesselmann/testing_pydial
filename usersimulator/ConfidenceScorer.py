@@ -39,13 +39,15 @@ Copyright CUED Dialogue Systems Group 2015 - 2017
 __author__ = "cued_dialogue_systems_group"
 
 import numpy as np
-from utils import Settings, DiaAct
+import os
+from utils import Settings, DiaAct, ContextLogger
+logger = ContextLogger.getLogger('')
 
 class AdditiveConfidenceScorer(object):
     '''Additive confidence scoring of TODO
     '''
 
-    def __init__(self, topProb1, rescale):
+    def __init__(self, topProb1=False, rescale=False):
         self.rescale = rescale
         self.TOP_PROB_IS_ONE = topProb1
 
@@ -83,9 +85,9 @@ class DSTC2ConfidenceScorer(object):
     '''Confidence scorer based on the statistics obtained from the DSTC2 corpus
     '''
 
-    def __init__(self):
+    def __init__(self, paramset=None):
 
-
+        #these are the original dstc2 statistics
         # statistics for correct items
         cor_u0 = 0.869149127189
         cor_u1 = 0.103655660074
@@ -121,6 +123,30 @@ class DSTC2ConfidenceScorer(object):
         inc_var_rest = 0.00183093114343
         inc_var = [inc_var0, inc_var1, inc_var2, inc_var3, inc_var4, inc_var_rest]
         self.inc_std = [np.sqrt(x) for x in inc_var]
+
+        if paramset:
+            if os.path.isfile(paramset):
+                with open(paramset, 'r') as paramfile:
+                    for line in paramfile:
+                        if not line.startswith('#'):
+                            if 'incorrectMean' in line:
+                                line = line.split('#')[0].split('=')[1]
+                                line = line.replace('[', '').replace(']', '')
+                                self.inc_u = [float(x.strip()) for x in line.split(',')]
+                            elif 'correctMean' in line:
+                                line = line.split('#')[0].split('=')[1]
+                                line = line.replace('[', '').replace(']', '')
+                                self.cor_u = [float(x.strip()) for x in line.split(',')]
+                            elif 'incorrectVar' in line:
+                                line = line.split('#')[0].split('=')[1]
+                                line = line.replace('[', '').replace(']', '')
+                                self.inc_std = [np.sqrt(float(x.strip())) for x in line.split(',')]
+                            elif 'correctVar' in line:
+                                line = line.split('#')[0].split('=')[1]
+                                line = line.replace('[', '').replace(']', '')
+                                self.cor_std = [np.sqrt(float(x.strip())) for x in line.split(',')]
+            else:
+                logger.error('Error model config file "{}" does not exist'.format(paramset))
 
     def assignConfScores(self, dapl):
         '''

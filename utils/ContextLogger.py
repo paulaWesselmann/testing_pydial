@@ -135,6 +135,12 @@ class ConsoleFormatter(logging.Formatter):
 cl = {}             # current set of context loggers indexed by module name
 module_level = {}   # logging level for each logger in cl
 
+def resetLoggingHandlers():
+
+    top_logger = logging.getLogger('')
+    top_logger.handlers = []
+
+
 def createLoggingHandlers(config=None, screen_level = "INFO", \
                           log_file = None, file_level = "DEBUG", use_color = True):
     """
@@ -156,7 +162,7 @@ def createLoggingHandlers(config=None, screen_level = "INFO", \
     global cl
     global module_level
     
-    top_logger = logging.getLogger('') # was ''
+    top_logger = logging.getLogger('')
     top_logger.setLevel(logging.DEBUG)
     # levels for logging
     

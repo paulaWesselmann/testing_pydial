@@ -117,7 +117,7 @@ class SVMSemI(SemI.SemI):
 
             after = int(round(time.time() * 1000))
             pred_dur = after - before
-            print "prediction time: %d" % pred_dur # Time taken by SVM for prediction
+            logger.debug("prediction time: %d" % pred_dur) # Time taken by DLSemI for prediction
 
             os.chdir(old_path)
 

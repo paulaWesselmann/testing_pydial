@@ -59,9 +59,11 @@ import math
 import scipy.stats
 import pickle as pkl
 import os.path
+import copy
 #from profilehooks import profile
 
 import PolicyUtils
+import GPPolicy
 from utils import Settings
 from utils import ContextLogger
 logger = ContextLogger.getLogger('')
@@ -109,15 +111,22 @@ class GPSARSAPrior(LearnerInterface):
     '''
     Defines the GP prior. Derives from LearnerInterface.
     '''
-    def __init__(self,in_policyfile, out_policyfile, numPrior=-1, learning=False):
+    def __init__(self,in_policyfile, out_policyfile, numPrior=-1, learning=False, domainString=None,sharedParams=None):
         self._inpolicyfile = in_policyfile
         self._outpolicyfile = out_policyfile
+        self.domainString = domainString
 
+        self.sharedParams = False
+        if sharedParams is None:
+            self.params = {}
+        else:
+            self.params = sharedParams
+            self.sharedParams = True
         self._actionSize = 0
         self.initial = False
         self.terminal = False
-        self._dictionary = []
-        self._alpha_tilda = []
+        self.params['_dictionary'] = []
+        self.params['_alpha_tilda'] = []
         self._inputDictFile =""
         self._inputParamFile = ""
         self._outputDictFile = ""
@@ -126,6 +135,7 @@ class GPSARSAPrior(LearnerInterface):
         self._superior = None
         self.learning = learning
         self._random = False
+
         
         if numPrior >= 0:
             if numPrior > 0:
@@ -145,8 +155,8 @@ class GPSARSAPrior(LearnerInterface):
 #         print self._outputDictFile
 #         print self._outputParamFile
 
-
-        self.readPolicy()
+        if self._prior:
+            self.readPolicy()
 
 
     def readParameters(self):
@@ -154,21 +164,21 @@ class GPSARSAPrior(LearnerInterface):
         Reads input policy parameters
         """
         with open(self._inputParamFile, 'rb') as pkl_file:
-            self._alpha_tilda = pkl.load(pkl_file)
+            self.params['_alpha_tilda'] = pkl.load(pkl_file)
 
     def readDictionary(self):
         """
         Reads input policy dictionary file
         """
         with open(self._inputDictFile, 'rb') as pkl_file:
-            self._dictionary = pkl.load(pkl_file)
-        logger.info("In Prior class: Read dictionary of size "+str(len(self._dictionary)))
+            self.params['_dictionary'] = pkl.load(pkl_file)
+        logger.info("In Prior class: Read dictionary of size " + str(len(self.params['_dictionary'])))
 
     def DictionarySize(self):
         """
         :returns: number of dictionary points
         """
-        return len(self._dictionary)
+        return len(self.params['_dictionary'])
 
     def SavePolicy(self, index):
         """
@@ -201,9 +211,9 @@ class GPSARSAPrior(LearnerInterface):
         else:
             qprior = 0
 
-        if len(self._dictionary)>0:
+        if len(self.params['_dictionary'])>0:
             k_tilda_t =self.k_tilda(state, action, kernel)
-            qval = np.dot(self._alpha_tilda,k_tilda_t)
+            qval = np.dot(self.params['_alpha_tilda'], k_tilda_t)
             mean = qprior+qval
         else:
             mean = qprior
@@ -221,19 +231,9 @@ class GPSARSAPrior(LearnerInterface):
         :returns: vector of kernel values of given state, action and kernel with all state-action pairs in the dictionary
         """
         res = []
-        for [dstate, daction] in self._dictionary:
-
+        for [dstate, daction] in self.params['_dictionary']:
             actKer = kernel.ActionKernel(action, daction)
             if actKer > 0:
-                """
-                if self._prior != None:
-                    # TODO - is this correct? seems to not use prior and be same as else: statement
-                    stateKer = kernel.beliefKernel(state, dstate)
-                elif self._superior != None and self._prior == None:
-                    stateKer = kernel.PriorKernel(state, dstate)
-                else:
-                    stateKer = kernel.beliefKernel(state, dstate)
-                """
                 if self._prior != None:
                     # TODO - is this correct? seems to not use prior and be same as else: statement
                     stateKer = kernel.PriorKernel(state, dstate)
@@ -244,7 +244,6 @@ class GPSARSAPrior(LearnerInterface):
                 res.append(actKer*stateKer)
             else:
                 res.append(actKer)
-
         return np.array(res)
 
 
@@ -259,63 +258,91 @@ class GPSARSA(GPSARSAPrior):
 
        Parameters needed to estimate the GP posterior
        self._K_tida_inv inverse of the Gram matrix of dictionary state-action pairs
-       self._C_tilda covariance function needed to estimate the final variance of the posterior
-       self._c_tilda vector needed to calculate self._C_tilda
-       self._alpha_tilda vector needed to estimate the mean of the posterior
-       self._d and self._s sufficient statistics needed for the iterative estimation of the posterior
+       self.sharedParams['_C_tilda'] covariance function needed to estimate the final variance of the posterior
+       self.sharedParams['_c_tilda'] vector needed to calculate self.sharedParams['_C_tilda']
+       self.sharedParams['_alpha_tilda'] vector needed to estimate the mean of the posterior
+       self.sharedParams['_d'] and self.sharedParams['_s'] sufficient statistics needed for the iterative estimation of the posterior
 
        Parameters needed for the policy selection
        self._random random policy choice
        self._scale scaling of the standard deviation when sampling Q-value, if -1 than taking the mean
        self.learning if true in learning mode
     """
-    def __init__(self, in_policyfile, out_policyfile, domainString=None, learning=False):
+    def __init__(self, in_policyfile, out_policyfile, domainString=None, learning=False, sharedParams=None):
         """
         Initialise the prior given policy files
         """
-        GPSARSAPrior.__init__(self,in_policyfile,out_policyfile,-1,learning)
+        GPSARSAPrior.__init__(self,in_policyfile,out_policyfile,-1,learning,domainString,sharedParams)
 
         self.save_as_prior = False
         self.initial = False
         self.terminal = False
         self.numpyFileFormat = False
+        self.domainString = domainString
+        self.sharedParams = False
+        if sharedParams is None:
+            self.params = {}
+        else:
+            self.params = sharedParams
+            self.sharedParams = True
         
         self._gamma = 1.0
         self._sigma = 5.0
         self._nu = 0.001
 
-        self._K_tilda_inv = np.array([])
-        self._C_tilda = np.array([])
-        self._c_tilda = np.array([])
-        self._a = np.array([])
-        self._alpha_tilda = np.array([])
-        self._dictionary = []        
-        self._d = 0
-        self._s = float('inf')
+        self.params['_K_tilda_inv'] = np.zeros((1, 1))
+        self.params['_C_tilda'] = np.zeros((1, 1))
+        self.params['_c_tilda'] = np.zeros(1)
+        self.params['_a'] = np.ones(1)
+        self.params['_alpha_tilda'] = np.zeros(1)
+        self.params['_dictionary'] = []
+        self.params['_d'] = 0.
+        self.params['_s'] = float('inf')
+
 
         self._random = False
         self._num_prior = 0
         self._scale = -1
         self._prior = None
+        self.beliefparametrisation = 'GP'
         # self.learning = learning => set in GPSARSAPrior __init__
 
-        
-        if Settings.config.has_option("gpsarsa_"+domainString, "saveasprior"):        
+        # parameter settings
+        if Settings.config.has_option('gpsarsa', "saveasprior"):
+            self.save_as_prior = Settings.config.getboolean('gpsarsa', "saveasprior")
+        if Settings.config.has_option('gpsarsa', "numprior"):
+            self._num_prior = Settings.config.getint('gpsarsa',"numprior")
+        if Settings.config.has_option("gpsarsa", "random"):
+            self._random = Settings.config.getboolean('gpsarsa', "random")
+        if Settings.config.has_option('gpsarsa', "gamma"):
+            self._gamma = Settings.config.getfloat('gpsarsa',"gamma")
+        if Settings.config.has_option('gpsarsa', "sigma"):
+            self._sigma = Settings.config.getfloat('gpsarsa',"sigma")
+        if Settings.config.has_option('gpsarsa', "nu"):
+            self._nu = Settings.config.getfloat('gpsarsa',"nu")
+        if Settings.config.has_option('gpsarsa', "scale"):
+            self._scale = Settings.config.getint('gpsarsa',"scale")
+        if Settings.config.has_option("gpsarsa", "saveasnpy"):
+            self.numpyFileFormat = Settings.config.getboolean('gpsarsa', "saveasnpy")
+
+        # domain specific parameter settings (overrides general policy parameter settings)
+        if Settings.config.has_option("gpsarsa_"+domainString, "saveasprior"):
             self.save_as_prior = Settings.config.getboolean("gpsarsa_"+domainString, "saveasprior")
         if Settings.config.has_option("gpsarsa_"+domainString, "numprior"):
-            self._num_prior = Settings.config.getint("gpsarsa_"+domainString,"numprior")  
-        if Settings.config.has_option("gpsarsa"+domainString, "random"):
-            self._random = Settings.config.getboolean("gpsarsa_"+domainString, "random")        
-        if Settings.config.has_option("gpsarsa_"+domainString, "gamma"):            
+            self._num_prior = Settings.config.getint("gpsarsa_"+domainString,"numprior")
+        if Settings.config.has_option("gpsarsa_"+domainString, "random"):
+            self._random = Settings.config.getboolean("gpsarsa_"+domainString, "random")
+        if Settings.config.has_option("gpsarsa_"+domainString, "gamma"):
             self._gamma = Settings.config.getfloat("gpsarsa_"+domainString,"gamma")
-        if Settings.config.has_option("gpsarsa_"+domainString, "sigma"):        
+        if Settings.config.has_option("gpsarsa_"+domainString, "sigma"):
             self._sigma = Settings.config.getfloat("gpsarsa_"+domainString,"sigma")
-        if Settings.config.has_option("gpsarsa_"+domainString, "nu"):            
+        if Settings.config.has_option("gpsarsa_"+domainString, "nu"):
             self._nu = Settings.config.getfloat("gpsarsa_"+domainString,"nu")
-        if Settings.config.has_option("gpsarsa_"+domainString, "scale"):            
+        if Settings.config.has_option("gpsarsa_"+domainString, "scale"):
             self._scale = Settings.config.getint("gpsarsa_"+domainString,"scale")
-        if Settings.config.has_option("gpsarsa"+domainString, "saveasnpy"):
+        if Settings.config.has_option("gpsarsa_"+domainString, "saveasnpy"):
             self.numpyFileFormat = Settings.config.getboolean("gpsarsa_"+domainString, "saveasnpy")
+
 
         if self._num_prior == 0:
             self._inputDictFile = in_policyfile+".dct"
@@ -348,14 +375,14 @@ class GPSARSA(GPSARSAPrior):
         :returns None:
         """
         if len(self._ditionary) > 0:
-            self._K_tilda_inv = np.array([])
-            self._C_tilda = np.array([])
-            self._c_tilda = np.array([])
-            self._a = np.array([])
-            self._alpha_tilda = np.array([])
-            self._dictionary = []
-            self._d = 0
-            self._s = float('inf')
+            self.params['_K_tilda_inv'] = np.array([])
+            self.params['_C_tilda'] = np.array([])
+            self.params['_c_tilda'] = np.array([])
+            self.params['_a'] = np.array([])
+            self.params['_alpha_tilda'] = np.array([])
+            self.params['_dictionary'] = []
+            self.params['_d'] = 0
+            self.params['_s'] = float('inf')
 
         self.initial = True
         self.terminal = False
@@ -383,10 +410,10 @@ class GPSARSA(GPSARSAPrior):
         if self._prior != None:
             qprior = self._prior.QvalueMean(state, action, kernel)
 
-        if len(self._dictionary) > 0 :
+        if len(self.params['_dictionary']) > 0 :
             k_tilda_t = self.k_tilda(state,action,kernel)
-            qval = np.dot(k_tilda_t,self._alpha_tilda)
-            qvar = np.dot(k_tilda_t,np.dot(self._C_tilda,k_tilda_t))
+            qval = np.dot(k_tilda_t, self.params['_alpha_tilda'])
+            qvar = np.dot(k_tilda_t, np.dot(self.params['_C_tilda'], k_tilda_t))
 
         mean = qprior + qval        
         if self._prior != None:
@@ -436,7 +463,7 @@ class GPSARSA(GPSARSAPrior):
             return [Settings.random.choice(executable).act, 0,0]
 
         Q =[]
-        for action in executable:                        
+        for action in executable:
             if self._scale <= 0:
                 [mean, var] = self.QvalueMeanVar(state, action, kernel)
                 logger.debug('action: ' +str(action.act) + ' mean then var:\t\t\t ' + str(mean) + '  ' + str(math.sqrt(var)))
@@ -469,20 +496,20 @@ class GPSARSA(GPSARSAPrior):
         Add points pstate and paction in the dictionary and extend sufficient statistics matrices and vectors for one dimension
         Only used for the first state action pair in the episode
         """
-        _a_prev = np.zeros(len(self._dictionary)+1)
+        _a_prev = np.zeros(len(self.params['_dictionary']) + 1)
         _a_prev[-1] =1.0
-        _c_tilda_prev = np.zeros(len(self._dictionary)+1)
-        _K_tilda_inv_prev = self.extendKtildainv(self._K_tilda_inv,self._a,delta_prev)
-        _alpha_tilda_prev = self.extendVector(self._alpha_tilda)
-        _C_tilda_prev = self.extendMatrix(self._C_tilda)
+        _c_tilda_prev = np.zeros(len(self.params['_dictionary']) + 1)
+        _K_tilda_inv_prev = self.extendKtildainv(self.params['_K_tilda_inv'], self.params['_a'], delta_prev)
+        _alpha_tilda_prev = self.extendVector(self.params['_alpha_tilda'])
+        _C_tilda_prev = self.extendMatrix(self.params['_C_tilda'])
 
-        self._a = _a_prev
-        self._alpha_tilda = _alpha_tilda_prev
-        self._c_tilda = _c_tilda_prev
-        self._C_tilda = _C_tilda_prev
-        self._K_tilda_inv = _K_tilda_inv_prev
+        self.params['_a'] = _a_prev
+        self.params['_alpha_tilda'] = _alpha_tilda_prev
+        self.params['_c_tilda'] = _c_tilda_prev
+        self.params['_C_tilda'] = _C_tilda_prev
+        self.params['_K_tilda_inv'] = _K_tilda_inv_prev
 
-        self._dictionary.append([pstate,paction])
+        self.params['_dictionary'].append([pstate, paction])
         #self.checkKtildainv(kernel)
 
     def extendMatrix(self, M):
@@ -509,7 +536,7 @@ class GPSARSA(GPSARSAPrior):
         # grows nxn -> n+1xn+1 where n is dict size
         :returns: inverse of the Gram matrix using the previous Gram matrix and partition inverse theorem
         """
-        lenD = len(self._dictionary)
+        lenD = len(self.params['_dictionary'])
         K_tilda_inv_new = np.zeros((lenD+1,lenD+1))   
         K_tilda_inv_new[:lenD,:lenD] = K_tilda_inv + np.outer(a,a)/delta_new
         K_tilda_inv_new[:lenD,lenD] = -a/delta_new      # new col
@@ -523,10 +550,10 @@ class GPSARSA(GPSARSAPrior):
         Add new state and action to the dictionary and extend sufficient statistics matrices and vectors for one dimension
         and reestimates all parameters apart form the ones involving the reward
         """
-        _K_tilda_inv_new = self.extendKtildainv(self._K_tilda_inv, _a_new, delta_new)
-        _a_new = np.zeros(len(self._dictionary)+1)
+        _K_tilda_inv_new = self.extendKtildainv(self.params['_K_tilda_inv'], _a_new, delta_new)
+        _a_new = np.zeros(len(self.params['_dictionary']) + 1)
         _a_new[-1] =1.0
-        _h_tilda_new = self.extendVector(self._a)
+        _h_tilda_new = self.extendVector(self.params['_a'])
         _h_tilda_new[-1] = - self._gamma
 
         if self._prior != None:
@@ -534,55 +561,55 @@ class GPSARSA(GPSARSAPrior):
         else:
             kernelValue = kernel.beliefKernel(state,state)
 
-        delta_k_new = np.dot(self._a,(k_tilda_prev-2.0*self._gamma*k_tilda_new)) \
+        delta_k_new = np.dot(self.params['_a'], (k_tilda_prev - 2.0 * self._gamma * k_tilda_new)) \
                 + (self._gamma**2)*kernelValue*kernel.ActionKernel(action,action)
 
 
-        part1 = np.dot(self._C_tilda, delta_k_tilda_new)
-        part2 = np.zeros(len(self._dictionary))\
-                    if self.initial else (((self._gamma * (self._sigma ** 2)) * self._c_tilda)/self._s)
+        part1 = np.dot(self.params['_C_tilda'], delta_k_tilda_new)
+        part2 = np.zeros(len(self.params['_dictionary']))\
+                    if self.initial else (((self._gamma * (self._sigma ** 2)) * self.params['_c_tilda']) / self.params['_s'])
 
         _c_tilda_new = self.extendVector(_h_tilda_new[:-1] - part1  + part2)
         _c_tilda_new[-1] = _h_tilda_new[-1]
 
         spart1 = (1.0 + (self._gamma ** 2))* (self._sigma **2)
-        spart2 = np.dot(delta_k_tilda_new,np.dot(self._C_tilda,delta_k_tilda_new))
-        spart3 = 0.0  if self.initial else  ((2*np.dot(self._c_tilda, delta_k_tilda_new)\
-                        - self._gamma*(self._sigma**2))*(self._gamma * (self._sigma ** 2 ))/self._s)
+        spart2 = np.dot(delta_k_tilda_new, np.dot(self.params['_C_tilda'], delta_k_tilda_new))
+        spart3 = 0.0  if self.initial else  ((2*np.dot(self.params['_c_tilda'], delta_k_tilda_new)\
+                        - self._gamma*(self._sigma**2)) * (self._gamma * (self._sigma ** 2 )) / self.params['_s'])
 
         _s_new = spart1 + delta_k_new - spart2 + spart3
-        _alpha_tilda_new=self.extendVector(self._alpha_tilda)
-        _C_tilda_new = self.extendMatrix(self._C_tilda)
+        _alpha_tilda_new=self.extendVector(self.params['_alpha_tilda'])
+        _C_tilda_new = self.extendMatrix(self.params['_C_tilda'])
 
-        self._s = _s_new
-        self._alpha_tilda = _alpha_tilda_new
-        self._c_tilda = _c_tilda_new
-        self._C_tilda = _C_tilda_new
-        self._K_tilda_inv = _K_tilda_inv_new
-        self._a = _a_new
-        self._dictionary.append([state,action])
+        self.params['_s'] = _s_new
+        self.params['_alpha_tilda'] = _alpha_tilda_new
+        self.params['_c_tilda'] = _c_tilda_new
+        self.params['_C_tilda'] = _C_tilda_new
+        self.params['_K_tilda_inv'] = _K_tilda_inv_new
+        self.params['_a'] = _a_new
+        self.params['_dictionary'].append([state, action])
         #self.checkKtildainv(kernel)
 
     def NoExtend(self, _a_new, delta_k_tilda_new):
         """
         Resestimates sufficient statistics without extending the dictionary
         """
-        _h_tilda_new = self._a - self._gamma * _a_new
+        _h_tilda_new = self.params['_a'] - self._gamma * _a_new
 
-        part1 = np.zeros(len(self._dictionary)) \
-                    if self.initial else (self._c_tilda * (self._gamma * (self._sigma ** 2)) / self._s)
-        part2 = np.dot(self._C_tilda,delta_k_tilda_new)
+        part1 = np.zeros(len(self.params['_dictionary'])) \
+                    if self.initial else (self.params['_c_tilda'] * (self._gamma * (self._sigma ** 2)) / self.params['_s'])
+        part2 = np.dot(self.params['_C_tilda'], delta_k_tilda_new)
         _c_tilda_new = part1  + _h_tilda_new - part2
 
         spart1 = (1.0 + ( 0.0  if self.terminal else (self._gamma ** 2)))* (self._sigma **2)
-        spart2 = np.dot(delta_k_tilda_new, (_c_tilda_new + (np.zeros(len(self._dictionary)) \
-                        if self.initial else (self._c_tilda*(self._gamma) * (self._sigma ** 2)/self._s) ) ))
-        spart3 = (0 if self.initial else ((self._gamma**2) * (self._sigma ** 4)/self._s) )
+        spart2 = np.dot(delta_k_tilda_new, (_c_tilda_new + (np.zeros(len(self.params['_dictionary'])) \
+                        if self.initial else (self.params['_c_tilda'] * (self._gamma) * (self._sigma ** 2) / self.params['_s']))))
+        spart3 = (0 if self.initial else ((self._gamma**2) * (self._sigma ** 4) / self.params['_s']))
 
         _s_new = spart1  + spart2 - spart3
-        self._c_tilda = _c_tilda_new
-        self._s = _s_new
-        self._a = _a_new
+        self.params['_c_tilda'] = _c_tilda_new
+        self.params['_s'] = _s_new
+        self.params['_a'] = _a_new
 
     #@profile
     def LearningStep(self, pstate, paction, reward, state, action, kernel):
@@ -609,34 +636,27 @@ class GPSARSA(GPSARSAPrior):
                 offset = self._prior.QvalueMean(pstate,paction,kernel)
 
             reward = reward - offset
-
         # INIT:
-        if len(self._dictionary) == 0:
-            self._K_tilda_inv = np.zeros((1,1))
+        if len(self.params['_dictionary']) == 0:
+            self.params['_K_tilda_inv'] = np.zeros((1, 1))
             if self._prior != None:
-                self._K_tilda_inv[0][0] = 1.0/(kernel.PriorKernel(pstate,pstate)*kernel.ActionKernel(paction,paction))
+                self.params['_K_tilda_inv'][0][0] = 1.0 / (kernel.PriorKernel(pstate, pstate) * kernel.ActionKernel(paction, paction))
             else:
-                self._K_tilda_inv[0][0] = 1.0/(kernel.beliefKernel(pstate,pstate)*kernel.ActionKernel(paction,paction))
+                self.params['_K_tilda_inv'][0][0] = 1.0 / (kernel.beliefKernel(pstate, pstate) * kernel.ActionKernel(paction, paction))
 
-            self._a = np.ones(1)   
-            self._alpha_tilda = np.zeros(1)
-            self._C_tilda = np.zeros((1,1))
-            self._c_tilda = np.zeros(1)
-            self._d = 0.0
-            self._s = float('inf')
-            self._dictionary.append([pstate,paction])
+            self.params['_dictionary'].append([pstate, paction])
 
         elif self.initial :
             k_tilda_prev = self.k_tilda(pstate,paction,kernel)
-            self._a = np.dot(self._K_tilda_inv,k_tilda_prev)
-            self._c_tilda = np.zeros(len(self._dictionary))
+            self.params['_a'] = np.dot(self.params['_K_tilda_inv'], k_tilda_prev)
+            self.params['_c_tilda'] = np.zeros(len(self.params['_dictionary']))
             if self._prior != None:
-                delta_prev = kernel.PriorKernel(pstate,pstate)*kernel.ActionKernel(paction,paction) - np.dot(k_tilda_prev,self._a)
+                delta_prev = kernel.PriorKernel(pstate,pstate)*kernel.ActionKernel(paction,paction) - np.dot(k_tilda_prev, self.params['_a'])
             else:
-                delta_prev = kernel.beliefKernel(pstate,pstate)*kernel.ActionKernel(paction,paction) - np.dot(k_tilda_prev,self._a)
+                delta_prev = kernel.beliefKernel(pstate,pstate)*kernel.ActionKernel(paction,paction) - np.dot(k_tilda_prev, self.params['_a'])
 
-            self._d = 0.0
-            self._s = float('inf')
+            self.params['_d'] = 0.0
+            self.params['_s'] = float('inf')
 
             if delta_prev > self._nu :
                 self.Extend(delta_prev, pstate, paction)
@@ -645,12 +665,12 @@ class GPSARSA(GPSARSAPrior):
 
 
         if self.terminal:
-            _a_new = np.zeros(len(self._dictionary))
+            _a_new = np.zeros(len(self.params['_dictionary']))
             delta_new = 0.0
             delta_k_tilda_new = k_tilda_prev                        
         else:   
             k_tilda_new = self.k_tilda(state, action, kernel)      
-            _a_new = np.dot(self._K_tilda_inv, k_tilda_new)    
+            _a_new = np.dot(self.params['_K_tilda_inv'], k_tilda_new)
 
             if self._prior != None:
                 curr_ker = kernel.PriorKernel(state,state)*kernel.ActionKernel(action,action)
@@ -661,10 +681,10 @@ class GPSARSA(GPSARSAPrior):
             delta_new = curr_ker - ker_est
             delta_k_tilda_new = k_tilda_prev - self._gamma*k_tilda_new
 
-        _d_new = reward + (0.0 if self.initial else (self._gamma * (self._sigma ** 2)*self._d)/self._s ) \
-                    - np.dot(delta_k_tilda_new,self._alpha_tilda)
+        _d_new = reward + (0.0 if self.initial else (self._gamma * (self._sigma ** 2) * self.params['_d']) / self.params['_s']) \
+                    - np.dot(delta_k_tilda_new, self.params['_alpha_tilda'])
 
-        self._d =_d_new
+        self.params['_d'] =_d_new
 
         #logger.warning("Delta new is "+str(delta_new))
         if delta_new<0 and math.fabs(delta_new)>0.0001:
@@ -676,16 +696,14 @@ class GPSARSA(GPSARSAPrior):
             self.ExtendNew(delta_new, state, action, kernel, _a_new, k_tilda_prev, k_tilda_new, delta_k_tilda_new)
         else:
             self.NoExtend(_a_new, delta_k_tilda_new)
-
-        self._alpha_tilda += self._c_tilda * (self._d/self._s) 
         
         # If optimising HYPERPARAMETERS -- do it when self.terminal:
         #
         #if self.terminal:
         #    self._optimise_hyperparameters()
-        
-        self._C_tilda +=  np.outer(self._c_tilda,self._c_tilda)/self._s
-            
+
+        self.params['_alpha_tilda'] += self.params['_c_tilda'] * (self.params['_d'] / self.params['_s'])
+        self.params['_C_tilda'] += np.outer(self.params['_c_tilda'], self.params['_c_tilda']) / self.params['_s']
 
                 
     def checkKtildainv(self, kernel):
@@ -693,22 +711,22 @@ class GPSARSA(GPSARSAPrior):
         Checks positive definiteness
         :param: (instance) 
         """
-        if not np.all(np.linalg.eigvals(self._K_tilda_inv) > 0):
+        if not np.all(np.linalg.eigvals(self.params['_K_tilda_inv']) > 0):
             logger.error("Matrix not positive definite")
 
         K_tilda = []
 
-        for [state, action] in self._dictionary:
+        for [state, action] in self.params['_dictionary']:
             K_tilda.append(self.k_tilda(state,action,kernel))
 
-        I = np.dot(np.array(K_tilda),self._K_tilda_inv)
+        I = np.dot(np.array(K_tilda), self.params['_K_tilda_inv'])
 
         print np.array(K_tilda)
-        for i in range(len(self._dictionary)):
+        for i in range(len(self.params['_dictionary'])):
             if math.fabs(I[i][i]-1.0)>0.0001:
                 print I[i][i]
                 logger.error("Inverse not calculated properly")
-            for j in range(len(self._dictionary)):
+            for j in range(len(self.params['_dictionary'])):
                 if i!=j and math.fabs(I[i][j])>0.0001:
                     print I[i][j]
                     logger.error("Inverse not calculated properly")
@@ -717,7 +735,12 @@ class GPSARSA(GPSARSAPrior):
         """
         Reads dictionary and parameter file
         """
-        if not os.path.isfile(self._inputDictFile) or not os.path.isfile(self._inputParamFile):
+        inputDictFile = self._inputDictFile
+        inputParamFile = self._inputParamFile
+        if self.sharedParams:
+            inputDictFile = self._inputDictFile.replace(self.domainString, 'singlemodel')
+            inputParamFile = self._inputParamFile.replace(self.domainString, 'singlemodel')
+        if not os.path.isfile(inputDictFile) or not os.path.isfile(inputParamFile):
             if self.learning or self._random:
                 logger.warning('inpolicyfile:'+self._inpolicyfile+" does not exist")
                 #return
@@ -732,12 +755,15 @@ class GPSARSA(GPSARSAPrior):
         """
         Reads dictionary
         """
-        if self._inputDictFile not in  ["",".dct"]:
-            logger.info("Loading dictionary file " + self._inputDictFile)
-            with open(self._inputDictFile,'rb') as pkl_file:
-                self._dictionary = pkl.load(pkl_file)
-                #logger.info("Read dictionary of size "+str(len(self._dictionary)))
-                logger.info("in SARSA class: Read dictionary of size "+str(len(self._dictionary)))
+        inputDictFile = self._inputDictFile
+        if self.sharedParams:
+            inputDictFile = self._inputDictFile.replace(self.domainString, 'singlemodel')
+        if inputDictFile not in  ["",".dct"]:
+            logger.info("Loading dictionary file " + inputDictFile)
+            with open(inputDictFile,'rb') as pkl_file:
+                self.params['_dictionary'] = pkl.load(pkl_file)
+                #logger.info("Read dictionary of size "+str(len(self.sharedParams['_dictionary'])))
+                logger.info("in SARSA class: Read dictionary of size " + str(len(self.params['_dictionary'])))
         else:
             logger.warning("Dictionary file not given")
 
@@ -745,30 +771,33 @@ class GPSARSA(GPSARSAPrior):
         """
         Reads parameter file
         """
-        with open(self._inputParamFile,'rb') as pkl_file:
+        inputParamFile = self._inputParamFile
+        if self.sharedParams:
+            inputParamFile = self._inputParamFile.replace(self.domainString, 'singlemodel')
+        with open(inputParamFile,'rb') as pkl_file:
             if self.numpyFileFormat:
                 npzfile = np.load(pkl_file)
                 try:
-                    self._K_tilda_inv = npzfile['_K_tilda_inv']
-                    self._C_tilda = npzfile['_C_tilda']
-                    self._c_tilda = npzfile['_c_tilda']
-                    self._a = npzfile['_a']
-                    self._alpha_tilda = npzfile['_alpha_tilda']
-                    self._d = npzfile['_d']
-                    self._s = npzfile['_s']
+                    self.params['_K_tilda_inv'] = npzfile['_K_tilda_inv']
+                    self.params['_C_tilda'] = npzfile['_C_tilda']
+                    self.params['_c_tilda'] = npzfile['_c_tilda']
+                    self.params['_a'] = npzfile['_a']
+                    self.params['_alpha_tilda'] = npzfile['_alpha_tilda']
+                    self.params['_d'] = npzfile['_d']
+                    self.params['_s'] = npzfile['_s']
                 except Exception as e:
                     print npzfile.files
                     raise e
 
             else:
                 # ORDER MUST BE THE SAME HERE AS WRITTEN IN saveParameters() below.
-                self._K_tilda_inv = pkl.load(pkl_file)
-                self._C_tilda = pkl.load(pkl_file)
-                self._c_tilda = pkl.load(pkl_file)
-                self._a = pkl.load(pkl_file)
-                self._alpha_tilda = pkl.load(pkl_file)
-                self._d = pkl.load(pkl_file)
-                self._s = pkl.load(pkl_file)
+                self.params['_K_tilda_inv'] = pkl.load(pkl_file)
+                self.params['_C_tilda'] = pkl.load(pkl_file)
+                self.params['_c_tilda'] = pkl.load(pkl_file)
+                self.params['_a'] = pkl.load(pkl_file)
+                self.params['_alpha_tilda'] = pkl.load(pkl_file)
+                self.params['_d'] = pkl.load(pkl_file)
+                self.params['_s'] = pkl.load(pkl_file)
                 #-------------------------------
 
     def saveDictionary(self):
@@ -777,28 +806,34 @@ class GPSARSA(GPSARSAPrior):
         :param None:
         :returns None:
         """
-        PolicyUtils.checkDirExistsAndMake(self._outputDictFile)
-        with open(self._outputDictFile,'wb') as pkl_file:
-            pkl.dump(self._dictionary,pkl_file)
+        outputDictFile = self._outputDictFile
+        if self.sharedParams:
+            outputDictFile = self._outputDictFile.replace(self.domainString, 'singlemodel')
+        PolicyUtils.checkDirExistsAndMake(outputDictFile)
+        with open(outputDictFile,'wb') as pkl_file:
+            pkl.dump(self.params['_dictionary'], pkl_file)
 
 
     def saveParameters(self):
         """
         Save parameter file
         """
-        PolicyUtils.checkDirExistsAndMake(self._outputParamFile)
-        with open(self._outputParamFile,'wb') as pkl_file:
+        outputParamFile = self._outputParamFile
+        if self.sharedParams:
+            outputParamFile = self._outputParamFile.replace(self.domainString, 'singlemodel')
+        PolicyUtils.checkDirExistsAndMake(outputParamFile)
+        with open(outputParamFile,'wb') as pkl_file:
             if self.numpyFileFormat:
-                np.savez(pkl_file,_K_tilda_inv=self._K_tilda_inv,_C_tilda=self._C_tilda,_c_tilda=self._c_tilda,_a=self._a,_alpha_tilda=self._alpha_tilda,_d=self._d,_s=self._s)
+                np.savez(pkl_file, _K_tilda_inv=self.params['_K_tilda_inv'], _C_tilda=self.params['_C_tilda'], _c_tilda=self.params['_c_tilda'], _a=self.params['_a'], _alpha_tilda=self.params['_alpha_tilda'], _d=self.params['_d'], _s=self.params['_s'])
             else:
                 # ORDER MUST BE THE SAME HERE AS IN readParameters() above.
-                pkl.dump(self._K_tilda_inv,pkl_file)
-                pkl.dump(self._C_tilda,pkl_file)
-                pkl.dump(self._c_tilda,pkl_file)
-                pkl.dump(self._a,pkl_file)
-                pkl.dump(self._alpha_tilda,pkl_file)
-                pkl.dump(self._d,pkl_file)
-                pkl.dump(self._s,pkl_file)
+                pkl.dump(self.params['_K_tilda_inv'], pkl_file)
+                pkl.dump(self.params['_C_tilda'], pkl_file)
+                pkl.dump(self.params['_c_tilda'], pkl_file)
+                pkl.dump(self.params['_a'], pkl_file)
+                pkl.dump(self.params['_alpha_tilda'], pkl_file)
+                pkl.dump(self.params['_d'], pkl_file)
+                pkl.dump(self.params['_s'], pkl_file)
                 #-------------------------------
 
     def savePrior(self, priordictfile, priorparamfile):
@@ -807,10 +842,10 @@ class GPSARSA(GPSARSAPrior):
         """
         PolicyUtils.checkDirExistsAndMake(priordictfile)
         with open(priordictfile, 'wb') as pkl_file:
-            pkl.dump(self._dictionary, pkl_file)
+            pkl.dump(self.params['_dictionary'], pkl_file)
         PolicyUtils.checkDirExistsAndMake(priorparamfile)
         with open(priorparamfile, 'wb') as pkl_file:
-            pkl.dump(self._alpha_tilda, pkl_file)
+            pkl.dump(self.params['_alpha_tilda'], pkl_file)
 
     def savePolicy(self):
         """Saves the GP dictionary (.dct) and parameters (.prm). Saves as a prior if self.save_as_prior is True.
@@ -818,13 +853,16 @@ class GPSARSA(GPSARSAPrior):
         :param None:
         :returns: None
         """
+        outpolicyfile = self._outpolicyfile
+        if self.sharedParams:
+            outpolicyfile = self._outpolicyfile.replace(self.domainString,'singlemodel')
         if self.save_as_prior:
-            logger.info("saving GP policy: "+self._outpolicyfile + " as a prior")
-            priordictfile = self._outpolicyfile +"."+ str(self._num_prior)+".prior.dct"
-            priorparamfile = self._outpolicyfile +"."+ str(self._num_prior)+".prior.prm"
+            logger.info("saving GP policy: "+outpolicyfile + " as a prior")
+            priordictfile = outpolicyfile +"."+ str(self._num_prior)+".prior.dct"
+            priorparamfile = outpolicyfile +"."+ str(self._num_prior)+".prior.prm"
             self.savePrior(priordictfile,priorparamfile)
         else:
-            logger.info("saving GP policy: "+self._outpolicyfile)
+            logger.info("saving GP policy: "+outpolicyfile)
             self.saveDictionary()
             self.saveParameters()
 

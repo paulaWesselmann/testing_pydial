@@ -35,27 +35,27 @@ Copyright CUED Dialogue Systems Group 2015 - 2017
 
 '''
 import copy
+import os
 import numpy as np
 from utils import Settings, ContextLogger
 logger = ContextLogger.getLogger('')
 
 
 class NBestGenerator(object):
-    def __new__(cls, confusion_model, nbest_size):
-        new = object.__new__(cls)
-        new.confusionModel = confusion_model
-        new.error_rate = None
-        new.nbest_size = nbest_size
-        return new
-
-    def set_error_rate(self, error_rate):
+    def __init__(self, confusion_model, error_rate, nbest_size):
+        self.confusionModel = confusion_model
         self.error_rate = error_rate
+        self.nbest_size = nbest_size
 
 
 class EMNBestGenerator(NBestGenerator):
     '''
     Tool for generating random semantic errors.
     '''
+
+    def __init__(self, confusion_model, error_rate, nbest_size):
+        super(EMNBestGenerator, self).__init__(confusion_model, error_rate, nbest_size)
+
     def getNBest(self, a_u):
         '''
         Returns an N-best list of dialogue acts of length nbest_size.
@@ -95,7 +95,8 @@ class EMSampledNBestGenerator(NBestGenerator):
 
     .. note:: The original C++ implementation did not sample N which is the length of the N-best list.
     '''
-    def __init__(self, confusion_model, nbest_size):
+    def __init__(self, confusion_model, error_rate, nbest_size):
+        super(EMSampledNBestGenerator, self).__init__(confusion_model, error_rate, nbest_size)
         self.confidence = [1./nbest_size] * nbest_size
 
     def getNBest(self, a_u):
@@ -123,8 +124,10 @@ class DSTC2NBestGenerator(NBestGenerator):
     '''
     Tool for generating random semantic errors based on the statistics learned from the DSTC2 corpus
     '''
-    def __init__(self, confusion_model, nbest_size):
-        super(DSTC2NBestGenerator, self).__init__(confusion_model, nbest_size)
+    def __init__(self, confusion_model, error_rate, nbest_size, paramset=None):
+        super(DSTC2NBestGenerator, self).__init__(confusion_model, error_rate, nbest_size)
+
+        # The following probabilities are learned from DSTC2 statistics
         self.inc_nb_pos_dist = [0.0,
                                  0.172275641,
                                  0.0580128205,
@@ -157,9 +160,36 @@ class DSTC2NBestGenerator(NBestGenerator):
                                  0.06073718,
                                  0.0099359]
 
+        if paramset:
+            if os.path.isfile(paramset):
+                with open(paramset, 'r') as paramfile:
+                    for line in paramfile:
+                        if not line.startswith('#'):
+                            if 'incorrectNBPosDist' in line:
+                                line = line.split('#')[0].split('=')[1]
+                                line = line.replace('[', '').replace(']', '')
+                                self.inc_nb_pos_dist = [float(x.strip()) for x in line.split(',')]
+                            elif 'incorrectNBLenDist' in line:
+                                line = line.split('#')[0].split('=')[1]
+                                line = line.replace('[', '').replace(']', '')
+                                self.inc_nb_len_dist = [float(x.strip()) for x in line.split(',')]
+                            elif 'correctNBLenDist' in line:
+                                line = line.split('#')[0].split('=')[1]
+                                line = line.replace('[', '').replace(']', '')
+                                self.cor_nb_len_dist = [float(x.strip()) for x in line.split(',')]
+        else:
+            logger.error('Error model config file "{}" does not exist'.format(paramset))
+        self.inc_nb_pos_dist = np.array(self.inc_nb_pos_dist)/sum(self.inc_nb_pos_dist)
+        self.cor_nb_len_dist = np.array(self.cor_nb_len_dist)/sum(self.cor_nb_len_dist)
+        self.inc_nb_len_dist = np.array(self.inc_nb_len_dist)/sum(self.inc_nb_len_dist)
+
+
+
+
+
     def getNBest(self, a_u):
         '''
-        Returns an N-best list of dialogue acts of length.
+        Returns an N-best list of dialogue acts of length self.nbest_size
 
         :param a_u: of :class:`DiaActWithProb`
         :type a_u: instance

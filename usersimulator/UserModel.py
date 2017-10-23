@@ -202,7 +202,8 @@ class UMAgenda(object):
         for ait in self.agenda_items:
             if ait.act in ['inform', 'confirm', 'affirm'] and len(ait.items) > 0:
                 if len(ait.items) > 1:
-                    logger.error('Assumes all agenda items have only one semantic items: '+ait)
+                    pass
+#                     logger.error('Assumes all agenda items have only one semantic items: {}'.format(ait))
                 for only_item in ait.items:
                     if only_item.slot == slot:
                         deleted.append(ait)
@@ -315,7 +316,7 @@ class UMGoal(object):
         self.constraints.append(item)
 
     def replace_const(self, slot, value, negate=False):
-        self.remove_slot_const(slot)
+        self.remove_slot_const(slot, negate)
         self.add_const(slot, value, negate)
 
     def contains_slot_const(self, slot):
@@ -326,11 +327,23 @@ class UMGoal(object):
                 return True
         return False
 
-    def remove_slot_const(self, slot):
+    def remove_slot_const(self, slot, negate=None):
         copy_consts = copy.deepcopy(self.constraints)
-        for item in copy_consts:
-            if item.slot == slot:
-                self.constraints.remove(item)
+        
+        if negate is not None:
+            if not negate:
+                op = '='
+            else:
+                op = '!='
+        
+            for item in copy_consts:
+                if item.slot == slot:
+                    if item.op == op:
+                        self.constraints.remove(item)
+        else:
+            for item in copy_consts:
+                if item.slot == slot:
+                    self.constraints.remove(item)
 
     def get_correct_const_value(self, slot, negate=False):
         '''
@@ -377,16 +390,18 @@ class UMGoal(object):
         correct_venue = self.get_correct_const_value('name', negate=False)
 
         if not negate:
+            # Adding name=value but there is name!=value.
+            if value in wrong_venues:
+                logger.error('Failed to add name=%s: already got constraint name!=%s.' %
+                             (value, value))
+                return
+            
             # Can have only one name= constraint.
             if correct_venue is not None:
                 #logger.debug('Failed to add name=%s: already got constraint name=%s.' %
                 #             (value, correct_venue))
-                return
-
-            # Adding name=value but there is name!=value.
-            if value in wrong_venues:
-                logger.debug('Failed to add name=%s: already got constraint name!=%s.' %
-                             (value, value))
+                self.replace_const('name', value) # ic340: added to override previously informed venues, to avoid
+                                                    # simuser getting obsessed with a wrong venue
                 return
 
             # Adding name=value, then remove all name!=other.
@@ -486,15 +501,26 @@ class UMGoal(object):
 
 
 class GoalGenerator(object):
-    '''Generates domain specific goals for simulated user.
-
-    :param dstring: domain tag
-    :type dstring: str
     '''
-    def __init__(self, dstring, conditional_behaviour=False):
+    Master class for defining a goal generator to generate domain specific goals for the simulated user.
+    
+    This class also defines the interface for new goal generators.
+    
+    To implement domain-specific behaviour, derive from this class and override init_goals.
+    '''
+    def __init__(self, dstring):
+        '''
+        The init method of the goal generator reading the config and setting the default parameter values.
+        
+        :param dstring: domain name tag
+        :type dstring: str
+        '''
         self.dstring = dstring
-        self.CONDITIONAL_BEHAVIOUR = conditional_behaviour
         configlist = []
+        
+        self.CONDITIONAL_BEHAVIOUR = False
+        if Settings.config.has_option("conditional","conditionalsimuser"):
+            self.CONDITIONAL_BEHAVIOUR = Settings.config.getboolean("conditional","conditionalsimuser")
         
         self.MAX_VENUES_PER_GOAL = 4
         if Settings.config.has_option('goalgenerator','maxvenuespergoal'):
@@ -527,15 +553,49 @@ class GoalGenerator(object):
 
         if self.MIN_VENUES_PER_GOAL > self.MAX_VENUES_PER_GOAL:
             logger.error('Invalid config: MIN_VENUES_PER_GOAL > MAX_VENUES_PER_GOAL')
-
-#         if Settings.config.has_section('goalgenerator'):
-#             for opt in Settings.config.options('goalgenerator'):
-#                 if opt not in configlist and opt not in Settings.config.defaults():
-#                     logger.error('Invalid config: ' + opt)
-
-        # self.nGoalsGenerated = 0
-        # self.nZeroSolutionGoalsGenerator = 0
+        
+        self.conditional_constraints = []
+        self.conditional_constraints_slots = []
+        
        
+    def init_goal(self, otherDomainsConstraints, um_patience):
+        '''
+        Initialises the goal g with random constraints and requests
+
+        :param otherDomainsConstraints: of constraints from other domains in this dialog which have already had goals generated.
+        :type otherDomainsConstraints: list
+        :param um_patience: the patiance value for this goal
+        :type um_patience: int
+        :returns: (instance) of :class:`UMGoal`
+        '''
+        
+        # clean/parse the domainConstraints list - contains other domains already generated goals:
+        self._set_other_domains_constraints(otherDomainsConstraints)
+
+        # Set initial goal status vars
+        goal = UMGoal(um_patience, domainString=self.dstring)
+        logger.debug(str(goal))
+        num_attempts_to_resample = 2000
+        while True:
+            num_attempts_to_resample -= 1
+            # Randomly sample a goal (ie constraints):
+            self._init_consts_requests(goal, um_patience)
+            # Check that there are venues that satisfy the constraints:
+            venues = Ontology.global_ontology.entity_by_features(self.dstring, constraints=goal.constraints)
+            #logger.info('num_venues: %d' % len(venues))
+            if self.MIN_VENUES_PER_GOAL < len(venues) < self.MAX_VENUES_PER_GOAL:
+                break
+            if num_attempts_to_resample == 0:
+                logger.warning('Maximum number of goal resampling attempts reached.')
+                
+        if self.CONDITIONAL_BEHAVIOUR:
+            # now check self.generator.conditional_constraints list against self.goal -assume any values that are the same
+            # are because they are conditionally copied over from earlier domains goal. - set self.goal.copied_constraints
+            goal.set_copied_constraints(all_conditional_constraints=self.conditional_constraints)
+
+        # logger.warning('SetSuitableVenues is deprecated.')
+        return goal
+        
     def _set_other_domains_constraints(self, otherDomainsConstraints):
         """Simplest approach for now: just look for slots with same name 
         """
@@ -560,38 +620,6 @@ class GoalGenerator(object):
         return
 
 
-    def init_goal(self, otherDomainsConstraints, um_patience):
-        '''
-        Initialises the goal g with random constraints and requests
-
-        :param otherDomainsConstraints: of constraints from other domains in this dialog which have already had goals generated.
-        :type otherDomainsConstraints: list
-        :returns: (instance) of :class:`UMGoal`
-        '''
-        # clean/parse the domainConstraints list - contains other domains already generated goals:
-        self._set_other_domains_constraints(otherDomainsConstraints)
-
-        # Set initial goal status vars
-        goal = UMGoal(um_patience, domainString=self.dstring)
-        logger.debug(str(goal))
-        num_attempts_to_resample = 2000
-        while True:
-            num_attempts_to_resample -= 1
-            # Randomly sample a goal (ie constraints):
-            self._init_consts_requests(goal, um_patience)
-            # Check that there are venues that satisfy the constraints:
-            venues = Ontology.global_ontology.entity_by_features(self.dstring, constraints=goal.constraints)
-            #logger.info('num_venues: %d' % len(venues))
-            if self.MIN_VENUES_PER_GOAL < len(venues) < self.MAX_VENUES_PER_GOAL:
-                break
-            if num_attempts_to_resample == 0:
-                logger.warning('Maximum number of goal resampling attempts reached.')
-
-        # logger.warning('SetSuitableVenues is deprecated.')
-        logger.dial('User will execute the following goal: {}'
-                    .format(str(goal.request_type)+str(goal.constraints)+str([req for req in goal.requests])))
-        return goal
-        
     def _init_consts_requests(self, goal, um_patience):
         '''
         Randomly initialises constraints and requests of the given goal.
@@ -640,31 +668,34 @@ class UM(object):
     :param None:
     '''
     def __init__(self, domainString):
-        self.CONDITIONAL_BEHAVIOUR = False
-        if Settings.config.has_option("conditional","conditionalsimuser"):
-            self.CONDITIONAL_BEHAVIOUR = Settings.config.getboolean("conditional","conditionalsimuser")
-         
-        self.max_patience = 5   
+        self.max_patience = 5
+        self.sample_patience = None
         if Settings.config.has_option('goalgenerator', 'patience'): # only here for backwards compatibility; should actually be in um
-            self.max_patience = Settings.config.getint('goalgenerator', 'patience')
-        if Settings.config.has_option('um', 'patience'):
-            self.max_patience = Settings.config.getint('um', 'patience')
+            self.max_patience = Settings.config.get('goalgenerator', 'patience')
+        if Settings.config.has_option('usermodel', 'patience'):
+            self.max_patience = Settings.config.get('usermodel', 'patience')
+        if isinstance(self.max_patience,str) and len(self.max_patience.split(',')) > 1:
+            self.sample_patience = [int(x.strip()) for x in self.max_patience.split(',')]
+            if len(self.sample_patience) != 2 or self.sample_patience[0] > self.sample_patience[1]:
+                logger.error('Patience should be either a single int or a range between 2 ints.')
+        else:
+            self.max_patience = int(self.max_patience)
         
         self.patience_old_style = False
-        if Settings.config.has_option('um', 'oldstylepatience'):
-            self.patience_old_style = Settings.config.getboolean('um', 'oldstylepatience')
+        if Settings.config.has_option('usermodel', 'oldstylepatience'):
+            self.patience_old_style = Settings.config.getboolean('usermodel', 'oldstylepatience')
         self.old_style_parameter_sampling = True
-        if Settings.config.has_option('um', 'oldstylesampling'):
-            self.old_style_parameter_sampling = Settings.config.getboolean('um', 'oldstylesampling')
+        if Settings.config.has_option('usermodel', 'oldstylesampling'):
+            self.old_style_parameter_sampling = Settings.config.getboolean('usermodel', 'oldstylesampling')
             
         self.sampleParameters = False
-        if Settings.config.has_option('um', 'sampledialogueprobs'):
-            self.sampleParameters = Settings.config.getboolean('um', 'sampledialogueprobs')
+        if Settings.config.has_option('usermodel', 'sampledialogueprobs'):
+            self.sampleParameters = Settings.config.getboolean('usermodel', 'sampledialogueprobs')
             
-        self.generator = GoalGenerator(domainString, conditional_behaviour=self.CONDITIONAL_BEHAVIOUR)
+        self.generator = self._load_domain_goal_generator(domainString)
         self.goal = None
         self.prev_goal = None
-        self.hdcSim = UMHdcSim.UMHdcSim(domainString)
+        self.hdcSim = self._load_domain_simulator(domainString)
         self.lastUserAct = None
         self.lastSysAct = None
         
@@ -682,14 +713,12 @@ class UM(object):
         '''
         if self.sampleParameters:
             self._sampleParameters()
+
+        if self.sample_patience:
+            self.max_patience = Settings.random.randint(self.sample_patience[0], self.sample_patience[1])
         
         self.goal = self.generator.init_goal(otherDomainsConstraints, self.max_patience)
         logger.debug(str(self.goal))
-
-        if self.CONDITIONAL_BEHAVIOUR:
-            # now check self.generator.conditional_constraints list against self.goal -assume any values that are the same
-            # are because they are conditionally copied over from earlier domains goal. - set self.goal.copied_constraints
-            self.goal.set_copied_constraints(all_conditional_constraints=self.generator.conditional_constraints)
 
         self.lastUserAct = None
         self.lastSysAct = None
@@ -773,5 +802,73 @@ class UM(object):
     def _sampleParameters(self):
         if not self.old_style_parameter_sampling:
             self.max_patience = Settings.random.randint(2,10)
+            
+    def _load_domain_goal_generator(self, domainString):
+        '''
+        Loads and instantiates the respective goal generator object as configured in config file. The new object is returned.
+        
+        Default is GoalGenerator.
+        
+        .. Note:
+            To dynamically load a class, the __init__() must take two arguments: domainString (str), conditional_behaviour (bool)
+        
+        :param domainString: the domain the goal generator will be loaded for.
+        :type domainString: str
+        :returns: goal generator object
+        '''
+        
+        generatorClass = None
+        
+        if Settings.config.has_option('usermodel_' + domainString, 'goalgenerator'):
+            generatorClass = Settings.config.get('usermodel_' + domainString, 'goalgenerator')
+        
+        if generatorClass is None:
+            return GoalGenerator(domainString)
+        else:
+            try:
+                # try to view the config string as a complete module path to the class to be instantiated
+                components = generatorClass.split('.')
+                packageString = '.'.join(components[:-1]) 
+                classString = components[-1]
+                mod = __import__(packageString, fromlist=[classString])
+                klass = getattr(mod, classString)
+                return klass(domainString)
+            except ImportError:
+                logger.error('Unknown domain ontology class "{}" for domain "{}"'.format(generatorClass, domainString))
+                
+    def _load_domain_simulator(self, domainString):
+        '''
+        Loads and instantiates the respective simulator object as configured in config file. The new object is returned.
+        
+        Default is UMHdcSim.
+        
+        .. Note:
+            To dynamically load a class, the __init__() must take one argument: domainString (str)
+        
+        :param domainString: the domain the simulator will be loaded for.
+        :type domainString: str
+        :returns: simulator object
+        '''
+        
+        simulatorClass = None
+        
+        if Settings.config.has_option('usermodel_' + domainString, 'usersimulator'):
+            simulatorClass = Settings.config.get('usermodel_' + domainString, 'usersimulator')
+        
+        if simulatorClass is None:
+            return UMHdcSim.UMHdcSim(domainString)
+        else:
+            try:
+                # try to view the config string as a complete module path to the class to be instantiated
+                components = simulatorClass.split('.')
+                packageString = '.'.join(components[:-1]) 
+                classString = components[-1]
+                mod = __import__(packageString, fromlist=[classString])
+                klass = getattr(mod, classString)
+                return klass(domainString)
+            except ImportError:
+                logger.error('Unknown domain ontology class "{}" for domain "{}"'.format(simulatorClass, domainString))
+                
+                
 
 #END OF FILE

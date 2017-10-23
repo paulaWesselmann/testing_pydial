@@ -53,12 +53,14 @@ import numpy as np
 import json
 import os
 import sys
-from itertools import starmap, izip
+import time
+from itertools import starmap, izip, combinations, product
 from operator import mul    #,sub
+from scipy.stats import entropy
 
 
 from Policy import Policy, Action, State, TerminalAction, TerminalState
-from policy import PolicyCommittee
+from policy import PolicyCommittee, SummaryUtils
 from GPLib import GPSARSA
 from ontology import Ontology
 from utils import Settings, ContextLogger
@@ -70,12 +72,16 @@ class GPPolicy(Policy,PolicyCommittee.CommitteeMember):
     
     The class implements the public interfaces from :class:`~Policy.Policy` and :class:`~PolicyCommittee.CommitteeMember`.
     '''
-    def __init__(self, domainString, learning):  
+    def __init__(self, domainString, learning, sharedParams=None):
         super(GPPolicy, self).__init__(domainString,learning)
         
         inpolicyfile = ''
         outpolicyfile = ''
         
+        if Settings.config.has_option('policy', 'inpolicyfile'):
+            inpolicyfile = Settings.config.get('policy', 'inpolicyfile')
+        if Settings.config.has_option('policy', 'outpolicyfile'):
+            outpolicyfile = Settings.config.get('policy', 'outpolicyfile')
         if Settings.config.has_option('policy_'+domainString, 'inpolicyfile'):
             inpolicyfile = Settings.config.get('policy_'+domainString, 'inpolicyfile')
         if Settings.config.has_option('policy_'+domainString, 'outpolicyfile'):
@@ -90,11 +96,14 @@ class GPPolicy(Policy,PolicyCommittee.CommitteeMember):
         self.slot_abstraction_file = os.path.join(Settings.root, 'policy/slot_abstractions/'+domainString + '.json')       # default mappings
         self.abstract_slots = False
         self.unabstract_slots = False
-        self.doForceSave = False    
+        self.doForceSave = False
+        self.beliefParametrisation = None
          
         # CONFIG:
+        if Settings.config.has_option('gppolicy',"abstractslots"):
+            self.abstract_slots = Settings.config.getboolean('gppolicy',"abstractslots")
         if Settings.config.has_option("gppolicy_"+domainString,"abstractslots"):
-            self.abstract_slots = Settings.config.getboolean("gppolicy_"+domainString,"abstractslots")  
+            self.abstract_slots = Settings.config.getboolean("gppolicy_"+domainString,"abstractslots")
         if not self.abstract_slots:
             # Check - in case you are using BCM but forgot to set abstractslots True in config
             if Settings.config.has_option('policycommittee','bcm'):
@@ -111,22 +120,36 @@ class GPPolicy(Policy,PolicyCommittee.CommitteeMember):
                             except Exception: #ConfigParser.NoOptionError:  # can import ConfigParser if you wish 
                                 pass
         if not self.abstract_slots:
+            if Settings.config.has_option('gppolicy',"unabstractslots"):
+                self.unabstract_slots = Settings.config.getboolean('gppolicy',"unabstractslots")
             if Settings.config.has_option("gppolicy_"+domainString,"unabstractslots"):
                 self.unabstract_slots = Settings.config.getboolean("gppolicy_"+domainString,"unabstractslots")
           
-        if Settings.config.has_option("gppolicy_"+domainString, "kernel"):
-            self.kerneltype = Settings.config.get("gppolicy_"+domainString, "kernel")
-        if Settings.config.has_option("gppolicy_"+domainString, "thetafile"):
-            self.thetafile = Settings.config.get("gppolicy_"+domainString, "thetafile")
-        if Settings.config.has_option("gppolicy_"+domainString, "slotabstractionfile"):            
-            self.slot_abstraction_file = Settings.config.get("gppolicy_"+domainString, "slotabstractionfile")
-        if Settings.config.has_option("gppolicy_"+domainString, "actionkerneltype"):            
-            self.action_kernel_type = Settings.config.get("gppolicy_"+domainString, "actionkerneltype")
-        if Settings.config.has_option("gppolicy_"+domainString, "doforcesave"):
-            self.doForceSave = Settings.config.getboolean("gppolicy_"+domainString, "doforcesave")
-            
+        if Settings.config.has_option('gppolicy', "kernel"):
+            self.kerneltype = Settings.config.get('gppolicy', "kernel")
+        if Settings.config.has_option('gppolicy', "thetafile"):
+            self.thetafile = Settings.config.get('gppolicy', "thetafile")
+        if Settings.config.has_option('gppolicy', "slotabstractionfile"):
+            self.slot_abstraction_file = Settings.config.get('gppolicy', "slotabstractionfile")
+        if Settings.config.has_option('gppolicy', "actionkerneltype"):
+            self.action_kernel_type = Settings.config.get('gppolicy', "actionkerneltype")
+        if Settings.config.has_option('gppolicy', "doforcesave"):
+            self.beliefParametrisation = Settings.config.getboolean('gppolicy', "doforcesave")
+
+        if Settings.config.has_option("gppolicy_" + domainString, "kernel"):
+            self.kerneltype = Settings.config.get("gppolicy_" + domainString, "kernel")
+        if Settings.config.has_option("gppolicy_" + domainString, "thetafile"):
+            self.thetafile = Settings.config.get("gppolicy_" + domainString, "thetafile")
+        if Settings.config.has_option("gppolicy_" + domainString, "slotabstractionfile"):
+            self.slot_abstraction_file = Settings.config.get("gppolicy_" + domainString, "slotabstractionfile")
+        if Settings.config.has_option("gppolicy_" + domainString, "actionkerneltype"):
+            self.action_kernel_type = Settings.config.get("gppolicy_" + domainString, "actionkerneltype")
+        if Settings.config.has_option("gppolicy_" + domainString, "doforcesave"):
+            self.beliefParametrisation = Settings.config.getboolean("gppolicy_" + domainString, "doforcesave")
+
+
         # Learning algorithm:
-        self.learner = GPSARSA(inpolicyfile,outpolicyfile,domainString=domainString, learning=self.learning)
+        self.learner = GPSARSA(inpolicyfile,outpolicyfile,domainString=domainString, learning=self.learning, sharedParams=sharedParams)
         
         # Load slot abstraction mapping - for everything BCM related         
         if self.abstract_slots and self.unabstract_slots:   # enforce some logic on your config settings:
@@ -180,7 +203,7 @@ class GPPolicy(Policy,PolicyCommittee.CommitteeMember):
                 return self._byeAction
             
         if self._byeAction is not None:
-            nonExecutableActions.append(self._byeAction)        
+            nonExecutableActions.append(self._byeAction)
         currentstate = self.get_State(belief)
         executable = self._createExecutable(nonExecutableActions)
         
@@ -291,7 +314,7 @@ class GPPolicy(Policy,PolicyCommittee.CommitteeMember):
         :type beliefstate:
         :param keep_none:
         :type keep_none:
-        '''   
+        '''
         return GPState(beliefstate, keep_none=keep_none, replace=self.replace, domainString=self.domainString)
 
     def get_Action(self, action):     
@@ -543,49 +566,49 @@ class GPPolicy(Policy,PolicyCommittee.CommitteeMember):
             if (self.learner.terminal and i < len(episode.strace)):
                 logger.warning("There are {} entries in episode after terminal state for domain {} with episode of domain {}".format(len(episode.strace)-i,self.domainString,episode.learning_from_domain))
                 break
-        logger.info("Number of dictionary points in domain {}: ".format(self.domainString) + str(len(self.learner._dictionary)))
+        logger.info("Number of dictionary points in domain {}: ".format(self.domainString) + str(len(self.learner.params['_dictionary'])))
         return
     
     def _unabstract_dictionary(self):
-        for i in range(len(self.learner._dictionary)):
+        for i in range(len(self.learner.params['_dictionary'])):
             # for back compatibility with earlier trained policies
             try:
-                _ = self.learner._dictionary[i][0].is_abstract
+                _ = self.learner.params['_dictionary'][i][0].is_abstract
             except AttributeError:
-                self.learner._dictionary[i][0].is_abstract = False  
-                self.learner._dictionary[i][1].is_abstract = False
+                self.learner.params['_dictionary'][i][0].is_abstract = False
+                self.learner.params['_dictionary'][i][1].is_abstract = False
                                       
             # 0 index is state  
-            if self.learner._dictionary[i][0].is_abstract:                                  
-                for islot in self.learner._dictionary[i][0]._bstate:
+            if self.learner.params['_dictionary'][i][0].is_abstract:
+                for islot in self.learner.params['_dictionary'][i][0]._bstate:
                     if 'slot' in islot: # covers 'goal_slot01' and 'goal_infoslot00' -- i.e all things abstracted:
                         try:
                             [prefix,slot] = islot.split('_')
                             real_name = prefix + '_' + self.abstraction_mapping['abstract2real'][slot]
-                            self.learner._dictionary[i][0]._bstate[real_name] = self.learner._dictionary[i][0]._bstate.pop(islot) 
+                            self.learner.params['_dictionary'][i][0]._bstate[real_name] = self.learner.params['_dictionary'][i][0]._bstate.pop(islot)
                         except:
                             logger.warning('{} - slot not in mapping'.format(islot))
-                self.learner._dictionary[i][0].is_abstract = False
+                self.learner.params['_dictionary'][i][0].is_abstract = False
             
             # 1 index is action. should always be the same as state ...
-            if self.learner._dictionary[i][1].is_abstract:   
-                self.learner._dictionary[i][1].act = self._unabstract_action(self.learner._dictionary[i][1].act)
-                self.learner._dictionary[i][1].is_abstract = False 
+            if self.learner.params['_dictionary'][i][1].is_abstract:
+                self.learner.params['_dictionary'][i][1].act = self._unabstract_action(self.learner.params['_dictionary'][i][1].act)
+                self.learner.params['_dictionary'][i][1].is_abstract = False
         logger.info('Un-abstracted dictionary in domain {}'.format(self.domainString))
         return               
     
     def _abstract_dictionary(self):
-        for i in range(len(self.learner._dictionary)):                      
+        for i in range(len(self.learner.params['_dictionary'])):
             # for back compatibility with earlier trained policies
             try:
-                _ = self.learner._dictionary[i][0].is_abstract
+                _ = self.learner.params['_dictionary'][i][0].is_abstract
             except AttributeError:
-                self.learner._dictionary[i][0].is_abstract = False  
-                self.learner._dictionary[i][1].is_abstract = False
+                self.learner.params['_dictionary'][i][0].is_abstract = False
+                self.learner.params['_dictionary'][i][1].is_abstract = False
             
             # 0 index is state    
-            if not self.learner._dictionary[i][0].is_abstract:                                  
-                for islot in self.learner._dictionary[i][0]._bstate:
+            if not self.learner.params['_dictionary'][i][0].is_abstract:
+                for islot in self.learner.params['_dictionary'][i][0]._bstate:
                     
                     #islot is real name --> must be abstracted                     
                     if '_' in islot:    # if not --> not abstract
@@ -593,17 +616,17 @@ class GPPolicy(Policy,PolicyCommittee.CommitteeMember):
                             [prefix,slot] = islot.split('_')
                             try:                            
                                 abstract_name = prefix + '_' + self.replace[slot]
-                                self.learner._dictionary[i][0]._bstate[abstract_name] = self.learner._dictionary[i][0]._bstate.pop(islot) 
+                                self.learner.params['_dictionary'][i][0]._bstate[abstract_name] = self.learner.params['_dictionary'][i][0]._bstate.pop(islot)
                             except:
                                 logger.debug('{} - slot not in mapping'.format(islot))
-                self.learner._dictionary[i][0].is_abstract = True
+                self.learner.params['_dictionary'][i][0].is_abstract = True
             
             # 1 index is action. abstraction status should always be the same as state ...
-            if not self.learner._dictionary[i][1].is_abstract:                   
-                act = self.learner._dictionary[i][1].act
+            if not self.learner.params['_dictionary'][i][1].is_abstract:
+                act = self.learner.params['_dictionary'][i][1].act
                 # Use GPAction instance method replaceAction() to perform the action abstraction:
-                self.learner._dictionary[i][1].act = self.learner._dictionary[i][1].replaceAction(act, self.replace)
-                self.learner._dictionary[i][1].is_abstract = True   
+                self.learner.params['_dictionary'][i][1].act = self.learner.params['_dictionary'][i][1].replaceAction(act, self.replace)
+                self.learner.params['_dictionary'][i][1].is_abstract = True
         logger.info('Abstracted dictionary in domain {}'.format(self.domainString))
         return  
     
@@ -626,6 +649,8 @@ class Kernel(object):
         self.theta are kernel parameters
         self.der is the derivative
         '''
+
+        self.pad_warning_issued = False
         self.kernel_type = kernel_type
         self.theta = theta
         self.der = der    
@@ -634,6 +659,8 @@ class Kernel(object):
             if action_names == None:
                 exit("You need to pass action names when using the distributed action kernel")
             ssqrIn = 20
+            if Settings.config.has_option('gppolicy', "distlength"):
+                ssqrIn = float(Settings.config.get('gppolicy', "distlength"))
             if Settings.config.has_option("gppolicy_"+domainString, "distlength"):
                 ssqrIn = float(Settings.config.get("gppolicy_"+domainString, "distlength"))
             self._set_distibuted_action_vectors(action_names, ssqrIn)
@@ -732,8 +759,14 @@ class Kernel(object):
                 ker = np.dot(s.beliefStateVec, ns.beliefStateVec)
             else:
                 # old linear kernel for committee calculations
-                logger.error('incorrect beliefStateVec padding/truncating')
-                sys.exit()
+                if not self.pad_warning_issued:
+                    #logger.warning('incorrect beliefStateVec padding/truncating, returning 0')
+                    #logger.warning('ns: {} {}'.format(ns._bstate, len(ns.beliefStateVec)))
+                    #logger.warning('s: {} {}'.format(s._bstate, len(s.beliefStateVec)))
+                    logger.warning('ns:  {}'.format(len(ns.beliefStateVec)))
+                    logger.warning('s:  {}'.format( len(s.beliefStateVec)))
+                #sys.exit()
+                ker = 0
                         
         # 2. DEAL WITH DERIVATIVES (depending on self.der)
         if self.kernel_type == 'gausssort':
@@ -1333,5 +1366,5 @@ class TerminalGPState(GPState,TerminalState):
     '''
     def __init__(self):
         super(TerminalGPState,self).__init__(None)
-        
+
 # END OF FILE

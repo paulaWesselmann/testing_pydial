@@ -19,7 +19,6 @@
 # limitations under the License.
 #
 ###############################################################################
-
 '''
 UMHdcSim.py - Handcrafted simulated user behaviour 
 ====================================================
@@ -49,7 +48,7 @@ Copyright CUED Dialogue Systems Group 2015 - 2017
 __author__ = "cued_dialogue_systems_group"
 import copy
 
-import UserModel
+import UserModel, UMSimulator
 from ontology import Ontology
 from utils import Settings, DiaAct, dact, ContextLogger
 logger = ContextLogger.getLogger('')
@@ -84,7 +83,7 @@ logger = ContextLogger.getLogger('')
 #                        'NoAfterReqmore':        0.7}
 
 # # from eddy
-rand_decision_probs = {'InformCombination':     0.6,
+'''rand_decision_probs = {'InformCombination':     0.6,
                        'AddSlotToReq':          0.333,
                        'NoAfterReqmore':        0.7,
                        'YesAfterReqmore':       0.25,
@@ -109,7 +108,7 @@ rand_decision_probs = {'InformCombination':     0.6,
                        'CorrectingAct2':        0.4,
                        'ThankAck1':             0.1,
                        'ThankAck2':             0.1,
-                       'AffirmCombination':     1.0}
+                       'AffirmCombination':     1.0}'''
 
 # from david
 # rand_decision_probs = {'InformCombination':     0.6,
@@ -140,39 +139,67 @@ rand_decision_probs = {'InformCombination':     0.6,
 #                        'NoAfterReqmore':        0.7}
 
 
-class UMHdcSim(object):
+class UMHdcSim(UMSimulator.UMSimulator):
     '''Handcrafted behaviour of simulated user
     '''
     def __init__(self, domainString, max_patience = 5):
-        self.dstring = domainString
+        super(UMHdcSim,self).__init__(domainString,max_patience)
         
         # DEFAULTS:
-        self.max_patience = max_patience
         self.answer_req_always = True
         self.use_new_goal_scenarios = False
         self.sampleDecisiconProbs = False
+        self.patience_old_style = False
+        self.old_style_parameter_sampling = True
+        config_file_path = 'config/defaultUM.cfg'
+        self.rand_decision_probs = {'InformCombination':     0.6,
+                       'AddSlotToReq':          0.333,
+                       'NoAfterReqmore':        0.7,
+                       'YesAfterReqmore':       0.25,
+                       'Greeting':              0.5,
+                       'ConstraintRelax':       0.667,
+                       'TellAboutChange':       0.5,
+                       'ByeOrStartOver':        0.333,
+                       'DealWithPending':       0.5,
+                       'AddVenueNameToRequest': 0.05,
+                       'NoSlotWithDontcare':    0.8,
+                       'Repeat':                0.0,
+                       'InformToConfirm':       0.05,
+                       'CombAffirmWithAgdItem': 0.05,
+                       'NullResp':              0.0,
+                       'OverruleCorrection':    0.1,
+                       'ConfirmRandomConstr':   0.1,
+                       'ReqAltsAfterVenRec1':   0.143,
+                       'ReqAltsAfterVenRec2':   0.143,
+                       'NewRequestResp1':       0.2,
+                       'NewRequestResp2':       0.2,
+                       'CorrectingAct1':        0.45,
+                       'CorrectingAct2':        0.4,
+                       'ThankAck1':             0.1,
+                       'ThankAck2':             0.1,
+                       'AffirmCombination':     1.0}
         
         # CONFIG:
-        if Settings.config.has_option('um', 'usenewgoalscenarios'):
-            self.use_new_goal_scenarios = Settings.config.getboolean('um', 'usenewgoalscenarios')
-        if Settings.config.has_option('um', 'answerreqalways'):
-            self.answer_req_always = Settings.config.getboolean('um', 'answerreqalways')
+        if Settings.config.has_option('usermodel', 'usenewgoalscenarios'):
+            self.use_new_goal_scenarios = Settings.config.getboolean('usermodel', 'usenewgoalscenarios')
+        if Settings.config.has_option('usermodel', 'answerreqalways'):
+            self.answer_req_always = Settings.config.getboolean('usermodel', 'answerreqalways')
 
-        if Settings.config.has_option('um', 'informcombinationprob'):
-            rand_decision_probs['InformCombination'] = Settings.config.getfloat('um', 'informcombinationprob')
-        if Settings.config.has_option('um', 'affirmcombinationprob'):
-            rand_decision_probs['AffirmCombination'] = Settings.config.getfloat('um', 'affirmcombinationprob')
-        if Settings.config.has_option('um', 'reqaltsaftervenrec'):
-            rand_decision_probs['ReqAltsAfterVenRec1'] = Settings.config.getfloat('um', 'reqaltsaftervenrec')
-        if Settings.config.has_option('um', 'sampledialogueprobs'):
-            self.sampleDecisiconProbs = Settings.config.getboolean('um', 'sampledialogueprobs')
-        
-        self.patience_old_style = False
-        if Settings.config.has_option('um', 'oldstylepatience'):
-            self.patience_old_style = Settings.config.getboolean('um', 'oldstylepatience')
-        self.old_style_parameter_sampling = True
-        if Settings.config.has_option('um', 'oldstylesampling'):
-            self.old_style_parameter_sampling = Settings.config.getboolean('um', 'oldstylesampling')
+        if Settings.config.has_option('usermodel', 'informcombinationprob'):
+            self.rand_decision_probs['InformCombination'] = Settings.config.getfloat('usermodel', 'informcombinationprob')
+        if Settings.config.has_option('usermodel', 'affirmcombinationprob'):
+            self.rand_decision_probs['AffirmCombination'] = Settings.config.getfloat('usermodel', 'affirmcombinationprob')
+        if Settings.config.has_option('usermodel', 'reqaltsaftervenrec'):
+            self.rand_decision_probs['ReqAltsAfterVenRec1'] = Settings.config.getfloat('usermodel', 'reqaltsaftervenrec')
+        if Settings.config.has_option('usermodel', 'sampledialogueprobs'):
+            self.sampleDecisiconProbs = Settings.config.getboolean('usermodel', 'sampledialogueprobs') # deprecated, now this is set in the config file
+        if Settings.config.has_option('usermodel', 'oldstylepatience'):
+            self.patience_old_style = Settings.config.getboolean('usermodel', 'oldstylepatience')
+        if Settings.config.has_option('usermodel', 'oldstylesampling'):
+            self.old_style_parameter_sampling = Settings.config.getboolean('usermodel', 'oldstylesampling')
+        if Settings.config.has_option('usermodel', 'configfile'):
+            config_file_path = Settings.config.get('usermodel', 'configfile')
+        self._read_UM_config(config_file_path)
 
         self.agenda = UserModel.UMAgenda(self.dstring)
         self.last_user_act = None
@@ -193,6 +220,11 @@ class UMHdcSim(object):
                    'bye': self._receive_bye,
                    'affirm': self._receive_affirm,
                    'negate': self._receive_negate}
+        self.sampling_probs = None
+        for key in self.rand_decision_probs:
+            if type(self.rand_decision_probs[key]) is list:
+                self.sampling_probs = copy.deepcopy(self.rand_decision_probs)
+                break
 
     def init(self, goal, um_patience):
         """
@@ -202,7 +234,8 @@ class UMHdcSim(object):
         self.last_user_act = DiaAct.DiaAct('null()')
         self.last_sys_act = DiaAct.DiaAct('null()')
         
-        if self.sampleDecisiconProbs:
+        #if self.sampleDecisiconProbs:
+        if self.sampling_probs:
             self._sampleProbs()
             
         self.max_patience = um_patience
@@ -233,24 +266,109 @@ class UMHdcSim(object):
         #   and respond with a repeat act.
         if goal.patience > 1 and sys_act.act != 'repeat' and sys_act.act != 'badact' and\
                         sys_act.act != 'null':
-            if Settings.random.rand() < rand_decision_probs['Repeat']:
+            if Settings.random.rand() < self.rand_decision_probs['Repeat']:
                 self.agenda.push(DiaAct.DiaAct('repeat()'))
                 return
 
         # Generate null action with small probability:
         #   user generates (silence or) something incomprehensible
-        if Settings.random.rand() < rand_decision_probs['NullResp']:
+        if Settings.random.rand() < self.rand_decision_probs['NullResp']:
             self.agenda.push(DiaAct.DiaAct('null()'))
             return
 
         if sys_act.act in self.receive_options and sys_act.act != 'null': 
-           self.receive_options[sys_act.act](sys_act, goal)
+            self.receive_options[sys_act.act](sys_act, goal)
         else:
             logger.warning('Unknown acttype in UMHdcSim.receive(): ' + sys_act.act)
             self._receive_badact(goal)
 
         logger.debug(str(self.agenda.agenda_items))
         logger.debug(str(goal))
+
+    def respond(self, goal):
+        '''
+        This method is called to get the user response.
+
+        :param goal: of :class:`UMGoal` 
+        :type goal: instance
+        :returns: (instance) of :class:`DiaActWithProb`
+        '''
+        # If agenda is empty, push ByeAct on top.
+        if self.agenda.size() == 0:
+            self.agenda.push(DiaAct.DiaAct('bye()'))
+
+        # Pop the top act off the agenda to form the user response.
+        dap = self.agenda.pop()
+        logger.debug(str(dap))
+
+        # if len(dap.items) > 1:
+        #     logger.warning('Multiple semantic items in agenda: ' + str(dap))
+        dap_item = None
+        if len(dap.items) > 0:
+            dap_item = dap.items[0]
+
+        # If it created negate(name="!x") or deny(name="x", name="!x") or confirm(name="!x") just reqalts()
+        for item in dap.items:
+            if item.op == "!=":
+                dap = DiaAct.DiaAct('reqalts()')
+                break
+
+        # Checking agenda for redundant constraints.
+        self.agenda.filter_constraints(dap)
+
+        if dap.act in ['thankyou', 'silence', 'repeat', 'ack', 'deny', 'confirm']:
+            return self._normalise_act_no_rules(dap)
+
+        if self.last_sys_act.act == 'reqmore':
+            return self._normalise_act_no_rules(dap)
+
+        # Ckecing whether we might remove the slot name for value dontcare in the planned act.
+        if dap.act == 'inform' and not dap.items:
+            logger.error('Error inform act with no slots is on agenda.')
+
+        # In response to a request about a particular slot users often do not specify hte slot
+        # especially when the value is dontcare.
+        if self.last_sys_act.act in ['request', 'confreq', 'select']:
+            if dap.act == 'inform' and dap_item is not None and dap_item.val == 'dontcare':
+                f = Settings.random.rand()
+                if f < self.rand_decision_probs['NoSlotWithDontcare']:
+                    dap_item.slot = None
+
+        # Checking whether we might add a venue name ot the planned act.
+        if dap.act == 'request' and len(dap.items) == 1:
+            rec_ven = goal.requests['name']
+            # If venue recommended, randomly decide to include the venue name in the request.
+            if rec_ven is not None:
+                if Settings.random.rand() < self.rand_decision_probs['AddVenueNameToRequest']:
+                    dap.append('name', rec_ven)
+            # else:
+            #     logger.error('Requesting slot without venue recommended.')
+
+        # Checking whether we might include additional constraints in the planned act.
+        # When specifying a constraint, combine the act with additional constraints with some probability.
+        if dap.act in ['inform', 'negate', 'hello', 'affirm']:
+#             print "dialogue act", dap.act, dap.items
+            inf_comb_count = 0
+            while self.agenda.size() > 0 and \
+                    (self.agenda.agenda_items[-1].act == 'inform' or \
+                     self.agenda.agenda_items[-1].act == 'request' and dap.act == 'hello'):
+                if Settings.random.rand() < self.rand_decision_probs['InformCombination']:
+                    inf_comb_count += 1
+                    next_dap = self.agenda.pop()
+                    for dip in next_dap.items:
+                        dap.append(dip.slot, dip.val, dip.op == '!=')
+                else:
+                    break
+
+        # Checking whether we might request a slot when specifying the type of venue.
+        # When specifying the requestType constraint at the beginning of a dialogue,
+        # occasionally request an additional requested slot
+        if dap.act == 'request' and len(dap.items) > 0 and dap_item.slot in ['type', 'task', 'restaurant']:
+            logger.warning('Not completely implemented: RequestSlotAtStart')
+
+        usr_output = self._normalise_act_no_rules(dap)
+        self.last_user_act = usr_output
+        return usr_output
 
     def _receive_badact(self,goal):
         if goal.patience < 1:
@@ -260,7 +378,7 @@ class UMHdcSim(object):
 
     def _receive_hello(self, sys_act, goal):
         if not len(sys_act.items):
-            if Settings.random.rand() < rand_decision_probs['Greeting']:
+            if Settings.random.rand() < self.rand_decision_probs['Greeting']:
                 self.agenda.push(DiaAct.DiaAct('hello()'))
 
     def _receive_bye(self, sys_act, goal):
@@ -273,7 +391,7 @@ class UMHdcSim(object):
         if self.agenda.size() > 1:
             next_dap = self.agenda.agenda_items[-1]
             if not next_dap.contains('type', goal.request_type):  # was hard coded to 'restaurant'
-                if Settings.random.rand() < rand_decision_probs['CombAffirmWithAgdItem']:
+                if Settings.random.rand() < self.rand_decision_probs['CombAffirmWithAgdItem']:
                     # Responding with affirm and combine with next agenda item.
                     # Create an affirm act and combine it with the top item of the agenda if that specifies a constraint.
                     # e.g. inform(type=bar) -> affirm(type=bar) or request(bar) -> affirm(=bar)
@@ -293,7 +411,7 @@ class UMHdcSim(object):
         # Check if there is an unsatisfied request on the goal
         if goal.are_all_requests_filled():
             # If all requests are filled,
-            if Settings.random.rand() < rand_decision_probs['NoAfterReqmore']:
+            if Settings.random.rand() < self.rand_decision_probs['NoAfterReqmore']:
                 # Occasionally just say no. A good policy can save turns by ending the conversation at this point.
                 self.agenda.push(DiaAct.DiaAct('negate()'))
             else:
@@ -320,7 +438,7 @@ class UMHdcSim(object):
             # If no venue has been recommended yet, then asking reqmore() is pretty stupid.
             # Make the system loose a point by answering "yes!"
             else:
-                if Settings.random.rand() < rand_decision_probs['YesAfterReqmore']:
+                if Settings.random.rand() < self.rand_decision_probs['YesAfterReqmore']:
                     # Nothing recommended yet, so just say yes.
                     self.agenda.push(DiaAct.DiaAct('affirm()'))
                 else:
@@ -355,7 +473,7 @@ class UMHdcSim(object):
         if self.agenda.size() > 0:
             top_item = self.agenda.agenda_items[-1]
             if top_item.act == 'inform':
-                if Settings.random.rand() < rand_decision_probs['AffirmCombination']:
+                if Settings.random.rand() < self.rand_decision_probs['AffirmCombination']:
                     for item in top_item.items:
                         new_affirm_act.append(item.slot, item.val, negate=(item.op == '!='))
                     self.agenda.pop()
@@ -376,9 +494,9 @@ class UMHdcSim(object):
         if not goal.contains_slot_const(slot):
             # If slot is not in the goal, get the correct value for it.
             logger.warning('Slot %s in the given system act %s is not found in the user goal.' % (slot, str(sys_act)))
-            random_val = Ontology.global_ontology.getRandomValueForSlot(self.dstring, slot=slot)
-            goal.add_const(slot, random_val)
-            self.agenda.push(DiaAct.DiaAct('inform(%s="%s")' % (slot, random_val)))
+            #random_val = Ontology.global_ontology.getRandomValueForSlot(self.dstring, slot=slot)
+            goal.add_const(slot, 'dontcare') # ic340 shouldnt this be dontcare instead of adding a random constrain? (or at least do it with a prob) su259: I agree and have changed it to dontcare
+            self.agenda.push(DiaAct.DiaAct('inform(%s="%s")' % (slot, 'dontcare')))
         else:
             correct_val = goal.get_correct_const_value(slot)
             self.agenda.push(DiaAct.DiaAct('inform(%s="%s")' % (slot, correct_val)))
@@ -534,7 +652,7 @@ class UMHdcSim(object):
         logger.debug('###4 ---- into case 4 --- prob going to say dontcare ...')
         # Either repeat last user request or invent a value for the requested slot.
         f = Settings.random.rand()
-        if f < rand_decision_probs['NewRequestResp1']:
+        if f < self.rand_decision_probs['NewRequestResp1']:
             # Decided to randomly repeat one of the goal constraints.
             # Go through goal and randomly pick a request to repeat.
             random_val = goal.get_correct_const_value(requested_slot) # copied here from below because random_val was not defined. IS THIS CORRECT?
@@ -550,7 +668,7 @@ class UMHdcSim(object):
                 sampled_slot, sampled_op, sampled_value = sampled_act.slot, sampled_act.op, sampled_act.val
                 self.agenda.push(DiaAct.DiaAct('inform(%s="%s")' % (sampled_slot, sampled_value)))
 
-        elif f < rand_decision_probs['NewRequestResp1'] + rand_decision_probs['NewRequestResp2']:
+        elif f < self.rand_decision_probs['NewRequestResp1'] + self.rand_decision_probs['NewRequestResp2']:
             # Pick a constraint from the list of options and randomly invent a new constraint.
             #random_val = goal.getCorrectValueForAdditionalConstraint(requested_slot) # wrong method from dongho?
             random_val = goal.get_correct_const_value(requested_slot)
@@ -645,7 +763,7 @@ class UMHdcSim(object):
                 # Make a random choice of asking for alternatives,
                 # even if the system has recommended another venue.
                 f = Settings.random.rand()
-                if f < rand_decision_probs['ReqAltsAfterVenRec1']:
+                if f < self.rand_decision_probs['ReqAltsAfterVenRec1']:
                     # Ask for alternatives without changing the goal but add a !name in constraints.
 
                     # Insert name!=venue constraint.
@@ -654,7 +772,7 @@ class UMHdcSim(object):
                     self.agenda.push(DiaAct.DiaAct('reqalts()'))
                     return
 
-                elif f < rand_decision_probs['ReqAltsAfterVenRec1'] + rand_decision_probs['ReqAltsAfterVenRec2']:
+                elif f < self.rand_decision_probs['ReqAltsAfterVenRec1'] + self.rand_decision_probs['ReqAltsAfterVenRec2']:
                     # Do change the goal and ask for alternatives.
                     change_goal = True
 
@@ -710,7 +828,7 @@ class UMHdcSim(object):
                         logger.debug("current goal: "+str(goal))
                         logger.debug("current goal.prev_slot_values: "+str(goal.prev_slot_values))
 
-                        if Settings.random.rand() < rand_decision_probs['ConstraintRelax'] or relax_dontcare:
+                        if Settings.random.rand() < self.rand_decision_probs['ConstraintRelax'] or relax_dontcare:
                             logger.debug("--case0--")
                             # Just set it to dontcare.
                             relax_value = 'dontcare'
@@ -733,7 +851,7 @@ class UMHdcSim(object):
 
                         # Randomly decide whether to tell the system about the change or just request an alternative.
                         if not contains_name_none:
-                            if Settings.random.rand() < rand_decision_probs['TellAboutChange']:
+                            if Settings.random.rand() < self.rand_decision_probs['TellAboutChange']:
                                 # Decide to tell the system about it.
                                 self.agenda.push(DiaAct.DiaAct('reqalts(%s="%s")' % (relax_slot, relax_value)))
                             else:
@@ -792,7 +910,7 @@ class UMHdcSim(object):
         # Endif self.user_new_goal_scenarios == True
         if self.relax_constraints:
             # The given constraints were understood correctly but did not match a venue.
-            if Settings.random.rand() < rand_decision_probs['ByeOrStartOver']:
+            if Settings.random.rand() < self.rand_decision_probs['ByeOrStartOver']:
                 self.agenda.clear()
                 self.agenda.push(DiaAct.DiaAct('bye()'))
             else:
@@ -818,7 +936,7 @@ class UMHdcSim(object):
         '''
         With some probability, change any remaining inform acts on the agenda to confirm acts.
         '''
-        if Settings.random.rand() < rand_decision_probs['InformToConfirm']:
+        if Settings.random.rand() < self.rand_decision_probs['InformToConfirm']:
             for agenda_item in self.agenda.agenda_items:
                 if agenda_item.act == 'inform':
                     if len(agenda_item.items) == 0:
@@ -829,10 +947,10 @@ class UMHdcSim(object):
         # Randomly decide to respond with thankyou() or ack(), or continue.
         if self.use_new_goal_scenarios:
             f = Settings.random.rand()
-            if f < rand_decision_probs['ThankAck1']:
+            if f < self.rand_decision_probs['ThankAck1']:
                 self.agenda.push(DiaAct.DiaAct('thankyou()'))
                 return
-            elif f < rand_decision_probs['ThankAck1'] + rand_decision_probs['ThankAck2']:
+            elif f < self.rand_decision_probs['ThankAck1'] + self.rand_decision_probs['ThankAck2']:
                 self.agenda.push(DiaAct.DiaAct('ack()'))
                 return
 
@@ -842,7 +960,7 @@ class UMHdcSim(object):
         at least sometimes.
         '''
         if self.agenda.size() > 1:
-            if Settings.random.rand() < rand_decision_probs['DealWithPending']:
+            if Settings.random.rand() < self.rand_decision_probs['DealWithPending']:
                 return
 
         # If empty goal slots remain, put a request on the agenda.
@@ -864,7 +982,7 @@ class UMHdcSim(object):
                         one_added = True
                     else:
                         # Add another request with some probability
-                        if Settings.random.rand() < rand_decision_probs['AddSlotToReq']:
+                        if Settings.random.rand() < self.rand_decision_probs['AddSlotToReq']:
                             user_response.append(slot, None)
                         else:
                             break
@@ -904,10 +1022,13 @@ class UMHdcSim(object):
         '''
         contains_name_none = False
         contains_count = False
+        is_inform_requested = False
         #contains_options = False
 
         # First store all possible values for each unique slot in the list of items and check for name=none
         slot_values = {}
+        informable_s = Ontology.global_ontology.get_informable_slots(self.dstring)
+        requestable_s = Ontology.global_ontology.get_requestable_slots(self.dstring)
         for item in sys_act.items:
             if item.slot != 'count' and item.slot != 'option':
                 # if item.slot in slot_values:
@@ -925,6 +1046,11 @@ class UMHdcSim(object):
 
             if item.slot == 'name' and item.val == 'none':
                 contains_name_none = True
+
+            if item.slot in requestable_s and item.slot not in informable_s:
+                is_inform_requested = True
+
+
 
         # Check if all the implicitly given information is correct. Otherwise reply with negate or deny.
         do_exp_confirm = False
@@ -958,16 +1084,36 @@ class UMHdcSim(object):
                 wrong_val = goal.get_correct_const_value(item.slot, negate=True)
 
                 # Current negation: if the goal is slot!=value
-                if correct_val is None and wrong_val is not None:
-                    current_negation = True
-                elif correct_val is not None and wrong_val is None:
-                    current_negation = False
-                else:
+                if correct_val is not None and wrong_val is not None and correct_val == wrong_val:
                     logger.debug(str(goal))
                     logger.error('Not possible')
+                    
+                # Conflict between slot!=value on user goal and slot=value in system act.
+                if wrong_val is not None and not goal.is_satisfy_all_consts(slot_values[item.slot]):
+                    if contains_name_none:
+                        if item.slot == 'name':
+                            # Relax constraint for !name because of name=none.
+                            goal.remove_slot_const('name', negate = True) # su259: negate added; only remove slot!=value constraints
+                        else:
+                            # Must correct it because of name=none.
+                            do_correct_misunderstanding = True
+                    # System informed wrong venue.
+                    else:
+                        do_correct_misunderstanding = True
+                        
+                # ic340: Exclude the name from the confirmation. This makes the simulated user always accept a new informed
+                # venue even if another venue has been informed before. This is done to fix the bug with the simulated
+                # user becoming "obsessed" with a wrong venue. However, I dont know if this fix could introduce further bugs
+                # (e.g. user gets informed the telephone of a different restaurant and accepts it as correct)
+                # su259: moved here and added condition on do_correct_misunderstanding so that having a name in the sys act
+                # other than inform_requested which is forbidden by the goal triggers a correction instead of skipping it
+                if item.slot == 'name' and not is_inform_requested and not do_correct_misunderstanding:
+                    continue
+                    #pass
+
 
                 # Conflict between slot=value on user goal, and slot=other or slot!=other in system act
-                if not current_negation and not goal.is_satisfy_all_consts(slot_values[item.slot]):
+                if correct_val is not None and not goal.is_satisfy_all_consts(slot_values[item.slot]):
                     # If the system act contains name=none, then correct the misunderstanding in any case.
                     if contains_name_none:
                         if item.slot != 'name':
@@ -975,20 +1121,8 @@ class UMHdcSim(object):
                     # If it doesn't, then only correct the misunderstanding if the user goal constraints say so
                     elif correct_val != 'dontcare':
                         do_correct_misunderstanding = True
-
-                # Conflict between slot!=value on user goal and slot=value in system act.
-                elif current_negation and not goal.is_satisfy_all_consts(slot_values[item.slot]):
-                    if contains_name_none:
-                        if item.slot == 'name':
-                            # Relax constraint for !name because of name=none.
-                            goal.remove_slot_const('name')
-                        else:
-                            # Must correct it because of name=none.
-                            do_correct_misunderstanding = True
-                    # System informed wrong venue.
-                    else:
-                        do_correct_misunderstanding = True
-
+                        
+                
             # If all constraints mentioned by user but some are not implicitly confirmed in system act,
             # confirm one such constraint with some probability
             planned_response_act = None
@@ -1021,13 +1155,19 @@ class UMHdcSim(object):
                 # Now pick a constraint to confirm
                 if len(confirmable_consts) > 0:
                     rci = Settings.random.choice(confirmable_consts)
-                    slots_to_exp = Ontology.global_ontology.getSlotsToExpress(self.dstring, slot=rci.slot, value=rci.val)
                     planned_response_act = DiaAct.DiaAct('confirm()')
-                    for strit in slots_to_exp:
-                        v1 = goal.get_correct_const_value(strit)
-                        if v1 is not None: planned_response_act.append(strit, v1)
-                        v1 = goal.get_correct_const_value(strit, negate=True)
-                        if v1 is not None: planned_response_act.append(strit, v1, negate=True)
+                    planned_response_act.append(rci.slot, rci.val)
+
+                    # su259: unclear why in the following the goal is gone through again, constraint slot-value from goal
+                    # already collected in previous loop. Hence, simplifying this to the above code. 
+                    #
+                    # slots_to_exp = Ontology.global_ontology.getSlotsToExpress(self.dstring, slot=rci.slot, value=rci.val)
+                    # planned_response_act = DiaAct.DiaAct('confirm()')
+                    # for strit in slots_to_exp:
+                    #     v1 = goal.get_correct_const_value(strit)
+                    #     if v1 is not None: planned_response_act.append(strit, v1)
+                    #     v1 = goal.get_correct_const_value(strit, negate=True)
+                    #     if v1 is not None: planned_response_act.append(strit, v1, negate=True)
 
             if do_correct_misunderstanding:
                 logger.debug('Correct misunderstanding for slot %s' % item.slot)
@@ -1052,7 +1192,7 @@ class UMHdcSim(object):
                     if planned_response_act is None:
                         correct_it = True
                     else:
-                        if Settings.random.rand() >= rand_decision_probs['OverruleCorrection']:
+                        if Settings.random.rand() >= self.rand_decision_probs['OverruleCorrection']:
                             # Decided to correct the system.
                             correct_it = True
 
@@ -1065,14 +1205,14 @@ class UMHdcSim(object):
                             cslot = correct_slot
 
                         planned_response_act = None
-                        if current_negation:
+                        if wrong_val is not None:
                             planned_response_act = DiaAct.DiaAct('inform(%s!="%s")' % (cslot, wrong_val))
                             # planned_response_act = DiaAct.DiaAct('negate(%s="%s")' % (cslot, correct_val))
                         else:
                             f = Settings.random.rand()
-                            if f < rand_decision_probs['CorrectingAct1']:
+                            if f < self.rand_decision_probs['CorrectingAct1']:
                                 planned_response_act = DiaAct.DiaAct('negate(%s="%s")' % (cslot, correct_val))
-                            elif f < rand_decision_probs['CorrectingAct1'] + rand_decision_probs['CorrectingAct2']:
+                            elif f < self.rand_decision_probs['CorrectingAct1'] + self.rand_decision_probs['CorrectingAct2']:
                                 planned_response_act = DiaAct.DiaAct('deny(%s="%s",%s="%s")' % (item.slot, item.val,
                                                                                                cslot, correct_val))
                             else:
@@ -1090,7 +1230,7 @@ class UMHdcSim(object):
             # The system's understanding is correct so far, but with some changes,
             # the user decide to confirm a random constraints.
             elif planned_response_act is not None and not do_exp_confirm and not fromconfirm:
-                if Settings.random.rand() < rand_decision_probs['ConfirmRandomConstr']:
+                if Settings.random.rand() < self.rand_decision_probs['ConfirmRandomConstr']:
                     # Decided to confirm a random constraint.
                     self.agenda.push(planned_response_act)
                     do_exp_confirm = True
@@ -1107,99 +1247,18 @@ class UMHdcSim(object):
         # Implicit confirmations okay.
         return True
     
-    def _sampleProbs(self):
-        rand_decision_probs['AffirmCombination'] = Settings.random.rand()
-        rand_decision_probs['InformCombination'] = Settings.random.rand()
+    '''def _sampleProbs(self):
+        self.rand_decision_probs['AffirmCombination'] = Settings.random.rand()
+        self.rand_decision_probs['InformCombination'] = Settings.random.rand()
         if self.old_style_parameter_sampling:
-            self.max_patience = Settings.random.randint(2,10)
-        
+            self.max_patience = Settings.random.randint(2,10)'''
 
-    def respond(self, goal):
-        '''
-        This method is called to get the user response.
+    def _sampleProbs(self):
+        for key in self.sampling_probs:
+            if type(self.sampling_probs[key]) is list:
+                self.rand_decision_probs[key] = Settings.random.uniform(self.sampling_probs[key][0], self.sampling_probs[key][1])
 
-        :param goal: of :class:`UMGoal` 
-        :type goal: instance
-        :returns: (instance) of :class:`DiaActWithProb`
-        '''
-        # If agenda is empty, push ByeAct on top.
-        if self.agenda.size() == 0:
-            self.agenda.push(DiaAct.DiaAct('bye()'))
-
-        # Pop the top act off the agenda to form the user response.
-        dap = self.agenda.pop()
-        logger.debug(str(dap))
-
-        # if len(dap.items) > 1:
-        #     logger.warning('Multiple semantic items in agenda: ' + str(dap))
-        dap_item = None
-        if len(dap.items) > 0:
-            dap_item = dap.items[0]
-
-        # If it created negate(name="!x") or deny(name="x", name="!x") or confirm(name="!x") just reqalts()
-        for item in dap.items:
-            if item.op == "!=":
-                dap = DiaAct.DiaAct('reqalts()')
-                break
-
-        # Checking agenda for redundant constraints.
-        self.agenda.filter_constraints(dap)
-
-        if dap.act in ['thankyou', 'silence', 'repeat', 'ack', 'deny', 'confirm']:
-            return self.normalise_act_no_rules(dap)
-
-        if self.last_sys_act.act == 'reqmore':
-            return self.normalise_act_no_rules(dap)
-
-        # Ckecing whether we might remove the slot name for value dontcare in the planned act.
-        if dap.act == 'inform' and not dap.items:
-            logger.error('Error inform act with no slots is on agenda.')
-
-        # In response to a request about a particular slot users often do not specify hte slot
-        # especially when the value is dontcare.
-        if self.last_sys_act.act in ['request', 'confreq', 'select']:
-            if dap.act == 'inform' and dap_item is not None and dap_item.val == 'dontcare':
-                f = Settings.random.rand()
-                if f < rand_decision_probs['NoSlotWithDontcare']:
-                    dap_item.slot = None
-
-        # Checking whether we might add a venue name ot the planned act.
-        if dap.act == 'request' and len(dap.items) == 1:
-            rec_ven = goal.requests['name']
-            # If venue recommended, randomly decide to include the venue name in the request.
-            if rec_ven is not None:
-                if Settings.random.rand() < rand_decision_probs['AddVenueNameToRequest']:
-                    dap.append('name', rec_ven)
-            # else:
-            #     logger.error('Requesting slot without venue recommended.')
-
-        # Checking whether we might include additional constraints in the planned act.
-        # When specifying a constraint, combine the act with additional constraints with some probability.
-        if dap.act in ['inform', 'negate', 'hello', 'affirm']:
-#             print "dialogue act", dap.act, dap.items
-            inf_comb_count = 0
-            while self.agenda.size() > 0 and \
-                    (self.agenda.agenda_items[-1].act == 'inform' or \
-                     self.agenda.agenda_items[-1].act == 'request' and dap.act == 'hello'):
-                if Settings.random.rand() < rand_decision_probs['InformCombination']:
-                    inf_comb_count += 1
-                    next_dap = self.agenda.pop()
-                    for dip in next_dap.items:
-                        dap.append(dip.slot, dip.val, dip.op == '!=')
-                else:
-                    break
-
-        # Checking whether we might request a slot when specifying the type of venue.
-        # When specifying the requestType constraint at the beginning of a dialogue,
-        # occasionally request an additional requested slot
-        if dap.act == 'request' and len(dap.items) > 0 and dap_item.slot in ['type', 'task', 'restaurant']:
-            logger.warning('Not completely implemented: RequestSlotAtStart')
-
-        usr_output = self.normalise_act_no_rules(dap)
-        self.last_user_act = usr_output
-        return usr_output
-
-    def normalise_act_no_rules(self, dap):
+    def _normalise_act_no_rules(self, dap):
         #logger.debug(str(dap))
         norm_act = copy.deepcopy(dap)
         norm_act.items = []
@@ -1228,5 +1287,194 @@ class UMHdcSim(object):
 
         #logger.debug(str(norm_act))
         return norm_act
+    
+    def _read_UM_config(self, config_file_path):
+        with open(config_file_path, 'r') as config_file:
+            for line in config_file:
+                if not line.startswith('#'):
+                    if 'InformCombination' in line:
+                        val = line.split('#')[0].split('=')[-1].strip()
+                        if '[' in val and ']' in val:
+                            val = [float(x) for x in val.replace('[', '').replace(']', '').split(',')]
+                        else:
+                            val = float(val)
+                        self.rand_decision_probs['InformCombination'] = val
+                    elif 'AddSlotToReq' in line:
+                        val = line.split('#')[0].split('=')[-1].strip()
+                        if '[' in val and ']' in val:
+                            val = [float(x) for x in val.replace('[', '').replace(']', '').split(',')]
+                        else:
+                            val = float(val)
+                        self.rand_decision_probs['AddSlotToReq'] = val
+                    elif 'NoAfterReqmore' in line:
+                        val = line.split('#')[0].split('=')[-1].strip()
+                        if '[' in val and ']' in val:
+                            val = [float(x) for x in val.replace('[', '').replace(']', '').split(',')]
+                        else:
+                            val = float(val)
+                        self.rand_decision_probs['NoAfterReqmore'] = val
+                    elif 'YesAfterReqmore' in line:
+                        val = line.split('#')[0].split('=')[-1].strip()
+                        if '[' in val and ']' in val:
+                            val = [float(x) for x in val.replace('[', '').replace(']', '').split(',')]
+                        else:
+                            val = float(val)
+                        self.rand_decision_probs['YesAfterReqmore'] = val
+                    elif 'Greeting' in line:
+                        val = line.split('#')[0].split('=')[-1].strip()
+                        if '[' in val and ']' in val:
+                            val = [float(x) for x in val.replace('[', '').replace(']', '').split(',')]
+                        else:
+                            val = float(val)
+                        self.rand_decision_probs['Greeting'] = val
+                    elif 'ConstraintRelax' in line:
+                        val = line.split('#')[0].split('=')[-1].strip()
+                        if '[' in val and ']' in val:
+                            val = [float(x) for x in val.replace('[', '').replace(']', '').split(',')]
+                        else:
+                            val = float(val)
+                        self.rand_decision_probs['ConstraintRelax'] = val
+                    elif 'TellAboutChange' in line:
+                        val = line.split('#')[0].split('=')[-1].strip()
+                        if '[' in val and ']' in val:
+                            val = [float(x) for x in val.replace('[', '').replace(']', '').split(',')]
+                        else:
+                            val = float(val)
+                        self.rand_decision_probs['TellAboutChange'] = val
+                    elif 'ByeOrStartOver' in line:
+                        val = line.split('#')[0].split('=')[-1].strip()
+                        if '[' in val and ']' in val:
+                            val = [float(x) for x in val.replace('[', '').replace(']', '').split(',')]
+                        else:
+                            val = float(val)
+                        self.rand_decision_probs['ByeOrStartOver'] = val
+                    elif 'DealWithPending' in line:
+                        val = line.split('#')[0].split('=')[-1].strip()
+                        if '[' in val and ']' in val:
+                            val = [float(x) for x in val.replace('[', '').replace(']', '').split(',')]
+                        else:
+                            val = float(val)
+                        self.rand_decision_probs['DealWithPending'] = val
+                    elif 'AddVenueNameToRequest' in line:
+                        val = line.split('#')[0].split('=')[-1].strip()
+                        if '[' in val and ']' in val:
+                            val = [float(x) for x in val.replace('[', '').replace(']', '').split(',')]
+                        else:
+                            val = float(val)
+                        self.rand_decision_probs['AddVenueNameToRequest'] = val
+                    elif 'NoSlotWithDontcare' in line:
+                        val = line.split('#')[0].split('=')[-1].strip()
+                        if '[' in val and ']' in val:
+                            val = [float(x) for x in val.replace('[', '').replace(']', '').split(',')]
+                        else:
+                            val = float(val)
+                        self.rand_decision_probs['NoSlotWithDontcare'] = val
+                    elif 'Repeat' in line:
+                        val = line.split('#')[0].split('=')[-1].strip()
+                        if '[' in val and ']' in val:
+                            val = [float(x) for x in val.replace('[', '').replace(']', '').split(',')]
+                        else:
+                            val = float(val)
+                        self.rand_decision_probs['Repeat'] = val
+                    elif 'InformToConfirm' in line:
+                        val = line.split('#')[0].split('=')[-1].strip()
+                        if '[' in val and ']' in val:
+                            val = [float(x) for x in val.replace('[', '').replace(']', '').split(',')]
+                        else:
+                            val = float(val)
+                        self.rand_decision_probs['InformToConfirm'] = val
+                    elif 'CombAffirmWithAgdItem' in line:
+                        val = line.split('#')[0].split('=')[-1].strip()
+                        if '[' in val and ']' in val:
+                            val = [float(x) for x in val.replace('[', '').replace(']', '').split(',')]
+                        else:
+                            val = float(val)
+                        self.rand_decision_probs['CombAffirmWithAgdItem'] = val
+                    elif 'NullResp' in line:
+                        val = line.split('#')[0].split('=')[-1].strip()
+                        if '[' in val and ']' in val:
+                            val = [float(x) for x in val.replace('[', '').replace(']', '').split(',')]
+                        else:
+                            val = float(val)
+                        self.rand_decision_probs['NullResp'] = val
+                    elif 'OverruleCorrection' in line:
+                        val = line.split('#')[0].split('=')[-1].strip()
+                        if '[' in val and ']' in val:
+                            val = [float(x) for x in val.replace('[', '').replace(']', '').split(',')]
+                        else:
+                            val = float(val)
+                        self.rand_decision_probs['OverruleCorrection'] = val
+                    elif 'ConfirmRandomConstr' in line:
+                        val = line.split('#')[0].split('=')[-1].strip()
+                        if '[' in val and ']' in val:
+                            val = [float(x) for x in val.replace('[', '').replace(']', '').split(',')]
+                        else:
+                            val = float(val)
+                        self.rand_decision_probs['ConfirmRandomConstr'] = val
+                    elif 'ReqAltsAfterVenRec1' in line:
+                        val = line.split('#')[0].split('=')[-1].strip()
+                        if '[' in val and ']' in val:
+                            val = [float(x) for x in val.replace('[', '').replace(']', '').split(',')]
+                        else:
+                            val = float(val)
+                        self.rand_decision_probs['ReqAltsAfterVenRec1'] = val
+                    elif 'ReqAltsAfterVenRec2' in line:
+                        val = line.split('#')[0].split('=')[-1].strip()
+                        if '[' in val and ']' in val:
+                            val = [float(x) for x in val.replace('[', '').replace(']', '').split(',')]
+                        else:
+                            val = float(val)
+                        self.rand_decision_probs['ReqAltsAfterVenRec2'] = val
+                    elif 'NewRequestResp1' in line:
+                        val = line.split('#')[0].split('=')[-1].strip()
+                        if '[' in val and ']' in val:
+                            val = [float(x) for x in val.replace('[', '').replace(']', '').split(',')]
+                        else:
+                            val = float(val)
+                        self.rand_decision_probs['NewRequestResp1'] = val
+                    elif 'NewRequestResp2' in line:
+                        val = line.split('#')[0].split('=')[-1].strip()
+                        if '[' in val and ']' in val:
+                            val = [float(x) for x in val.replace('[', '').replace(']', '').split(',')]
+                        else:
+                            val = float(val)
+                        self.rand_decision_probs['NewRequestResp2'] = val
+                    elif 'CorrectingAct1' in line:
+                        val = line.split('#')[0].split('=')[-1].strip()
+                        if '[' in val and ']' in val:
+                            val = [float(x) for x in val.replace('[', '').replace(']', '').split(',')]
+                        else:
+                            val = float(val)
+                        self.rand_decision_probs['CorrectingAct1'] = val
+                    elif 'CorrectingAct2' in line:
+                        val = line.split('#')[0].split('=')[-1].strip()
+                        if '[' in val and ']' in val:
+                            val = [float(x) for x in val.replace('[', '').replace(']', '').split(',')]
+                        else:
+                            val = float(val)
+                        self.rand_decision_probs['CorrectingAct2'] = val
+                    elif 'ThankAck1' in line:
+                        val = line.split('#')[0].split('=')[-1].strip()
+                        if '[' in val and ']' in val:
+                            val = [float(x) for x in val.replace('[', '').replace(']', '').split(',')]
+                        else:
+                            val = float(val)
+                        self.rand_decision_probs['ThankAck1'] = val
+                    elif 'ThankAck2' in line:
+                        val = line.split('#')[0].split('=')[-1].strip()
+                        if '[' in val and ']' in val:
+                            val = [float(x) for x in val.replace('[', '').replace(']', '').split(',')]
+                        else:
+                            val = float(val)
+                        self.rand_decision_probs['ThankAck2'] = val
+                    elif 'AffirmCombination' in line:
+                        val = line.split('#')[0].split('=')[-1].strip()
+                        if '[' in val and ']' in val:
+                            val = [float(x) for x in val.replace('[', '').replace(']', '').split(',')]
+                        else:
+                            val = float(val)
+                        self.rand_decision_probs['AffirmCombination'] = val
+
+    
 
 #END OF FILE

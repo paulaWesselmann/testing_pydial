@@ -215,7 +215,6 @@ def getTopBeliefsExcludingNone(slot_belief):
 ####Methods for inform related actions.####
 '''
 
-
 def acceptanceListCanBeDiscriminated(accepted_values, domainString, num_accepted=None):
     '''
     Checks if the given acceptance list with the given number of values accepted
@@ -238,32 +237,7 @@ def acceptanceListCanBeDiscriminated(accepted_values, domainString, num_accepted
         ordered_accepted_values.append((slot, value[0], value[1]))
     ordered_accepted_values = sorted(ordered_accepted_values, key=lambda x: x[2], reverse=True)[:num_accepted]
 
-    constraints = {}
-    dontcare_slots = []
-    for slot, value, belief in ordered_accepted_values:
-        if value != 'dontcare':
-            constraints[slot] = value
-        else:
-            dontcare_slots.append(slot)
-
-    entries = Ontology.global_ontology.entity_by_features(domainString, constraints=constraints)
-
-    discriminable = False
-    if len(entries) < 2:
-        return discriminable
-    else:
-        discriminating_slots = list(Ontology.global_ontology.get_informable_slots(domainString))
-        discriminating_slots.remove('name')
-        if 'price' in discriminating_slots: #TODO: ic340 why is price in informable slots (SFR)?
-            discriminating_slots.remove('price')
-        for slot in discriminating_slots:
-            if slot not in dontcare_slots:
-                values = []
-                for ent in entries:
-                    values.append(ent[slot])
-                if len(set(values)) > 1:
-                    discriminable = True
-        return discriminable
+    return Ontology.global_ontology.constraintsCanBeDiscriminated(domainString, constraints=ordered_accepted_values)
 
 
 def getInformNoneVenue(constraints):
@@ -280,7 +254,7 @@ def getInformNoneVenue(constraints):
     return 'inform(name=none, {})'.format(convertFeatsToStr(feats))
 
 
-def getInformByConstraints(constraints, domainString):
+def getInformByConstraints(constraints, domainString, lastInformedVenue):
     '''
     Looks for a database match with constraints and converts this entity into a dialogue act
 
@@ -292,8 +266,12 @@ def getInformByConstraints(constraints, domainString):
     if len(entities) == 0:
         return getInformNoneVenue(constraints)
     else:
-        ent = entities[0]
-        return getInformEntity(constraints, ent)
+        ret_ent = entities[0]
+        for ent in entities:
+            if ent['name'] == lastInformedVenue:
+                ret_ent = ent
+                break
+        return getInformEntity(constraints, ret_ent)
 
 
 def getInformEntity(accepted_values, ent):
@@ -309,8 +287,8 @@ def getInformEntity(accepted_values, ent):
     acceptance_keys = accepted_values.keys()
 
     maxNumFeats = 5
-    if Settings.config.has_option("policy", "maxinformslots"):
-        maxNumFeats = int(Settings.config.get('policy', 'maxinformslots'))
+    if Settings.config.has_option("summaryacts", "maxinformslots"):
+        maxNumFeats = int(Settings.config.get('summaryacts', 'maxinformslots'))
 
     if numFeats > maxNumFeats:
         Settings.random.shuffle(acceptance_keys)
@@ -345,8 +323,18 @@ def getInformRequestedSlots(requested_slots, name, domainString):
         ent = result[0]
         return _getInformRequestedSlotsForEntity(requested_slots, ent, domainString)
     else:
-        logger.warning('Couldn\'t find the provided name: ' + name)
-        return getInformNoneVenue({'name': name})
+        if not name:
+            # Return a random venue
+            result = []
+            while len(result) == 0:
+                rand_name = Ontology.global_ontology.getRandomValueForSlot(domainString, 'name', nodontcare=True)
+                result = Ontology.global_ontology.entity_by_features(domainString, {'name': rand_name})
+            ent = result[0]
+            return _getInformRequestedSlotsForEntity(requested_slots, ent, domainString)
+
+        else:
+            logger.warning('Couldn\'t find the provided name: ' + name)
+            return getInformNoneVenue({'name': name})
 
 
 def _getInformRequestedSlotsForEntity(requested_slots, ent, domainString):
@@ -372,15 +360,15 @@ def _getInformRequestedSlotsForEntity(requested_slots, ent, domainString):
 
     else:
         max_num_feats = 5
-        if Settings.config.has_option("policy", "maxinformslots"):
-            max_num_feats = int(Settings.config.get('policy', 'maxinformslots'))
+        if Settings.config.has_option("summaryacts", "maxinformslots"):
+            max_num_feats = int(Settings.config.get('summaryacts', 'maxinformslots'))
 
         if len(requested_slots) > max_num_feats:
             Settings.random.shuffle(requested_slots)
             requested_slots = requested_slots[:max_num_feats]
 
         for slot in requested_slots:
-            if slot != 'name' or slot != 'location':
+            if slot != 'name' and slot != 'location':
                 if slot in ent:
                     slotvaluepair.append('{}="{}"'.format(slot, ent[slot]))
                 else:
@@ -426,8 +414,8 @@ def getInformNoMoreVenues(accepted_values, entities):
     '''
 
     maxNumFeats = 5
-    if Settings.config.has_option("policy", "maxinformslots"):
-        maxNumFeats = int(Settings.config.get('policy', 'maxinformslots'))
+    if Settings.config.has_option("summaryacts", "maxinformslots"):
+        maxNumFeats = int(Settings.config.get('summaryacts', 'maxinformslots'))
 
     feats = {}
     for slot in accepted_values:
@@ -506,7 +494,8 @@ def _countEntitiesForAcceptanceListPart(accepted_values, num_accepted, domainStr
         if value != 'dontcare':
             constraints[slot] = value
 
-    return len(Ontology.global_ontology.entity_by_features(domainString, constraints=constraints))
+#     return len(Ontology.global_ontology.entity_by_features(domainString, constraints=constraints))
+    return Ontology.global_ontology.get_length_entity_by_features(domainString, constraints=constraints)
 
 
 

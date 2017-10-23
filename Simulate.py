@@ -122,7 +122,14 @@ class SimulationSystem(object):
         
         # RESET THE USER SIMULATOR:
         self.simulator.restart()
+        for domain in self.simulator.simUserManagers:
+            if self.simulator.simUserManagers[domain]:
+                goal = self.simulator.simUserManagers[domain].um.goal
+                logger.dial('User will execute the following goal: {}'
+                            .format(str(goal.request_type) + str(goal.constraints) + str([req for req in goal.requests])))
         user_act = ''
+        
+        endingDialogue = False
 
         # SYSTEM STARTS THE CALL:
         sys_act = self.agent_factory.agents[agent_id].start_call(session_id, 
@@ -135,7 +142,7 @@ class SimulationSystem(object):
             logger.info('| Prompt > '+ prompt_str)
         
         # LOOP OVER TURNS:
-        while not self.agent_factory.agents[agent_id].ENDING_DIALOG:
+        while not endingDialogue:
             
             # USER ACT:  
             #-------------------------------------------------------------------------------------------------------------
@@ -153,14 +160,21 @@ class SimulationSystem(object):
             #-------------------------------------------------------------------------------------------------------------
             sys_act = self.agent_factory.agents[agent_id].continue_call(asr_info = hyps, 
                                                                           domainString=user_actsDomain,
-                                                                          domainSimulatedUsers=self.simulator.simUserManagers,
-                                                                          user_act=user_act)
+                                                                          domainSimulatedUsers=self.simulator.simUserManagers)
             prompt_str = sys_act.prompt
             if prompt_str is not None:      # if we are generating text, versus remaining only at semantic level.
                 if self.traceDialog>1: print '   Prompt >', prompt_str
                 logger.info('| Prompt > ' + prompt_str)
+                
+            if 'bye' == user_act.act or 'bye' == sys_act.act:
+                endingDialogue = True
 
         # Process ends.
+        for domain in self.simulator.simUserManagers:
+            if self.simulator.simUserManagers[domain]:
+                goal = self.simulator.simUserManagers[domain].um.goal
+                logger.dial('User goal at the end of the dialogue: {}'
+                            .format(str(goal.request_type) + str(goal.constraints) + str([req for req in goal.requests])))
         self.agent_factory.agents[agent_id].end_call(domainSimulatedUsers=self.simulator.simUserManagers)
 
         return

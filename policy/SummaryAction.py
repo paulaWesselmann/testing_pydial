@@ -40,6 +40,7 @@ Copyright CUED Dialogue Systems Group 2015 - 2017, 2017
 
 __author__ = "cued_dialogue_systems_group"
 
+import sys
 import SummaryUtils
 from utils import ContextLogger,Settings
 from ontology import Ontology
@@ -70,16 +71,19 @@ class SummaryAction(object):
         self._global_summary = None
 
         self.inform_mask = True
-        if Settings.config.has_option("policy", "informmask"):
-            self.inform_mask = Settings.config.getboolean('policy', 'informmask')
+        if Settings.config.has_option("summaryacts", "informmask"):
+            self.inform_mask = Settings.config.getboolean('summaryacts', 'informmask')
         self.inform_count_accepted = 4
-        if Settings.config.has_option("policy", "informcountaccepted"):
-            self.inform_count_accepted = Settings.config.getint('policy', 'informcountaccepted')
+        if Settings.config.has_option("summaryacts", "informcountaccepted"):
+            self.inform_count_accepted = Settings.config.getint('summaryacts', 'informcountaccepted')
         elif Settings.config.has_option("goalgenerator", "maxconstraints"):
             self.inform_count_accepted = Settings.config.getint('goalgenerator', 'maxconstraints') + 1
         self.request_mask = True
-        if Settings.config.has_option("policy", "requestmask"):
-            self.request_mask = Settings.config.getboolean('policy', 'requestmask')
+        if Settings.config.has_option("summaryacts", "requestmask"):
+            self.request_mask = Settings.config.getboolean('summaryacts', 'requestmask')
+        self.bye_mask = True
+        if Settings.config.has_option("summaryacts", "byemask"):
+            self.request_mask = Settings.config.getboolean('summaryacts', 'byemask')
 
         if not empty:
             for slot in Ontology.global_ontology.get_system_requestable_slots(domainString):
@@ -97,6 +101,10 @@ class SummaryAction(object):
                                    "reqmore",
                                    "restart"
                                  ]
+        self.reset()
+
+    def reset(self):
+        self.alternatives_requested = False
 
     def Convert(self, belief, action, lastSystemAction):
         '''
@@ -151,6 +159,8 @@ class SummaryAction(object):
 
         array_slot_summary = SummaryUtils.arraySlotSummary(belief, self.domainString)
         global_summary = SummaryUtils.globalSummary(belief, self.domainString)
+        if global_summary['GLOBAL_BYALTERNATIVES'] and not global_summary['GLOBAL_THANKYOU'] and not global_summary['GLOBAL_ACK']:
+            self.alternatives_requested = True
 
         nonexec = []
 
@@ -169,7 +179,7 @@ class SummaryAction(object):
                     nonexec.append(action)
 
             elif action == "inform_byname":
-                if not global_summary['GLOBAL_BYNAME']:# and inform_mask:
+                if not global_summary['GLOBAL_BYNAME']:
                     mask_action = True
                 if belief['features']['lastInformedVenue'] == '' \
                         and SummaryUtils.getTopBelief(belief['beliefs']['name'])[0] == '**NONE**' :
@@ -178,7 +188,9 @@ class SummaryAction(object):
                     nonexec.append(action)
 
             elif action == "inform_alternatives":
-                if not global_summary['GLOBAL_BYALTERNATIVES']:
+                if not self.alternatives_requested:
+                    mask_action = True
+                if belief['features']['lastInformedVenue'] == '':
                     mask_action = True
                 if mask_action and self.inform_mask:
                     nonexec.append(action)
@@ -186,7 +198,7 @@ class SummaryAction(object):
             elif action == "bye":
                 if not global_summary['GLOBAL_FINISHED']:
                     mask_action = True
-                if mask_action and self.request_mask:
+                if mask_action and self.bye_mask:
                     nonexec.append(action)
 
             elif action == "repeat":
@@ -242,6 +254,26 @@ class SummaryAction(object):
         logger.dial('masked inform actions:' + str([act for act in nonexec if 'inform' in act]))
         return nonexec
 
+    # added by phs26, 4 Nov 2016
+    def getExecutableMask(self, belief, lastSystemAction):
+        '''
+        '''
+        """
+        # hack, make every action executable
+        return [0.0] * len(self.action_names)
+        """
+
+        execMask = []
+        nonExec = self.getNonExecutable(belief.getDomainState(belief.currentdomain), lastSystemAction)
+        for action in self.action_names:
+            if action in nonExec:
+                execMask.append(-sys.maxint)
+            else:
+                execMask.append(0.0)
+
+        return execMask
+
+
     # CONVERTING METHODS FOR EACH SPECIFIC ACT:
     #------------------------------------------------------------------------------------
     
@@ -267,7 +299,7 @@ class SummaryAction(object):
     def getInformByConstraints(self, belief):
         accepted_values = SummaryUtils.getTopBeliefs(belief, domainString=self.domainString)
         constraints = SummaryUtils.get_constraints(accepted_values)
-        return SummaryUtils.getInformByConstraints(constraints, self.domainString)
+        return SummaryUtils.getInformByConstraints(constraints, self.domainString, belief['features']['lastInformedVenue'])
 
     def getInformByName(self, belief):
         requested_slots = SummaryUtils.getRequestedSlots(belief)
@@ -277,6 +309,7 @@ class SummaryAction(object):
         return SummaryUtils.getInformRequestedSlots(requested_slots, name, self.domainString)
 
     def getInformAlternatives(self, belief):
+        self.alternatives_requested = False
         informedVenueSinceNone = set(belief['features']['informedVenueSinceNone'])
         accepted_values = SummaryUtils.getTopBeliefs(belief, domainString=self.domainString)
         return SummaryUtils.getInformAlternativeEntities(accepted_values, informedVenueSinceNone, self.domainString)

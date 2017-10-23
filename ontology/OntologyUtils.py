@@ -169,12 +169,12 @@ def get_ontology_path(domainString):
     '''Required function just to handle repository root location varying if running on grid machines etc
     :rtype: object
     '''
-    return utils.Settings.root + ont_db_pairs[domainString]['ontology']
+    return os.path.join(utils.Settings.root, ont_db_pairs[domainString]['ontology'])
 
 def get_database_path(domainString):
     '''Required function just to handle repository root location varying if running on grid machines etc
     '''
-    return utils.Settings.root + ont_db_pairs[domainString]['database']
+    return os.path.join(utils.Settings.root, ont_db_pairs[domainString]['database'])
 
 def get_domains_group(domains):
     '''domains has (needs to have) been checked to be in ['camtourist','sftourist','electronics','all']:
