@@ -164,14 +164,14 @@ class DSTC2ConfidenceScorer(object):
 
         # sample each confidence score in the nbest list
         for i in range(len(dapl)):
-            sample = Settings.random.normal(u[i], std[i])
+            sample = Settings.random.normal(u[i], max(0.0001,std[i]))
             sample = round(max(min(0.99, sample), 0.01), 4)
             dapl[i].P_Au_O = sample
 
         # sample the 'rest' confidence score
         rest_cs = 0
         for i in range(len(dapl), len(u)):
-            sample = Settings.random.normal(u[i], std[i])
+            sample = Settings.random.normal(u[i], max(0.00001, std[i]))
             sample = round(max(min(0.99, sample), 0.01), 4)
             rest_cs += sample
         nb_names = [x.to_string() for x in dapl]

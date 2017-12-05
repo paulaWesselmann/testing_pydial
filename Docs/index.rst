@@ -19,7 +19,7 @@ To get familiar with usage of PyDial, you can use the following tutorials:
 - `Natural Language Generation <tutorials/Natural%20Language%20Generation%20Module.html>`_
 - `How to add your own module <tutorials/How%20to%20add%20your%20own%20module.html>`_
 - `How to add a new domain <tutorials/How%20to%20add%20a%20new%20domain.html>`_
-
+- `Deep Reinforcement Learning Policies <tutorials/Deep%20RL%20Policies.html>`_
 
 System Documentation
 ====================

@@ -90,9 +90,12 @@ class SimulationSystem(object):
         #-----------------------------------------
         self.simulator = SimulatedUsersManager.SimulatedUsersManager(error_rate)
         self.traceDialog = 2
+        self.sim_level = 'act'
 
         if Settings.config.has_option("GENERAL", "tracedialog"):
             self.traceDialog = Settings.config.getint("GENERAL", "tracedialog")
+        if Settings.config.has_option("usermodel", "simlevel"):
+            self.sim_level = Settings.config.getint("usermodel", "simlevel")
             
 
     def run_dialogs(self, numDialogs):
@@ -105,11 +108,11 @@ class SimulationSystem(object):
         '''
         for i in range(numDialogs):
             logger.info('Dialogue %d' % (i+1))
-            self.run(session_id='simulate_dialog'+str(i))
+            self.run(session_id='simulate_dialog'+str(i), sim_level=self.sim_level)
  
         self.agent_factory.power_down_factory() # Important! -uses FORCE_SAVE on policy- which will finalise learning and save policy.
        
-    def run(self, session_id, agent_id='Smith'):
+    def run(self, session_id, agent_id='Smith', sim_level='dial_act'):
         '''
         Runs one episode through the simulator
         
@@ -132,7 +135,7 @@ class SimulationSystem(object):
         endingDialogue = False
 
         # SYSTEM STARTS THE CALL:
-        sys_act = self.agent_factory.agents[agent_id].start_call(session_id, 
+        sys_act = self.agent_factory.agents[agent_id].start_call(session_id,
                                                                    domainSimulatedUsers=self.simulator.simUserManagers,
                                                                    maxNumTurnsScaling=self.simulator.number_domains_this_dialog)
         prompt_str = sys_act.prompt
@@ -149,6 +152,13 @@ class SimulationSystem(object):
             sys_act = self.agent_factory.agents[agent_id].retrieve_last_sys_act()
             
             user_act, user_actsDomain, hyps = self.simulator.act_on(sys_act)
+
+            if sim_level == 'text':
+                #todo: convert dialact to text
+                text_user_act = raw_input('Translate user act: {} >'.format(user_act))
+                hyps = [(text_user_act, 1.0)]
+
+
             
             #actually also output user_actsDomain (the TRUE DOMAIN) here too - which can be used to avoid doing topic tracking  
             

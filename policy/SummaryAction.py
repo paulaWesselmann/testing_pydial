@@ -251,7 +251,7 @@ class SummaryAction(object):
                 if mask_action and self.request_mask:
                     nonexec.append(action)
 
-        logger.dial('masked inform actions:' + str([act for act in nonexec if 'inform' in act]))
+        logger.info('masked inform actions:' + str([act for act in nonexec if 'inform' in act]))
         return nonexec
 
     # added by phs26, 4 Nov 2016

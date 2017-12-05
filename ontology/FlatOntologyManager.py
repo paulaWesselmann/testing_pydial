@@ -90,7 +90,7 @@ class FlatDomainOntology(object):
         """Just loads json file -- No class for ontology representation at present. 
         """
         ontology_fname = OntologyUtils.get_ontology_path(self.domainString)
-        logger.results('Loading ontology: '+ontology_fname) # ic340: pydial.py uses this line in the log to create the list of domains
+        logger.info('Loading ontology: '+ontology_fname)
         try:
             self.ontology = json.load(open(ontology_fname))
         except IOError:

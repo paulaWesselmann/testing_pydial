@@ -48,6 +48,19 @@ Policy
    :members:
 
 .. automodule:: policy.BCM_Tools
+
+.. automodule:: policy.A2CPolicy
+
+.. automodule:: policy.ACERPolicy
+
+.. automodule:: policy.BDQNPolicy
+
+.. automodule:: policy.DQNPolicy
+
+.. automodule:: policy.ENACPolicy
+
+.. automodule:: policy.TRACERPolicy
+
  
  
  
