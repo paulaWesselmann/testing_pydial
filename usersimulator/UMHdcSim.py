@@ -46,7 +46,7 @@ Copyright CUED Dialogue Systems Group 2015 - 2017
 '''
 
 __author__ = "cued_dialogue_systems_group"
-import copy
+import copy, os
 
 import UserModel, UMSimulator
 from ontology import Ontology
@@ -199,6 +199,9 @@ class UMHdcSim(UMSimulator.UMSimulator):
             self.old_style_parameter_sampling = Settings.config.getboolean('usermodel', 'oldstylesampling')
         if Settings.config.has_option('usermodel', 'configfile'):
             config_file_path = Settings.config.get('usermodel', 'configfile')
+            
+        config_file_path = self._check_config_file_path(config_file_path)
+            
         self._read_UM_config(config_file_path)
 
         self.agenda = UserModel.UMAgenda(self.dstring)
@@ -1287,6 +1290,14 @@ class UMHdcSim(UMSimulator.UMSimulator):
 
         #logger.debug(str(norm_act))
         return norm_act
+    
+    def _check_config_file_path(self, cfpath):
+        # check if file path points to an existing file. if not, try searching for file relative to root
+        if not os.path.isfile(cfpath):
+            cfpath = os.path.join(Settings.root,cfpath)
+            if not os.path.isfile(cfpath):
+                logger.error('Error model config file "{}" does not exist'.format(cfpath))
+        return cfpath
     
     def _read_UM_config(self, config_file_path):
         with open(config_file_path, 'r') as config_file:

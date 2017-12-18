@@ -373,4 +373,16 @@ class BeliefTracker(object):
 #             print slot
 #         raw_input("hold and check beliefs in "+self.domainString)
 
+if __name__ == "__main__":
+    from belieftracking.baseline import FocusTracker
+    from utils import Settings
+    Settings.load_root('/Users/su259/pydial-letsgo/')
+    Settings.load_config(None)
+    Settings.config.add_section("GENERAL")
+    Settings.config.set("GENERAL",'domains', 'CamRestaurants')
+    
+    Ontology.init_global_ontology()
+    tracker = FocusTracker('CamRestaurants')
+    tracker.update_belief_state(None, [('confirm(area=south)',1.0)])
+
 #END OF FILE
