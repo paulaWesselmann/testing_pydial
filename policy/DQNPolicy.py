@@ -41,6 +41,7 @@ Copyright CUED Dialogue Systems Group 2015 - 2017
 
 import copy
 import os
+import sys
 import json
 import numpy as np
 import cPickle as pickle
@@ -58,6 +59,7 @@ import DRL.dqn as dqn
 import Policy
 import SummaryAction
 from Policy import TerminalAction, TerminalState
+from policy.feudalRL.DIP_parametrisation import DIP_state
 
 logger = utils.ContextLogger.getLogger('')
 
@@ -126,7 +128,7 @@ class DQNPolicy(Policy.Policy):
     '''Derived from :class:`Policy`
     '''
 
-    def __init__(self, in_policy_file, out_policy_file, domainString='CamRestaurants', is_training=False):
+    def __init__(self, in_policy_file, out_policy_file, domainString='CamRestaurants', is_training=False, action_names=None):
         super(DQNPolicy, self).__init__(domainString, is_training)
 
         tf.reset_default_graph()
@@ -221,9 +223,9 @@ class DQNPolicy(Policy.Policy):
         if cfg.has_option('dqnpolicy', 'minibatch_size'):
             self.minibatch_size = cfg.getint('dqnpolicy', 'minibatch_size')
 
-        self.capacity = 1000  # max(self.minibatch_size, 2000)
+        self.capacity = 1000
         if cfg.has_option('dqnpolicy', 'capacity'):
-            self.capacity = max(cfg.getint('dqnpolicy', 'capacity'), 2000)
+            self.capacity = cfg.getint('dqnpolicy', 'capacity')
 
         self.replay_type = 'vanilla'
         if cfg.has_option('dqnpolicy', 'replay_type'):
@@ -232,6 +234,8 @@ class DQNPolicy(Policy.Policy):
         self.architecture = 'vanilla'
         if cfg.has_option('dqnpolicy', 'architecture'):
             self.architecture = cfg.get('dqnpolicy', 'architecture')
+            if self.architecture == 'dip':
+                self.architecture = 'dip2'
 
         self.q_update = 'single'
         if cfg.has_option('dqnpolicy', 'q_update'):
@@ -307,7 +311,7 @@ class DQNPolicy(Policy.Policy):
             self.minibatch_size = cfg.getint('dqnpolicy_' + domainString, 'minibatch_size')
 
         if cfg.has_option('dqnpolicy_' + domainString, 'capacity'):
-            self.capacity = max(cfg.getint('dqnpolicy_' + domainString, 'capacity'), 2000)
+            self.capacity = cfg.getint('dqnpolicy_' + domainString, 'capacity')
 
         if cfg.has_option('dqnpolicy_' + domainString, 'replay_type'):
             self.replay_type = cfg.get('dqnpolicy_' + domainString, 'replay_type')
@@ -341,43 +345,55 @@ class DQNPolicy(Policy.Policy):
         self.episode_ave_max_q = []
 
         os.environ["CUDA_VISIBLE_DEVICES"] = ""
+        policytype = 'dqn'
+        self.dropout_rate = 0.
+        if cfg.has_option('dqnpolicy', 'dropout_rate'):
+            self.dropout_rate = cfg.getfloat('dqnpolicy', 'dropout_rate')
+        if cfg.has_option('policy', 'policytype'):
+            policytype = cfg.get('policy', 'policytype')
+        if policytype != 'feudal':
+            # init session
+            self.sess = tf.Session()
+            with tf.device("/cpu:0"):
 
-        # init session
-        self.sess = tf.Session()
-        with tf.device("/cpu:0"):
+                np.random.seed(self.randomseed)
+                tf.set_random_seed(self.randomseed)
 
-            np.random.seed(self.randomseed)
-            tf.set_random_seed(self.randomseed)
+                # initialise an replay buffer
+                if self.replay_type == 'vanilla':
+                    self.episodes[self.domainString] = ReplayBuffer(self.capacity, self.minibatch_size, self.randomseed)
+                elif self.replay_type == 'prioritized':
+                    self.episodes[self.domainString] = ReplayPrioritised(self.capacity, self.minibatch_size,
+                                                                         self.randomseed)
+                self.samplecount = 0
+                self.episodecount = 0
 
-            # initialise an replay buffer
-            if self.replay_type == 'vanilla':
-                self.episodes[self.domainString] = ReplayBuffer(self.capacity, self.minibatch_size, self.randomseed)
-            elif self.replay_type == 'prioritized':
-                self.episodes[self.domainString] = ReplayPrioritised(self.capacity, self.minibatch_size,
-                                                                     self.randomseed)
-            self.samplecount = 0
-            self.episodecount = 0
+                # construct the models
+                self.state_dim = self.n_in
+                if self.architecture == 'dip2':
+                    self.state_dim = 89
+                self.summaryaction = SummaryAction.SummaryAction(domainString)
+                if action_names is None:
+                    self.action_names = self.summaryaction.action_names
+                else:
+                    self.action_names = action_names
+                self.action_dim = len(self.action_names)
+                action_bound = len(self.action_names)
+                self.stats = [0 for _ in range(self.action_dim)]
 
-            # construct the models
-            self.state_dim = self.n_in
-            self.summaryaction = SummaryAction.SummaryAction(domainString)
-            self.action_dim = len(self.summaryaction.action_names)
-            action_bound = len(self.summaryaction.action_names)
-            self.stats = [0 for _ in range(self.action_dim)]
+                self.dqn = dqn.DeepQNetwork(self.sess, self.state_dim, self.action_dim, \
+                                            self.learning_rate, self.tau, action_bound, self.minibatch_size,
+                                            self.architecture, self.h1_size,
+                                            self.h2_size, dropout_rate=self.dropout_rate)
 
-            self.dqn = dqn.DeepQNetwork(self.sess, self.state_dim, self.action_dim, \
-                                        self.learning_rate, self.tau, action_bound, self.minibatch_size,
-                                        self.architecture, self.h1_size,
-                                        self.h2_size)
+                # when all models are defined, init all variables
+                init_op = tf.global_variables_initializer()
+                self.sess.run(init_op)
 
-            # when all models are defined, init all variables
-            init_op = tf.global_variables_initializer()
-            self.sess.run(init_op)
+                self.loadPolicy(self.in_policy_file)
+                print 'loaded replay size: ', self.episodes[self.domainString].size()
 
-            self.loadPolicy(self.in_policy_file)
-            print 'loaded replay size: ', self.episodes[self.domainString].size()
-
-            self.dqn.update_target_network()
+                self.dqn.update_target_network()
 
     def get_n_in(self, domain_string):
         if domain_string == 'CamRestaurants':
@@ -421,19 +437,29 @@ class DQNPolicy(Policy.Policy):
         if action is None:
             action = self.actToBeRecorded
 
-        cState, cAction = self.convertStateAction(state, action)
-
+        if self.architecture != 'dip2':
+            cState, cAction = self.convertStateAction(state, action)
+        else:
+            cState, cAction = self.convertDIPStateAction(state, action)
         # normalising total return to -1~1
         reward /= 20.0
 
         cur_cState = np.vstack([np.expand_dims(x, 0) for x in [cState]])
-        cur_action_q = self.dqn.predict(cur_cState)
-        cur_target_q = self.dqn.predict_target(cur_cState)
+        Action_idx = np.eye(self.action_dim, self.action_dim)[[cAction]]
+        if self.architecture != 'dip':
+            cur_action_q = self.dqn.predict(cur_cState)
+            cur_target_q = self.dqn.predict_target(cur_cState)
+        else:
+            cur_action_q = self.dqn.predict_dip(cur_cState, Action_idx)
+            cur_target_q = self.dqn.predict_target_dip(cur_cState, Action_idx)
         execMask = self.summaryaction.getExecutableMask(state, cAction)
 
         if self.q_update == 'single':
             admissible = np.add(cur_target_q, np.array(execMask))
-            Q_s_t_a_t_ = cur_action_q[0][cAction]
+            if self.architecture != 'dip':
+                Q_s_t_a_t_ = cur_action_q[0][cAction]
+            else:
+                Q_s_t_a_t_ = cur_action_q[0]
             gamma_Q_s_tplu1_maxa_ = self.gamma * np.max(admissible)
         elif self.q_update == 'double':
             admissible = np.add(cur_action_q, np.array(execMask))
@@ -539,6 +565,25 @@ class DQNPolicy(Policy.Policy):
 
             return flat_belief, action
 
+    def convertDIPStateAction(self, state, action):
+        '''
+
+        '''
+        if isinstance(state, TerminalState):
+            return [0] * 89, action
+
+        else:
+            dip_state = DIP_state(state.domainStates[state.currentdomain], self.domainString)
+            action_name = self.actions.action_names[action]
+            act_slot = 'general'
+            for slot in dip_state.slots:
+                if slot in action_name:
+                    act_slot = slot
+            flat_belief = dip_state.get_beliefStateVec(act_slot)
+            self.prev_state_check = flat_belief
+
+            return flat_belief, action
+
     def nextAction(self, beliefstate):
         '''
         select next action
@@ -547,7 +592,10 @@ class DQNPolicy(Policy.Policy):
         :param hyps:
         :returns: (int) next summary action
         '''
-        beliefVec = flatten_belief(beliefstate, self.domainUtil)
+        if self.architecture != 'dip2':
+            beliefVec = flatten_belief(beliefstate, self.domainUtil)
+        else:
+            dip_state = DIP_state(beliefstate.domainStates[beliefstate.currentdomain], self.domainString)
         execMask = self.summaryaction.getExecutableMask(beliefstate, self.lastSystemAction)
 
         if self.exploration_type == 'e-greedy':
@@ -557,15 +605,53 @@ class DQNPolicy(Policy.Policy):
                 random.shuffle(admissible)
                 nextaIdex = admissible[0]
             else:
-                action_Q = self.dqn.predict(np.reshape(beliefVec, (1, len(beliefVec))))  # + (1. / (1. + i + j))
-                admissible = np.add(action_Q, np.array(execMask))
-                logger.info('action Q...')
-                #print admissible
-                nextaIdex = np.argmax(admissible)
+                if self.architecture != 'dip' and self.architecture != 'dip2':
+                    action_Q = self.dqn.predict(np.reshape(beliefVec, (1, len(beliefVec))))  # + (1. / (1. + i + j))
+                    admissible = np.add(action_Q, np.array(execMask))
+                    logger.info('action Q...')
+                    #print admissible.shape
+                    #print admissible
+                    nextaIdex = np.argmax(admissible)
 
-                # add current max Q to self.episode_ave_max_q
-                #print 'current maxQ', np.max(admissible)
-                self.episode_ave_max_q.append(np.max(admissible))
+                    # add current max Q to self.episode_ave_max_q
+                    #print 'current maxQ', np.max(admissible)
+                    self.episode_ave_max_q.append(np.max(admissible))
+                elif self.architecture == 'dip2':
+                    admissible = []
+                    for idx, v in enumerate(execMask):
+                        action_name = self.actions.action_names[idx]
+                        act_slot = 'general'
+                        for slot in dip_state.slots:
+                            if slot in action_name:
+                                act_slot = slot
+                        beliefVec = dip_state.get_beliefStateVec(act_slot)
+                        action_Q = self.dqn.predict(np.reshape(beliefVec, (1, len(beliefVec))))  # + (1. / (1. + i + j))
+                        if v == 0:
+                            admissible.append(action_Q[0][idx])
+                        else:
+                            admissible.append(v)
+                    nextaIdex = np.argmax(admissible)
+                    self.episode_ave_max_q.append(np.max(admissible))
+
+                else:
+                    admissible = []
+                    for idx, v in enumerate(execMask):
+                        if v > -sys.maxint:
+                            Action_idx = np.eye(self.action_dim, self.action_dim)[[idx]]
+                            Qidx = self.dqn.predict_dip(np.reshape(beliefVec, (1, len(beliefVec))), Action_idx)
+                            #print 'argmax Q',Qidx[0]
+                            admissible.append(Qidx[0])
+                        else:
+                            admissible.append(-sys.maxint)
+                    # action_Q = self.dqn.predict(np.reshape(beliefVec, (1, len(beliefVec))))# + (1. / (1. + i + j))
+                    # admissible = np.add(action_Q, np.array(execMask))
+                    logger.info('action Q...')
+                    #print admissible
+                    nextaIdex = np.argmax(admissible)
+
+                    # add current max Q to self.episode_ave_max_q
+                    #print 'current maxQ', np.max(admissible)
+                    self.episode_ave_max_q.append(np.max(admissible))
 
         elif self.exploration_type == 'Boltzman':
             # softmax
@@ -584,7 +670,7 @@ class DQNPolicy(Policy.Policy):
             nextaIdex = np.argmax(action_prob[0] == sampled_prob)
 
         self.stats[nextaIdex] += 1
-        summaryAct = self.summaryaction.action_names[nextaIdex]
+        summaryAct = self.action_names[nextaIdex]
         beliefstate = beliefstate.getDomainState(self.domainUtil.domainString)
         masterAct = self.summaryaction.Convert(beliefstate, summaryAct, self.lastSystemAction)
         return masterAct, nextaIdex
@@ -613,9 +699,17 @@ class DQNPolicy(Policy.Policy):
             # here?
             s_batch = np.vstack([np.expand_dims(x, 0) for x in s_batch])
             s2_batch = np.vstack([np.expand_dims(x, 0) for x in s2_batch])
+
+            a_batch_one_hot = np.eye(self.action_dim, self.action_dim)[a_batch]
             # target_q = self.dqn.predict_target_with_action_maxQ(s2_batch)
-            action_q = self.dqn.predict(s2_batch)
-            target_q = self.dqn.predict_target(s2_batch)
+            if self.architecture != 'dip':
+                action_q = self.dqn.predict(s2_batch)
+                target_q = self.dqn.predict_target(s2_batch)
+            else:
+                action_q = self.dqn.predict_dip(s2_batch, a_batch_one_hot)
+                target_q = self.dqn.predict_target_dip(s2_batch, a_batch_one_hot)
+            #print 'action Q and target Q:', action_q, target_q
+
 
             y_i = []
             for k in xrange(min(self.minibatch_size, self.episodes[self.domainString].size())):
@@ -646,7 +740,7 @@ class DQNPolicy(Policy.Policy):
                     self.episodes[self.domainString].update(idx_batch[k], error)
 
             # change index-based a_batch to one-hot-based a_batch
-            a_batch_one_hot = np.eye(self.action_dim, self.action_dim)[a_batch]
+            #a_batch_one_hot = np.eye(self.action_dim, self.action_dim)[a_batch]
 
             # Update the critic given the targets
             reshaped_yi = np.vstack([np.expand_dims(x, 0) for x in y_i])
@@ -655,6 +749,8 @@ class DQNPolicy(Policy.Policy):
             #print reshaped_yi.shape[0]
             #print self.episodes[self.domainString].size()
             predicted_q_value, _, currentLoss = self.dqn.train(s_batch, a_batch_one_hot, reshaped_yi)
+            #print 'pred V and loss:', predicted_q_value, currentLoss
+
 
             #print 'y_i'
             #print y_i

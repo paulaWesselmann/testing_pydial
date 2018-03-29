@@ -232,7 +232,7 @@ class ENACPolicy(Policy.Policy):
 
         self.capacity = 1000  # max(self.minibatch_size, 2000)
         if cfg.has_option('dqnpolicy', 'capacity'):
-            self.capacity = max(cfg.getint('dqnpolicy', 'capacity'), 2000)
+            self.capacity = cfg.getint('dqnpolicy', 'capacity')
 
         self.replay_type = 'vanilla'
         if cfg.has_option('dqnpolicy', 'replay_type'):
@@ -328,7 +328,7 @@ class ENACPolicy(Policy.Policy):
             self.minibatch_size = cfg.getint('dqnpolicy_' + domainString, 'minibatch_size')
 
         if cfg.has_option('dqnpolicy_' + domainString, 'capacity'):
-            self.capacity = max(cfg.getint('dqnpolicy_' + domainString, 'capacity'), 2000)
+            self.capacity = cfg.getint('dqnpolicy_' + domainString, 'capacity')
 
         if cfg.has_option('dqnpolicy_' + domainString, 'replay_type'):
             self.replay_type = cfg.get('dqnpolicy_' + domainString, 'replay_type')

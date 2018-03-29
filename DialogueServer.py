@@ -315,6 +315,8 @@ def make_request_handler_class(dialServer):
                         prompt_str += " "+token_text
                         dialServer.postToCamdial(token=token, dialogueID=self.currentSession, task=dialServer.agent_factory.agents[agent_id].taskId)
                     else:
+                        if prompt_str is None:
+                            prompt_str = ''
                         prompt_str += 'You can now hang up.'
                     reply=dialServer.prompt(prompt_str,session_id=self.currentSession, isbargein=False,isfinal=True)
                     # Important! Now finish the learning etc for the just finished dialog

@@ -99,8 +99,10 @@ class RegexSemI_CamRestaurants(RegexSemI.RegexSemI):
         self.request_regex["pricerange"] += "|(how\ much\ is\ it)"
         self.request_regex["food"] += "|(what\ (type\ of\ )*food)"
         self.request_regex["phone"] += "|(phone(\ num(ber)*)*)"
-        self.request_regex["postcode"] += "|(postcode)|(post\ code)"
+        self.request_regex["postcode"] += "|(postcode)|(post\ code)|(zip\ code)"
         self.request_regex["addr"] += "|(address)"
+        self.request_regex["signature"] += "|(signature)|(best\ dish)|(specialty)|(recipe)"
+        self.request_regex["description"] += "|(description)|(more\ information)|(more\ details)|(describe)"
 
     def _set_inform_regex(self):
         """
@@ -223,18 +225,18 @@ class RegexSemI_CamRestaurants(RegexSemI.RegexSemI):
         # SLOT: area 
         slot = 'area'
         # {u'west': '(west)', u'east': '(east)', u'north': '(north)', u'south': '(south)', u'centre': '(centre)'}
-        self.slot_values[slot]['north'] = "((the)\ )*(north)"
-        self.slot_values[slot]['east'] = "((the)\ )*(east)"
-        self.slot_values[slot]['west'] = "((the)\ )*(west)"
-        self.slot_values[slot]['south'] = "((the)\ )*(south)"
-        self.slot_values[slot]['centre'] = "((the)\ )*(centre|center|downtown|central)"  # lmr46, added rule for detecting the center
+        self.slot_values[slot]['north'] = "((the)\ )*(north|kings\ hedges|arbury|chesterton)"
+        self.slot_values[slot]['east'] = "((the)\ )*(east|castle|newnham)"
+        self.slot_values[slot]['west'] = "((the)\ )*(west|abbey|romsey|cherry hinton)"
+        self.slot_values[slot]['south'] = "((the)\ )*(south|trumpington|queen ediths|coleridge)"
+        self.slot_values[slot]['centre'] = "((the)\ )*(centre|center|downtown|central|market)"  # lmr46, added rule for detecting the center
 #         self.slot_values[slot]['dontcare'] = "any(\ )*(area|location|place|where)"    
         # SLOT: pricerange
         slot = 'pricerange'
         # {u'moderate': '(moderate)', u'budget': '(budget)', u'expensive': '(expensive)'}
         self.slot_values[slot]['moderate'] = "(to\ be\ |any\ )*(moderat|moderate|moderately\ priced|mid|middle|average)"
         self.slot_values[slot]['moderate']+="(?!(\ )*weight)"
-        self.slot_values[slot]['cheap'] = "(to\ be\ |any\ )*(budget|cheap|bargin|inexpensive|cheapest|low\ cost)"
+        self.slot_values[slot]['cheap'] = "(to\ be\ |any\ )*(budget|cheap|bargin|bargain|inexpensive|cheapest|low\ cost)"
         self.slot_values[slot]['expensive'] = "(to\ be\ |any\ )*(expensive|expensively|dear|costly|pricey)"
 #         self.slot_values[slot]['dontcare'] = "any\ (price|price(\ |-)*range)"
         # SLOT: food
@@ -242,8 +244,8 @@ class RegexSemI_CamRestaurants(RegexSemI.RegexSemI):
         # rely only on ontology values for now
         self.slot_values[slot]["asian oriental"] = "(oriental|asian)"
         self.slot_values[slot]["gastropub"] = "(gastropub|gastro pub)"
-        self.slot_values[slot]["italian"] = "(italian|pizza)"
-        self.slot_values[slot]["north american"] = "(american)"
+        self.slot_values[slot]["italian"] = "(italian|pizza|pasta)"
+        self.slot_values[slot]["north american"] = "(american|USA)"
         
         #---------------------------------------------------------------------------------------------------
 

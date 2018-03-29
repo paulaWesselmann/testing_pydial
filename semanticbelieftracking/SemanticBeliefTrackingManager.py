@@ -132,7 +132,7 @@ class SemanticBeliefTrackingManager(object):
                 if preload:
                     self.bootup(dstring)
     
-    def update_belief_state(self, dstring, ASR_obs, sys_act, turn=None, hub_id=None):
+    def update_belief_state(self, dstring, ASR_obs, sys_act, turn=None, hub_id=None, sim_lvl='dial_act'):
         '''
         Updates the belief state of the specified domain based on the given input. 
         
@@ -152,7 +152,7 @@ class SemanticBeliefTrackingManager(object):
         if self.domainSemiBelieftrackers[dstring] is None:
             self.bootup(dstring)
         
-        self.state.domainStates[dstring] = self.domainSemiBelieftrackers[dstring].update_belief_state(ASR_obs, sys_act, self.constraints, turn, hub_id)
+        self.state.domainStates[dstring] = self.domainSemiBelieftrackers[dstring].update_belief_state(ASR_obs, sys_act, self.constraints, turn, hub_id, sim_lvl)
         self.state.currentdomain = dstring
         
         return self.state

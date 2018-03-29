@@ -326,6 +326,10 @@ class EvaluationManager(object):
             evaluator = Settings.config.get('eval', 'successmeasure')
         if Settings.config.has_option('eval_' + domainString, 'successmeasure'):
             evaluator = Settings.config.get('eval_' + domainString, 'successmeasure')
+        if Settings.config.has_option("usermodel", "simlevel"):
+            simlevel = Settings.config.get("usermodel", "simlevel")
+            if simlevel == 'sys2text':
+                evaluator = 'sys2text'
         
 #         if evaluator == "rnn":
 #             import RNN_evaluator
@@ -334,6 +338,9 @@ class EvaluationManager(object):
         if evaluator == "objective": 
             import SuccessEvaluator
             self.domainEvaluators[domainString] = SuccessEvaluator.ObjectiveSuccessEvaluator(domainString)
+        elif evaluator == "sys2text":
+            import SuccessEvaluator
+            self.domainEvaluators[domainString] = SuccessEvaluator.Sys2TextSuccessEvaluator()
         elif evaluator == "subjective": 
             import SuccessEvaluator
             self.domainEvaluators[domainString] = SuccessEvaluator.SubjectiveSuccessEvaluator(domainString)

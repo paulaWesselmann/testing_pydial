@@ -292,9 +292,9 @@ class ObjectiveSuccessEvaluator(Evaluator):
                                 required = str(task[self.domainString]["Reqs"]).split(",")
                                 self.outcome = True
                                 for req in required:
-                                    if req == 'name':
+                                    if req.strip(" ") == 'name':
                                         continue
-                                    if req not in ','.join(informs[ent]): 
+                                    if req.strip(" ") not in ','.join(informs[ent]): 
                                         self.outcome = False
 
         return self.outcome * self.successReward - (not self.outcome) * self.failPenalty
@@ -353,6 +353,56 @@ class ObjectiveSuccessEvaluator(Evaluator):
         return 'Average success = {0:0.2f} +- {1:0.2f}'.format(100 * np.mean(outcomes), \
                                                             100 * tinv * np.std(outcomes) / np.sqrt(num_dialogs))
                 
+class Sys2TextSuccessEvaluator(Evaluator):
+    def __init__(self):
+        self.goal = {}
+        self.rewards = []
+        self.traceDialog = 0
+        domainString = 'CamRestaurants'
+        self.evaluator_label = 0
+        self.total_reward = 0
+        self.outcome = False
+        self.num_turns = 0
+        super(Sys2TextSuccessEvaluator, self).__init__(domainString)
+
+    def restart(self):
+        self.outcome = False
+        self.num_turns = 0
+        self.total_reward = 0
+
+    def _getTurnReward(self, turnInfo):
+        '''
+        Computes the turn reward which is always -1 if activated.
+
+        :param turnInfo: NOT USED parameters necessary for computing the turn reward, eg., system act or model of the simulated user.
+        :type turnInfo: dict
+        :return: int -- the turn reward.
+        '''
+
+        # Immediate reward for each turn.
+        reward = -1 # should be - penalise all turns
+        return reward
+
+    def _getFinalReward(self, finalInfo):
+        requests_fullfilled = finalInfo['usermodel'][self.domainString].reqFullfilled()
+        accepted_venue = finalInfo['usermodel']['CamRestaurants'].getCurrentVenue()
+        constraints = finalInfo['usermodel']['CamRestaurants'].getConstraintDict()
+        constraints['name'] = accepted_venue
+        entities = Ontology.global_ontology.entity_by_features(self.domainString, constraints)
+        '''try:
+            venue_constrains = Ontology.global_ontology.entity_by_features(self.domainString, {'name': accepted_venue})[0]
+            print len(entities), requests_fullfilled, accepted_venue, constraints, venue_constrains['food'], venue_constrains['area'], venue_constrains['pricerange']
+        except:
+            print 'nothing', requests_fullfilled, accepted_venue, constraints
+            pass'''
+        if len(entities) > 0 and requests_fullfilled:
+            self.outcome = True
+        if self.outcome:
+            return 20
+        else:
+            return 0
+
+
 class SubjectiveSuccessEvaluator(Evaluator):
     '''
     This class implements a reward model based on subjective success which is only possible during voice interaction through the :mod:`DialogueServer`. The subjective feedback is collected and

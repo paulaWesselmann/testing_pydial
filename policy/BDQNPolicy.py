@@ -359,7 +359,7 @@ class BDQNPolicy(Policy.Policy):
             self.minibatch_size = cfg.getint('dqnpolicy_' + domainString, 'minibatch_size')
 
         if cfg.has_option('dqnpolicy_' + domainString, 'capacity'):
-            self.capacity = max(cfg.getint('dqnpolicy_' + domainString, 'capacity'), 2000)
+            self.capacity = cfg.getint('dqnpolicy_' + domainString, 'capacity')
 
         if cfg.has_option('dqnpolicy_' + domainString, 'replay_type'):
             self.replay_type = cfg.get('dqnpolicy_' + domainString, 'replay_type')

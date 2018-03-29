@@ -58,7 +58,7 @@ class ReplayBufferEpisode(replay_abc.ReplayABC):
             Experience 2: (North, inform(cheap, north), -1+20, Bye)
         """
 
-        if self.s_prev == None and self.s_ori_prev == None and self.a_prev == None and self.r_prev == None and self.distribution_prev == None:
+        if self.s_prev is None and self.s_ori_prev is None and self.a_prev is None and self.r_prev is None and self.distribution_prev is None:
             self.s_prev, self.s_ori_prev, self.a_prev, self.r_prev, self.v_prev, self.distribution_prev = \
                     state, state_ori, action, reward, value.tolist(), distribution
             return

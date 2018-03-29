@@ -122,7 +122,8 @@ class SemIManager(object):
 
 
         # 1. get type:
-        semi_type = 'PassthroughSemI'  # domain+resource independent default
+        #semi_type = 'PassthroughSemI'  # domain+resource independent default
+        semi_type = 'RegexSemI'
         if Settings.config.has_option('semi_'+dstring, 'semitype'):
             semi_type = Settings.config.get('semi_'+dstring, 'semitype')
             

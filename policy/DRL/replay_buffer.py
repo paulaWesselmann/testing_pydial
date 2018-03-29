@@ -65,7 +65,7 @@ class ReplayBuffer(replay_abc.ReplayABC):
 
         """
 
-        if self.s_prev == None and self.s_ori_prev == None and self.a_prev == None and self.r_prev == None:
+        if self.s_prev is None and self.s_ori_prev is None and self.a_prev is None and self.r_prev is None:
             self.s_prev, self.s_ori_prev, self.a_prev, self.r_prev = state, state_ori, action, reward
             return
         else:

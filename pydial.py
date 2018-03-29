@@ -22,6 +22,7 @@
 #
 ###############################################################################
 
+
 import os
 from scriptine import run, path, log, command
 import re
@@ -517,7 +518,7 @@ def extractEvalData(lines):
     evalData = {}
     training = False
     domain_list = []
-    #domain_list = ['SFRestaurants','SFHotels','Laptops11']
+    #domain_list = []#['SFRestaurants','SFHotels','Laptops11']
     #for dom in domain_list:
     #    evalData[dom] = {}
     cur_domain = None

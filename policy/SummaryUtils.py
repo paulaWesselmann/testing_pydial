@@ -355,6 +355,12 @@ def _getInformRequestedSlotsForEntity(requested_slots, ent, domainString):
             slots = Ontology.global_ontology.get_requestable_slots(domainString)
             if 'name' in slots:
                 slots.remove('name')
+            if Settings.config.has_option('summaryacts', 'DSTC2requestables'):
+                if Settings.config.getboolean('summaryacts', 'DSTC2requestables'):
+                    if 'description' in slots:
+                        slots.remove('description')
+                    if 'signature' in slots:
+                        slots.remove('signature')
             slot = slots[Settings.random.randint(len(slots))]
             slotvaluepair.append('{}="{}"'.format(slot, ent[slot]))
 

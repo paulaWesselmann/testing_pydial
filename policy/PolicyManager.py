@@ -267,6 +267,9 @@ class PolicyManager(object):
             elif policy_type == 'gp':
                 from policy import GPPolicy
                 self.domainPolicies[domainString] = GPPolicy.GPPolicy(domainString, learning, self.shared_params)
+            elif policy_type == 'dipgp':
+                from policy import DIPGPPolicy
+                self.domainPolicies[domainString] = DIPGPPolicy.GPPolicy(domainString, learning, self.shared_params)
             elif policy_type == 'dqn':
                 from policy import DQNPolicy
                 self.domainPolicies[domainString] = DQNPolicy.DQNPolicy(in_policy_file, out_policy_file, domainString, learning)
@@ -285,6 +288,15 @@ class PolicyManager(object):
             elif policy_type == 'tracer':
                 from policy import TRACERPolicy
                 self.domainPolicies[domainString] = TRACERPolicy.TRACERPolicy(in_policy_file, out_policy_file, domainString, learning)
+            elif policy_type == 'bbqn':
+                from policy import BBQNPolicy
+                self.domainPolicies[domainString] = BBQNPolicy.BBQNPolicy(in_policy_file, out_policy_file, domainString, learning)
+            elif policy_type == 'feudal':
+                from policy import FeudalPolicy
+                self.domainPolicies[domainString] = FeudalPolicy.FeudalPolicy(in_policy_file, out_policy_file, domainString, learning)
+            elif policy_type == 'feudalAC':
+                from policy import FeudalACPolicy
+                self.domainPolicies[domainString] = FeudalACPolicy.FeudalACPolicy(in_policy_file, out_policy_file, domainString, learning)
             else:
                 try:
                     # try to view the config string as a complete module path to the class to be instantiated

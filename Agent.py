@@ -95,6 +95,7 @@ class DialogueAgent(object):
         self.NO_ASR_MSG = "I am afraid I did not understand. Could you please repeat that."
         self.maxTurns_per_domain = 30
         self.traceDialog = 2
+        self.sim_level = 'dial_act'
         
         # CONFIGS:
         if Settings.config.has_option('agent', 'savefrequency'):
@@ -105,6 +106,8 @@ class DialogueAgent(object):
             self.maxTurns_per_domain = Settings.config.getint("agent", "maxturns")
         if Settings.config.has_option("GENERAL", "tracedialog"):
             self.traceDialog = Settings.config.getint("GENERAL", "tracedialog")
+        if Settings.config.has_option("usermodel", "simlevel"):
+            self.sim_level = Settings.config.get("usermodel", "simlevel")
 
         # TOPIC TRACKING:
         #-----------------------------------------
@@ -264,7 +267,7 @@ class DialogueAgent(object):
         logger.debug('active domain is: '+currentDomain)
         
         state = self.semi_belief_manager.update_belief_state(ASR_obs=asr_info, sys_act=prev_sys_act,
-                                                     dstring=currentDomain, turn=self.currentTurn,hub_id = self.hub_id)
+                                                     dstring=currentDomain, turn=self.currentTurn,hub_id = self.hub_id, sim_lvl=self.sim_level)
         
         self._print_usr_act(state, currentDomain)
         

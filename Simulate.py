@@ -58,12 +58,17 @@ Optional arguments/flags [default values]::
 ************************
 
 '''
+import os
 import argparse
 import Agent
 from usersimulator import SimulatedUsersManager
 from utils import Settings
 from utils import ContextLogger
 from ontology import Ontology
+try:
+	import usersimulator.textgenerator.textgen_toolkit.SCTranslate as SCT
+except:
+	pass
 logger = ContextLogger.getLogger('')
 
 __author__ = "cued_dialogue_systems_group"
@@ -90,13 +95,24 @@ class SimulationSystem(object):
         #-----------------------------------------
         self.simulator = SimulatedUsersManager.SimulatedUsersManager(error_rate)
         self.traceDialog = 2
-        self.sim_level = 'act'
+        self.sim_level = 'dial_act'
+        self.text_sampling = 'dict'
 
         if Settings.config.has_option("GENERAL", "tracedialog"):
             self.traceDialog = Settings.config.getint("GENERAL", "tracedialog")
         if Settings.config.has_option("usermodel", "simlevel"):
-            self.sim_level = Settings.config.getint("usermodel", "simlevel")
-            
+            self.sim_level = Settings.config.get("usermodel", "simlevel")
+        if Settings.config.has_option("usermodel", "textsampling"):
+            self.text_sampling = Settings.config.get("usermodel", "textsampling")
+        if self.sim_level == 'text':
+            #Load the text generator
+            if self.text_sampling == 'dict':
+                sampling_dict = os.path.join(Settings.root, 'usersimulator/textgenerator/textgen_dict.pkl')
+            else:
+                sampling_dict = None
+            self.SCT = SCT.SCTranslate(sampling_dict=sampling_dict)
+        elif self.sim_level == 'sys2text':
+            pass #load here florians model
 
     def run_dialogs(self, numDialogs):
         '''
@@ -126,7 +142,7 @@ class SimulationSystem(object):
         # RESET THE USER SIMULATOR:
         self.simulator.restart()
         for domain in self.simulator.simUserManagers:
-            if self.simulator.simUserManagers[domain]:
+            if self.simulator.simUserManagers[domain] and self.sim_level != 'sys2text':
                 goal = self.simulator.simUserManagers[domain].um.goal
                 logger.dial('User will execute the following goal: {}'
                             .format(str(goal.request_type) + str(goal.constraints) + str([req for req in goal.requests])))
@@ -150,13 +166,23 @@ class SimulationSystem(object):
             # USER ACT:  
             #-------------------------------------------------------------------------------------------------------------
             sys_act = self.agent_factory.agents[agent_id].retrieve_last_sys_act()
-            
-            user_act, user_actsDomain, hyps = self.simulator.act_on(sys_act)
 
-            if sim_level == 'text':
-                #todo: convert dialact to text
-                text_user_act = raw_input('Translate user act: {} >'.format(user_act))
+            if sim_level == 'sys2text':
+                text_user_act, user_actsDomain, _ = self.simulator.act_on(sys_act)
+                #user_actsDomain = 'CamRestaurants'
                 hyps = [(text_user_act, 1.0)]
+            else:
+                user_act, user_actsDomain, hyps = self.simulator.act_on(sys_act)
+
+                if sim_level == 'text':
+                    #todo: convert dialact to text
+                    #text_user_act = raw_input('Translate user act: {} > '.format(user_act))
+                    text_user_act = self.SCT.translateUserAct(str(user_act),1)[2]
+                    try:
+                        text_user_act = text_user_act[0]
+                    except:
+                        logger.error('Wrong user act: ' + user_act, text_user_act)
+                    hyps = [(text_user_act, 1.0)]
 
 
             
@@ -164,7 +190,10 @@ class SimulationSystem(object):
             
             if self.traceDialog>1:
                 print '   User >', user_act
-            logger.dial('| User > ' + user_act.to_string())
+            if self.sim_level != 'sys2text':
+                logger.dial('| User > ' + user_act.to_string())
+            else:
+                logger.dial('| User > ' + text_user_act)
                 
             # SYSTEM ACT:
             #-------------------------------------------------------------------------------------------------------------
@@ -175,16 +204,21 @@ class SimulationSystem(object):
             if prompt_str is not None:      # if we are generating text, versus remaining only at semantic level.
                 if self.traceDialog>1: print '   Prompt >', prompt_str
                 logger.info('| Prompt > ' + prompt_str)
-                
-            if 'bye' == user_act.act or 'bye' == sys_act.act:
-                endingDialogue = True
+
+            if self.sim_level != 'sys2text':
+                if 'bye' == user_act.act or 'bye' == sys_act.act:
+                    endingDialogue = True
+            else:
+                if 'bye' in text_user_act or 'bye' == sys_act.act:
+                    endingDialogue = True
 
         # Process ends.
         for domain in self.simulator.simUserManagers:
             if self.simulator.simUserManagers[domain]:
-                goal = self.simulator.simUserManagers[domain].um.goal
-                logger.dial('User goal at the end of the dialogue: {}'
-                            .format(str(goal.request_type) + str(goal.constraints) + str([req for req in goal.requests])))
+                if self.sim_level != 'sys2text':
+                    goal = self.simulator.simUserManagers[domain].um.goal
+                    logger.dial('User goal at the end of the dialogue: {}'
+                                .format(str(goal.request_type) + str(goal.constraints) + str([req for req in goal.requests])))
         self.agent_factory.agents[agent_id].end_call(domainSimulatedUsers=self.simulator.simUserManagers)
 
         return

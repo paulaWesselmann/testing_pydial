@@ -45,6 +45,8 @@ __author__ = "cued_dialogue_systems_group"
 
 import UserModel
 import ErrorModel
+
+
 from utils import DiaAct, Settings, ContextLogger
 from ontology import Ontology, OntologyUtils
 logger = ContextLogger.getLogger('')
@@ -140,6 +142,9 @@ class SimulatedUsersManager(object):
             self.domainSampling = Settings.config.get("simulate", "domainsampling")
         else:
             self.domainSampling = "random"
+        self.sim_level = 'dial_act'
+        if Settings.config.has_option("usermodel", "simlevel"):
+            self.sim_level = Settings.config.get("usermodel", "simlevel")
 
 
 
@@ -241,19 +246,26 @@ class SimulatedUsersManager(object):
 
         for dstring in self.using_domains: # doing this way to generate goals/behaviour in an order.
             # fire up or check if it is running
-            if self.simUserManagers[dstring] is None:
-                self.simUserManagers[dstring] = DomainsSimulatedUser(dstring, self.error_rate)
-            self.simUserManagers[dstring].restart(otherDomainsConstraints)
+            if self.sim_level == 'sys2text':
+                if self.simUserManagers[dstring] is None:
+                    from usersimulator.US_sys2text.Sys2TextSimulatedUser import Sys2TextSimulatedUser
+                    self.simUserManagers[dstring] = Sys2TextSimulatedUser(dstring)
+                self.simUserManagers[dstring].restart()
+            else:
+                if self.simUserManagers[dstring] is None:
+                    self.simUserManagers[dstring] = DomainsSimulatedUser(dstring, self.error_rate)
+                self.simUserManagers[dstring].restart(otherDomainsConstraints)
             
             # DEBUG prints to inspect goals we have generated:
-            logger.debug(str(self.simUserManagers[dstring].um.goal))
-            logger.debug(str(self.simUserManagers[dstring].um.goal.copied_constraints))
-            logger.debug(str(self.simUserManagers[dstring].um.hdcSim.agenda.agenda_items))
-            logger.debug("DOMAIN-----"+dstring)
+            if self.sim_level != 'sys2text':
+                logger.debug(str(self.simUserManagers[dstring].um.goal))
+                logger.debug(str(self.simUserManagers[dstring].um.goal.copied_constraints))
+                logger.debug(str(self.simUserManagers[dstring].um.hdcSim.agenda.agenda_items))
+                logger.debug("DOMAIN-----"+dstring)
             #raw_input('goal and agenda for domain '+dstring)
             
             
-            if self.CONDITIONAL_BEHAVIOUR:
+            if self.CONDITIONAL_BEHAVIOUR and self.sim_level != 'sys2text':
                 otherDomainsConstraints += self.simUserManagers[dstring].um.goal.constraints
              
 
@@ -267,7 +279,10 @@ class SimulatedUsersManager(object):
         include simulated errors. 
         """
         user_act, user_actsDomain = self._user_act(sys_act)
-        hyps = self._confuse_user_act_and_enforce_null(user_act, user_actsDomain)
+        if self.sim_level != 'sys2text':
+            hyps = self._confuse_user_act_and_enforce_null(user_act, user_actsDomain)
+        else:
+            hyps = None
         return user_act, user_actsDomain, hyps
     
     def _user_act(self, sys_act):
@@ -281,15 +296,16 @@ class SimulatedUsersManager(object):
         for dstring in self.using_domains:
             if dstring in self.uncompleted_domains:
                 user_act = self.simUserManagers[dstring].act_on(sys_act)
-                if 'bye(' in user_act.to_string():
-                    sys_act = 'hello()'
-                    self.uncompleted_domains.remove(dstring)
-                    if len(self.uncompleted_domains):
-                        continue
+                if self.sim_level != 'sys2text':
+                    if 'bye(' in user_act.to_string():
+                        sys_act = 'hello()'
+                        self.uncompleted_domains.remove(dstring)
+                        if len(self.uncompleted_domains):
+                            continue
+                        else:
+                            break
                     else:
                         break
-                else:
-                    break        
         return  user_act, dstring
     
     def _confuse_user_act_and_enforce_null(self, user_act, user_actsDomain):

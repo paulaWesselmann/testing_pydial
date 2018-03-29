@@ -51,6 +51,9 @@ class TopicTrackingManager(object):
         self.topic_tracker_type = None  # TopicTracker may not be needed in simulate, 
         if Settings.config.has_option("topictracker","type"):
             self.topic_tracker_type = Settings.config.get("topictracker","type")
+        else:
+            self.topic_tracker_type = "keyword"  # set it as a default
+
         if self.topic_tracker_type == "keyword":
             from RuleTopicTrackers import KeywordSpottingTopicTracker
             self.tt_model = KeywordSpottingTopicTracker()

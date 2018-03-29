@@ -59,22 +59,32 @@ class ModularSemanticBeliefTracker(SemanticBeliefTracker):
         
         self.semi_manager = ModularSemanticBeliefTracker.getSemiManager()
         self.belief_manager = ModularSemanticBeliefTracker.getBeliefTrackingManager()
-        
+
         self.lastHyps = []
     
-    def update_belief_state(self, ASR_obs, sys_act, constraints, turn=None, hub_id = None):
+    def update_belief_state(self, ASR_obs, sys_act, constraints, turn=None, hub_id = None, sim_lvl='dial_act'):
         
         # SEMI PARSING:
         if ASR_obs is not None:
             if hub_id == 'simulate':
-                ASR_obs = [(h.to_string(), h.P_Au_O) for h in ASR_obs]
-                self.lastHyps = self.semi_manager.simulate_add_context_to_user_act(sys_act, ASR_obs, self.domainString)
+                if sim_lvl=='dial_act':
+                    ASR_obs = [(h.to_string(), h.P_Au_O) for h in ASR_obs]
+                    self.lastHyps = self.semi_manager.simulate_add_context_to_user_act(sys_act, ASR_obs,
+                                                                                       self.domainString)
+                elif sim_lvl == 'text' or sim_lvl == 'sys2text':
+                    #ASR_obs = self.semi_manager.clean_possible_texthub_switch(ASR_obs) # ic340: not sure if this is necesary
+                    self.lastHyps = self.semi_manager.decode(ASR_obs=ASR_obs, sys_act=sys_act,
+                                                             domainTag=self.domainString, turn=turn)
+                    logger.dial('SemI > ' + str(self.lastHyps))
+                else:
+                    logger.error('sim level not recognised')
             else:
                 if hub_id == 'texthub':
                     ASR_obs = self.semi_manager.clean_possible_texthub_switch(ASR_obs)
                 self.lastHyps = self.semi_manager.decode(ASR_obs=ASR_obs, sys_act=sys_act,
                                                          domainTag=self.domainString, turn=turn)
                 logger.info('SemI   > '+ str(self.lastHyps))
+                #print '>>>>>>', self.lastHyps
         
         
         # 2. SYSTEM response:
