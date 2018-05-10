@@ -263,11 +263,9 @@ class SimulatedUsersManager(object):
                 logger.debug(str(self.simUserManagers[dstring].um.hdcSim.agenda.agenda_items))
                 logger.debug("DOMAIN-----"+dstring)
             #raw_input('goal and agenda for domain '+dstring)
-            
-            
+
             if self.CONDITIONAL_BEHAVIOUR and self.sim_level != 'sys2text':
                 otherDomainsConstraints += self.simUserManagers[dstring].um.goal.constraints
-             
 
         for dstring in self.possible_domains:  #STATELESS, no memory here. Fine to actually `kill' domains not using 
             if dstring not in self.using_domains:

@@ -720,6 +720,7 @@ def tabulateTrain(dataSet):
 
     return averaged_result_list
 
+
 def tabulateTest(dataSet):
     #pp.pprint(dataSet)
     rtab = {}
@@ -761,6 +762,7 @@ def tabulateTest(dataSet):
         ttab[policy]['var']=yterr
         ttab[policy]['x']=x
     return (rtab,stab,ttab)
+
 
 def train_command(configfile, seed=None, trainerrorrate=None,trainsourceiteration=None,
                   numtrainbatches=None,traindialogsperbatch=None,traindomains=None,dbprefix=None):
@@ -811,6 +813,7 @@ def train_command(configfile, seed=None, trainerrorrate=None,trainsourceiteratio
         exit(0)
     except KeyboardInterrupt:
         print "\nCommand Aborted from Keyboard"
+
 
 def test_command(configfile, iteration, seed=None, testerrorrate=None, trainerrorrate=None,
                  numtestdialogs=None, testdomains=None, dbprefix=None, inputpolicy=None):
@@ -910,6 +913,7 @@ def test_command(configfile, iteration, seed=None, testerrorrate=None, trainerro
     except KeyboardInterrupt:
         print "\nCommand Aborted from Keyboard"
 
+
 def plotTrainLogs(logfilelist,printtab,noplot,saveplot,datasetname,block=True):
     """
         Extract data from given log files and display.
@@ -995,6 +999,7 @@ def plotTrainLogs(logfilelist,printtab,noplot,saveplot,datasetname,block=True):
     except clog.ExceptionRaisedByLogger:
         print "Command Aborted - see Log file for error:"
 
+
 def getAverageResults(average_result_list):
     averaged_results = []
     for tab_list in average_result_list:
@@ -1023,6 +1028,7 @@ def getAverageResults(average_result_list):
                     tab_av_results[policy_key][key] = np.square(tab_av_results[policy_key][key])
         averaged_results.append(tab_av_results)
     return averaged_results
+
 
 def plotTestLogs(logfilelist,printtab,noplot,datasetname,block=True):
     """

@@ -74,6 +74,7 @@ logger = ContextLogger.getLogger('')
 __author__ = "cued_dialogue_systems_group"
 __version__ = Settings.__version__
 
+
 class SimulationSystem(object):
     '''
     Semantic level simulated dialog system
@@ -147,7 +148,7 @@ class SimulationSystem(object):
                 logger.dial('User will execute the following goal: {}'
                             .format(str(goal.request_type) + str(goal.constraints) + str([req for req in goal.requests])))
         user_act = ''
-        
+
         endingDialogue = False
 
         # SYSTEM STARTS THE CALL:
