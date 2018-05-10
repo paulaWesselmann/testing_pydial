@@ -42,6 +42,7 @@ from ontology import OntologyUtils
 from utils import Settings, ContextLogger
 logger = ContextLogger.getLogger('')
 
+
 class Evaluator(object):
     '''
     Interface class for a single domain evaluation module. Responsible for recording/calculating turns, dialogue outcome, reward for a single 
