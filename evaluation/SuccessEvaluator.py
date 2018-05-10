@@ -47,6 +47,7 @@ import numpy as np
 import copy
 logger = ContextLogger.getLogger('')
 
+
 class ObjectiveSuccessEvaluator(Evaluator):
     '''
     This class provides a reward model based on objective success. For simulated dialogues, the goal of the user simulator is compared with the the information the system has provided. 
@@ -87,8 +88,7 @@ class ObjectiveSuccessEvaluator(Evaluator):
             self.failPenalty = Settings.config.getint("eval_"+domainString, "failpenalty")
         if Settings.config.has_option("eval_"+domainString, "successreward"):
             self.successReward = Settings.config.getint("eval_"+domainString, "successreward")
-            
-            
+
         if Settings.config.has_option("dialogueserver","tasksfile"):
             self.using_tasks = True     # will record DM actions to deduce objective success against a given task:
             
