@@ -146,8 +146,8 @@ class DQNPolicy(Policy.Policy):
         self.domainUtil = FlatOnt.FlatDomainOntology(self.domainString)
         self.prev_state_check = None
 
-        self.prev_state = None
-        self.predloss = None
+        # self.prev_state = None
+        # self.predloss = None
 
 
         # parameter settings
@@ -432,54 +432,6 @@ class DQNPolicy(Policy.Policy):
 
         systemAct = DiaAct.DiaAct(systemAct)
 
-# todo //start construction zone
-        # Previous state for predictions in curiosity learning
-        prev_state = self.prev_state
-        prev_state_vec = np.asarray(flatten_belief(prev_state, self.domainUtil))
-        # predictor = mpc.StatePredictor(len(state_vec), num_actions, designHead='pydial', unsupType='state')
-        predictor = mpc.StateActionPredictor(len(prev_state_vec), self.numActions, designHead='pydial')
-
-        # # computing predictor loss
-        # if self.unsup:
-        #     if 'state' in unsupType:
-        #         self.predloss = constants['PREDICTION_LR_SCALE'] * predictor.forwardloss
-        #     else:
-        self.predloss = constants['PREDICTION_LR_SCALE'] * (predictor.invloss * (1 - constants['FORWARD_LOSS_WT']) +
-                                                            predictor.forwardloss * constants['FORWARD_LOSS_WT'])
-        predgrads = tf.gradients(self.predloss * 20.0,
-                                 predictor.var_list)  # batchsize=20. Factored out to make hyperparams not depend on it.   #what do i do about batch size thingy
-        # # do not backprop to policy
-        # if constants['POLICY_NO_BACKPROP_STEPS'] > 0:
-        #     grads = [
-        #         tf.scalar_mul(tf.to_float(tf.greater(self.global_step, constants['POLICY_NO_BACKPROP_STEPS'])), grads_i)
-        #         for grads_i in grads]
-
-        predgrads, _ = tf.clip_by_global_norm(predgrads, constants['GRAD_NORM_CLIP'])
-        pred_grads_and_vars = list(zip(predgrads, predictor.var_list))
-        grads_and_vars = pred_grads_and_vars
-        # each worker has a different set of adam optimizer parameters
-        # make optimizer global shared, if needed
-        # print("Optimizer: ADAM with lr: %f" % (constants['LEARNING_RATE']))
-        # print("Input observation shape: ", env.observation_space.shape)
-        # opt = tf.train.AdamOptimizer(constants['LEARNING_RATE'])
-        # train_op = tf.group(opt.apply_gradients(grads_and_vars), inc_step)
-        # train_op = opt.apply_gradients(grads_and_vars)
-        # next, run op session
-        sess = tf.Session()
-        sess.run(tf.global_variables_initializer())
-        # feed_dict = {  # local netrwork is only associated with lstm
-        #     # self.local_network.x: batch.si,
-        #     self.ac: batch.a,
-        #     self.adv: batch.adv,
-        #     self.r: batch.r,
-        #     # self.local_network.state_in[0]: 268,
-        #     # self.local_network.state_in[1]: 0,
-        # }
-        # sess.run(train_op, feed_dict=feed_dict)
-
-        self.prev_state = state
-# todo //end construction zone
-
         return systemAct
 
     def record(self, reward, domainInControl=None, weight=None, state=None, action=None):
@@ -498,7 +450,7 @@ class DQNPolicy(Policy.Policy):
         else:
             cState, cAction = self.convertDIPStateAction(state, action)
         # normalising total return to -1~1
-        reward /= 20.0
+        reward /= 20.0 #whut?
 
         cur_cState = np.vstack([np.expand_dims(x, 0) for x in [cState]])
         Action_idx = np.eye(self.action_dim, self.action_dim)[[cAction]]
@@ -746,7 +698,7 @@ class DQNPolicy(Policy.Policy):
         logger.info("Sample Num so far: %s" % (self.samplecount))
         logger.info("Episode Num so far: %s" % (self.episodecount))
 
-        if self.samplecount >= self.minibatch_size * 10 and self.episodecount % self.training_frequency == 0:
+        if self.samplecount >= self.minibatch_size * 10 and self.episodecount % self.training_frequency == 0:  # what is this condition?
             logger.info('start training...')
 
             s_batch, s_ori_batch, a_batch, r_batch, s2_batch, s2_ori_batch, t_batch, idx_batch, _ = \
@@ -765,7 +717,6 @@ class DQNPolicy(Policy.Policy):
                 action_q = self.dqn.predict_dip(s2_batch, a_batch_one_hot)
                 target_q = self.dqn.predict_target_dip(s2_batch, a_batch_one_hot)
             #print 'action Q and target Q:', action_q, target_q
-
 
             y_i = []
             for k in xrange(min(self.minibatch_size, self.episodes[self.domainString].size())):
@@ -807,6 +758,11 @@ class DQNPolicy(Policy.Policy):
             predicted_q_value, _, currentLoss = self.dqn.train(s_batch, a_batch_one_hot, reshaped_yi)
             print 'pred V and loss:', predicted_q_value, currentLoss
 
+            #put curiosity trg here?
+            #similar approach? predicted state, optimization, predloss? run together?
+            self.dqn.curiosity_backprop(s_batch, s2_batch, a_batch_one_hot, mpc)  # in batches? or every episode? or every turn?
+            # need to add loss into policy optimization instead
+            #i'd say in batches and same fashion as other trg?
 
             #print 'y_i'
             #print y_i
