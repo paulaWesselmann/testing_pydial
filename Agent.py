@@ -88,6 +88,7 @@ class DialogueAgent(object):
         self.session_id = None
         self.callValidator = CallValidator()
         self.prev_state = None
+        self.prev_statexx = None
         self.predloss = None
 
         # DEFAULTS:
@@ -197,11 +198,10 @@ class DialogueAgent(object):
         state = self.semi_belief_manager.update_belief_state(ASR_obs=None, sys_act=last_sys_act,
                                                      dstring=currentDomain, turn=self.currentTurn, hub_id=self.hub_id)
 
-        self.prev_state = state
+        # self.prev_state = state
 
         # 2. Policy -- Determine system act/response
-        sys_act = self.policy_manager.act_on(dstring=self.topic_tracker.operatingDomain,
-                                                  state=state)
+        sys_act = self.policy_manager.act_on(dstring=self.topic_tracker.operatingDomain, state=state)
 
         self._print_sys_act(sys_act)
 
@@ -238,21 +238,21 @@ class DialogueAgent(object):
         '''
 
         logger.dial("user input: {}".format([(x.to_string() if isinstance(x, DiaActWithProb) else x[0], round(x.P_Au_O, 3) if isinstance(x,DiaActWithProb) else x[1]) for x in asr_info]))
-#todo construction zone
-        # pw: Use turn info for predictions
-
-        action_names = []  # hardcoded to include slots for specific actions (request, confirm, select)
-        action_names += ["request(food)", "request(area)", "request(pricerange)",
-                         "confirm(food)", "confirm(area)", "confirm(pricerange)",
-                         "select(food)", "select(area)", "select(pricerange)",
-                         "inform",
-                         "inform_byname",
-                         "inform_alternatives",
-                         "bye",
-                         "repeat",
-                         "reqmore",
-                         "restart"]
-        num_actions = len(action_names)
+# #todo construction zone
+#         # pw: Use turn info for predictions
+#
+#         action_names = []  # hardcoded to include slots for specific actions (request, confirm, select)
+#         action_names += ["request(food)", "request(area)", "request(pricerange)",
+#                          "confirm(food)", "confirm(area)", "confirm(pricerange)",
+#                          "select(food)", "select(area)", "select(pricerange)",
+#                          "inform",
+#                          "inform_byname",
+#                          "inform_alternatives",
+#                          "bye",
+#                          "repeat",
+#                          "reqmore",
+#                          "restart"]
+#         num_actions = len(action_names)
 
         # Check if user says bye and whether this is already valid
         self.callValidator.validate() # update time once more
@@ -269,7 +269,6 @@ class DialogueAgent(object):
 
         # 1. USER turn:
         #--------------------------------------------------------------------------------------------------------------
-]
         # Make sure there is some asr information:
         if not len(asr_info):
             sys_act = DiaAct('null()')
@@ -280,21 +279,21 @@ class DialogueAgent(object):
         currentDomain = self._track_topic_and_hand_control(domainString=domainString, userAct_hyps=asr_info)
         prev_sys_act = self.retrieve_last_sys_act(currentDomain)
 
-        # Previous state for predictions in curiosity learning
-        import policy.DQNPolicy as dqn
-        domainUtil = FlatOnt.FlatDomainOntology(currentDomain)
-        prev_state = self.prev_state
-        prev_state_vec = np.asarray(dqn.flatten_belief(prev_state, domainUtil))
-        # predictor = mpc.StatePredictor(len(state_vec), num_actions, designHead='pydial', unsupType='state')
-        predictor = mpc.StateActionPredictor(len(prev_state_vec), num_actions, designHead='pydial')
+        # # Previous state for predictions in curiosity learning
+        # import policy.DQNPolicy as dqn
+        # domainUtil = FlatOnt.FlatDomainOntology(currentDomain)
+        # self.prev_state = self.prev_statexx
+        # prev_state_vec = np.asarray(dqn.flatten_belief(prev_state, domainUtil))
+        # # predictor = mpc.StatePredictor(len(state_vec), num_actions, designHead='pydial', unsupType='state')
+        # predictor = mpc.StateActionPredictor(len(prev_state_vec), num_actions, designHead='pydial')
 
         # # computing predictor loss
         # if self.unsup:
         #     if 'state' in unsupType:
         #         self.predloss = constants['PREDICTION_LR_SCALE'] * predictor.forwardloss
         #     else:
-        self.predloss = constants['PREDICTION_LR_SCALE'] * (predictor.invloss * (1 - constants['FORWARD_LOSS_WT']) +
-                                                            predictor.forwardloss * constants['FORWARD_LOSS_WT'])
+        # self.predloss = constants['PREDICTION_LR_SCALE'] * (predictor.invloss * (1 - constants['FORWARD_LOSS_WT']) +
+        #                                                     predictor.forwardloss * constants['FORWARD_LOSS_WT'])
         # predgrads = tf.gradients(self.predloss * 20.0,
         #                          predictor.var_list)  # batchsize=20. Factored out to make hyperparams not depend on it.
         # # do not backprop to policy
@@ -329,7 +328,7 @@ class DialogueAgent(object):
         sys_act.prompt = self.prompt_str
 
 
-        # 3. TURN ENDING
+        # 3. TURN ENDING  todo clean shit up
         #-----------------------------------------------------------------------------------------------------------------
 
         # EVALUATION: - record the system action taken in the current domain if using tasks for evaluation (ie DialogueServer)
@@ -340,23 +339,23 @@ class DialogueAgent(object):
         sys_act.prompt = self.prompt_str
         state.setLastSystemAct(sys_act)
 
-        state_vec = np.asarray(dqn.flatten_belief(state, domainUtil))
-        # print state_vec
-        # print prev_state_vec
-        # transform action into vector
-        ac_1hot = np.zeros(num_actions)
-        cnt = 0
-        for slot in action_names:
-            if slot in str(sys_act):
-                ac_1hot[cnt] = 1
-                break
-            cnt += 1
-
-        # returns bonus predicted by forward model
-        bonus = predictor.pred_bonus(prev_state_vec, state_vec, ac_1hot)  # input: last_state, state, action
-        # print bonus
-
-        self.prev_state = state
+        # state_vec = np.asarray(dqn.flatten_belief(state, domainUtil))
+        # # print state_vec
+        # # print prev_state_vec
+        # # transform action into vector
+        # ac_1hot = np.zeros(num_actions)
+        # cnt = 0
+        # for slot in action_names:
+        #     if slot in str(sys_act):
+        #         ac_1hot[cnt] = 1
+        #         break
+        #     cnt += 1
+        #
+        # # returns bonus predicted by forward model
+        # bonus = predictor.pred_bonus(prev_state_vec, state_vec, ac_1hot)  # input: last_state, state, action
+        # # print bonus
+        #
+        # self.prev_statexx = state
         #---Return the generated prompt---------------------------------------------------
         return sys_act
 
@@ -397,7 +396,6 @@ class DialogueAgent(object):
         self._save_policy()
         self.session_id = None  # indicates the agent is not on a call. 
         self.ENDING_DIALOG = False
-        
 
     def restart_agent(self, session_id, maxNumTurnsScaling=1.0, start_domain=None):
         '''
@@ -439,7 +437,6 @@ class DialogueAgent(object):
             self.topic_tracker.operatingDomain = start_domain
         self._hand_control(domainString=self.topic_tracker.operatingDomain, previousDomainString=None)
     
-    
     def retrieve_last_sys_act(self, domainString=None):
         '''
         Retreives the sys act from domain domainString if a domain switch has occurred
@@ -466,8 +463,7 @@ class DialogueAgent(object):
                 logger.warning('Enforcing hello() at first turn in singledomain system')
                 self.policy_manager.domainPolicies[self.topic_tracker.operatingDomain].startwithhello = True
         return      
-            
-    
+
     def _track_topic_and_hand_control(self, userAct_hyps=None, domainString=None):
         """
         userAct_hyps can possibly be various things: for example just semantic hyps with probs, or ASR n-best
@@ -583,8 +579,7 @@ class DialogueAgent(object):
         :return: None
         '''
         
-        
-        if self.currentTurn==0:
+        if self.currentTurn == 0:
             logger.debug('Note that we are ignoring any evaluation of the systems first action')
             return   
         operatingDomain = self.topic_tracker.operatingDomain       # Simply for easy access:
@@ -607,11 +602,41 @@ class DialogueAgent(object):
         # 1. Get reward
         #---------------------------------------------------------------------------------------------------------
         self.reward = None
+        import policy.DQNPolicy as dqn
+        domainUtil = FlatOnt.FlatDomainOntology(operatingDomain)
+        action_names = []  # hardcoded to include slots for specific actions (request, confirm, select)
+        action_names += ["request(food)", "request(area)", "request(pricerange)",
+                         "confirm(food", "confirm(area", "confirm(pricerange",
+                         "select(food)", "select(area)", "select(pricerange)",
+                         "inform",
+                         "inform_byname",
+                         "inform_alternatives",
+                         "bye",
+                         "repeat",
+                         "reqmore",
+                         "restart"]
+        # transform action into vector
+        ac_1hot = np.zeros(len(action_names))
+        cnt = 0
+        for slot in action_names:
+            if slot in str(sys_act):
+                ac_1hot[cnt] = 1
+                break
+            cnt += 1
+
         turnInfo = {}
-        turnInfo['sys_act']=sys_act.to_string()
-        turnInfo['state']=state
-        turnInfo['prev_sys_act']=state.getLastSystemAct(operatingDomain)
-        if self.hub_id=='simulate':
+        turnInfo['sys_act'] = sys_act.to_string()
+        turnInfo['state'] = state
+        turnInfo['prev_sys_act'] = state.getLastSystemAct(operatingDomain)
+        turnInfo['state_vec'] = np.asarray(dqn.flatten_belief(state, domainUtil))
+        if self.prev_state is None:
+            prev_state_vec = np.zeros(len(turnInfo['state_vec']))
+        else:
+            prev_state_vec = self.prev_state
+        turnInfo['prev_state_vec'] = prev_state_vec
+        turnInfo['ac_1hot'] = ac_1hot
+
+        if self.hub_id == 'simulate':
             user_model_holder = domainSimulatedUsers[operatingDomain]
             if user_model_holder is None:
                 logger.warning('Simulated user not present for domain %s - passing reward None thru to policy' % operatingDomain)
@@ -623,17 +648,17 @@ class DialogueAgent(object):
         # 2. Pass reward to dialogue management:
         #--------------------------------------------------------------------------------------------------------- 
         self.policy_manager.record(domainString=operatingDomain, reward=self.reward) 
-           
+        state_xx = np.asarray(dqn.flatten_belief(state, domainUtil))
+        self.prev_state = state_xx
         return
-    
-        
+
     def _print_turn(self):
         '''
         Prints the turn in different ways for different hubs (dialogueserver, simulate or texthub)
 
         :return: None
         '''
-        if self.hub_id=='dialogueserver':
+        if self.hub_id == 'dialogueserver':
             logger.dial('Turn %d' % self.currentTurn)
         else:
             if self.traceDialog>1: print '   Turn %d' % self.currentTurn
@@ -741,8 +766,7 @@ class DialogueAgent(object):
             prompt_str = self.semo_manager.generate(sys_act, domainTag=self.topic_tracker.operatingDomain)
         else:
             prompt_str = None 
-        return prompt_str                      
-
+        return prompt_str
 
     def _save_policy(self, FORCE_SAVE=False):
         """
@@ -803,7 +827,6 @@ class DialogueAgent(object):
         '''
         if self.session_id is not None:
             logger.error("Agent is assumed to be only on one call at a time")
-            
             
     def _load_manger(self, config, defaultManager):
         '''
@@ -1094,7 +1117,6 @@ class CallValidator(object):
     
     def getNonValidPrompt(self):
         return self.mindialoguedurationprompt
-    
     
     def check_if_user_bye(self,obs):
         """

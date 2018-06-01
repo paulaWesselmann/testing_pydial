@@ -172,6 +172,7 @@ class SimulationSystem(object):
                 text_user_act, user_actsDomain, _ = self.simulator.act_on(sys_act)
                 #user_actsDomain = 'CamRestaurants'
                 hyps = [(text_user_act, 1.0)]
+
             else:
                 user_act, user_actsDomain, hyps = self.simulator.act_on(sys_act)
 

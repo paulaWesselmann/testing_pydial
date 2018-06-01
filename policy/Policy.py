@@ -103,6 +103,10 @@ class Policy(object):
         self.actions = SummaryAction.SummaryAction(domainString, empty, self.useconfreq)
         # Total number of system actions.
         self.numActions = len(self.actions.action_names)
+        # pw: added to build 1-hot action vector
+        self.actions_list = self.actions.action_names
+        # print self.numActions
+        # print self.actions_list
         
         self.episodes = dict.fromkeys(OntologyUtils.available_domains, None)
         self.episodes[self.domainString] = Episode(self.domainString)

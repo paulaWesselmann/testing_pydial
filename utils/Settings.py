@@ -62,6 +62,7 @@ random = None
 randomCount = 0
 root = ''
 global_currentturn = None
+global_numiter = None
 
 #==============================================================================================================
 # Methods (for settings globals)
@@ -82,8 +83,8 @@ def init(config_file, seed = None):
     #-----------------------------------------
     if seed is None:
         # no seed given at cmd line (the overriding input), so check config for a seed, else use None (which means use clock).    
-        if config.has_option("GENERAL",'seed'):
-            seed = config.getint("GENERAL","seed")
+        if config.has_option("GENERAL", 'seed'):
+            seed = config.getint("GENERAL", "seed")
     seed = set_seed(seed)
 
     return seed

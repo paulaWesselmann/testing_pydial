@@ -753,17 +753,19 @@ class DQNPolicy(Policy.Policy):
             reshaped_yi = np.vstack([np.expand_dims(x, 0) for x in y_i])
 
             # similar approach? predicted state, optimization, predloss? run together?
-            predgrads, predloss = self.dqn.curiosity_backprop(s_batch[5, :], s2_batch[5, :], a_batch_one_hot[5, :],
-                                                              mpc)  # in batches? or every episode? or every turn?
+            # predgrads, predloss = self.dqn.curiosity_backprop(s_batch[5, :], s2_batch[5, :], a_batch_one_hot[5, :],
+            #                                                   mpc)  # in batches? or every episode? or every turn?
             # need to add loss into policy optimization instead
             # i'd say in batches and same fashion as other trg?
-            print predgrads
+            # print predgrads
 
             # reshaped_yi = np.reshape(y_i, (min(self.minibatch_size, self.episodes[self.domainString].size()), 1))
             #print reshaped_yi.shape[0]
             #print self.episodes[self.domainString].size()
             predicted_q_value, xx, currentLoss = self.dqn.train(s_batch, a_batch_one_hot, reshaped_yi)
-            print 'pred V and loss:', predicted_q_value, currentLoss, xx
+            # print 'pred V and loss:', predicted_q_value, currentLoss, xx
+            s = s_batch[5, :]
+            pred_loss = self.dqn.train_curiosity(s_batch[5, :], s2_batch[5, :], a_batch_one_hot[5, :])
 
             #print 'y_i'
             #print y_i

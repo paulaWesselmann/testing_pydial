@@ -283,7 +283,6 @@ class FlatDomainOntology(object):
 
     def get_length_entity_by_features(self, constraints): 
         return self.db.get_length_entity_by_features(constraints=constraints)
-        
 
 
 class FlatOntologyManager(object):

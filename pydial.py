@@ -68,6 +68,8 @@ gpscale = 1
 
 gplotnum=1
 
+gbatchnum = 0
+
 isSingleDomain = False
 taskID = ""
 domain = ""
@@ -75,6 +77,7 @@ domains = []
 policytype = "hdc"
 
 policytypes = {}
+
 
 def help_command():
     """ Provide an overview of pydial functionality
@@ -142,6 +145,7 @@ def help_command():
     print "  pydial help        this overview"
     print "  pydial cmd --help  help for a specific command\n"
 
+
 def conventionCheck(name):
     global taskID,domain,policytype
     try:
@@ -154,6 +158,7 @@ def conventionCheck(name):
             raise Exception('domain name != config param')
     except Exception as x:
         pass#log.warn("Non-standard config name [%s] (preferred format ID-policytype-domain.cfg)", x.args[0])
+
 
 def getConfigId(configFileName):
     i = configFileName.rfind('.')
@@ -169,11 +174,13 @@ def getConfigId(configFileName):
     if j>=0: id = id[j+1:]
     return id
 
+
 def getOptionalConfigVar(configvarname, default='', section='exec_config'):
     value = default
     if Settings.config.has_option(section, configvarname):
         value = Settings.config.get(section, configvarname)
     return value
+
 
 def getRequiredDirectory(directoryname, section='exec_config'):
     assert Settings.config.has_option(section, directoryname),\
@@ -182,17 +189,20 @@ def getRequiredDirectory(directoryname, section='exec_config'):
     if dir[-1] != '/': dir = dir+'/'
     return dir
 
+
 def getOptionalConfigInt(configvarname, default='0',section='exec_config'):
     value = default
     if Settings.config.has_option(section, configvarname):
         value = Settings.config.getint(section, configvarname)
     return value
 
+
 def getOptionalConfigBool(configvarname, default='False', section='exec_config'):
     value = default
     if Settings.config.has_option(section, configvarname):
         value = Settings.config.getboolean(section, configvarname)
     return value
+
 
 def initialise(configId,config_file, seed, mode, trainerrorrate=None, trainsourceiteration=None,
                numtrainbatches=None, traindialogsperbatch=None, numtestdialogs=None,
@@ -205,7 +215,6 @@ def initialise(configId,config_file, seed, mode, trainerrorrate=None, trainsourc
     global taskID, domain, domains, policytype, gtesteverybatch, gpscale
     global gdeleteprevpolicy, isSingleModel
     global policytypes
-
 
     if seed is not None:
         seed = int(seed)
@@ -373,6 +382,7 @@ def initialise(configId,config_file, seed, mode, trainerrorrate=None, trainsourc
     logger.info("Seed = %d", seed)
     logger.info("Root = %s", Settings.root)
 
+
 def setupPolicy(domain, configId, trainerr, source_iteration,target_iteration, seed=None):
     if Settings.config.has_section("policy_" + domain):
         policy_section = "policy_" + domain
@@ -398,10 +408,10 @@ def setupPolicy(domain, configId, trainerr, source_iteration,target_iteration, s
             pd.mkdir()
         Settings.config.set(policy_section, "inpolicyfile", multi_policy_dir + inpolicyfile)
         Settings.config.set(policy_section, "outpolicyfile", multi_policy_dir + outpolicyfile)
-    return (inpolicyfile,outpolicyfile)
+    return (inpolicyfile, outpolicyfile)
 
 
-def trainBatch(domain, configId, trainerr, ndialogs, source_iteration,seed=None):
+def trainBatch(domain, configId, trainerr, ndialogs, source_iteration, seed=None):
     if isSingleDomain:
         (inpolicy, outpolicy) = setupPolicy(domain, configId, trainerr, source_iteration, source_iteration + 1,seed=seed)
         mess = "*** Training Iteration %s->%s: iter=%d, error-rate=%d, num-dialogs=%d ***" % (
@@ -485,6 +495,7 @@ def setEvalConfig(domain, configId, evalerr, ndialogs, iteration, seed=None):
     cf = open(confsavefile, 'w')
     Settings.config.write(cf)
 
+
 def evalPolicy(domain, configId, evalerr, ndialogs, iteration, seed=None):
     if isSingleDomain:
         setEvalConfig(domain, configId, evalerr, ndialogs, iteration, seed=seed)
@@ -497,12 +508,14 @@ def evalPolicy(domain, configId, evalerr, ndialogs, iteration, seed=None):
     simulator = Simulate.SimulationSystem(error_rate=error)
     simulator.run_dialogs(ndialogs)
 
+
 def getIntParam(line,key):
     m = re.search(" %s *= *(\d+)" % (key), line)
     if m==None:
         print "Cant find int %s in %s" % (key,line)
         exit(0)
     return int(m.group(1))
+
 
 def getFloatRange(line,key):
     m = re.search(" %s *= *(\-?\d+\.\d+) *\+- *(\d+\.\d+)" % (key), line)
@@ -511,8 +524,10 @@ def getFloatRange(line,key):
         exit(0)
     return (float(m.group(1)),float(m.group(2)))
 
+
 def getDomainFromLog(l):
     return l.split()[-1].split(',')
+
 
 def extractEvalData(lines):
     evalData = {}
@@ -569,6 +584,7 @@ def extractEvalData(lines):
                 evalData[cur_domain][erate]['turns'] = getFloatRange(l,'Average turns')
     return evalData
 
+
 def plotTrain(dname,rtab,stab,block=True,saveplot=False):
     global gplotnum
     policylist = sorted(rtab.keys())
@@ -607,6 +623,7 @@ def plotTrain(dname,rtab,stab,block=True,saveplot=False):
         print 'plot saved as', dname
     else:
         plt.show(block=block)
+
 
 def plotTest(dname,rtab,stab,block=True,saveplot=False):
     global gplotnum
@@ -770,6 +787,7 @@ def train_command(configfile, seed=None, trainerrorrate=None,trainsourceiteratio
         Results are stored in the directories specified in the [exec_config] section of the config file.
         Optional parameters over-ride the corresponding config parameters of the same name.
     """
+
     try:
         if seed and seed.startswith('('):
             seeds = seed.replace('(','').replace(')','').split(',')
@@ -789,7 +807,8 @@ def train_command(configfile, seed=None, trainerrorrate=None,trainsourceiteratio
             initialise(configId,configfile,seed,"train",trainerrorrate=trainerrorrate,
                        trainsourceiteration=trainsourceiteration,numtrainbatches=numtrainbatches,
                        traindialogsperbatch=traindialogsperbatch,traindomains=traindomains,dbprefix=dbprefix)
-            for i in range(gtrainsourceiteration,gtrainsourceiteration+gnumtrainbatches):
+            for i in range(gtrainsourceiteration, gtrainsourceiteration+gnumtrainbatches):
+                Settings.global_numiter = i + 1
                 if isSingleDomain:
                     logger.results('List of domains: {}'.format(domain))
                     trainBatch(domain, configId, gtrainerrorrate, gtraindialogsperbatch, i, seed=seed)
@@ -1144,5 +1163,9 @@ def chat_command(configfile, seed=None, trainerrorrate=None, trainsourceiteratio
         except KeyboardInterrupt:
             print "\nCommand Aborted from Keyboard"
 
+
+# class addInfo(object):
+#     def __init__(self, gbatchnum):
+#         self.batch_number = gbatchnum
 
 run()

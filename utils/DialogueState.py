@@ -47,7 +47,6 @@ class DialogueState(object):
     The encapsulation of the dialogue state with a definition of the main interface.
     '''
 
-
     def __init__(self):
         self.domainStates = {}
         self.lastSystemAct = {}
@@ -57,7 +56,7 @@ class DialogueState(object):
         '''
         Access to the dialogue state (belief state) of the specified domain. Returns None if there is no state yet.
         
-        :param dstring: the string identifier of the domain the state should be retreived from
+        :param dstring: the string identifier of the domain the state should be retrieved from
         :type dstring: str
         
         :returns: the state dict or None
