@@ -1,0 +1,32 @@
+RESULTS:: 18:39:15: root                                   pydial.py <train_command>804 :  List of domains: CamRestaurants
+RESULTS:: 18:39:15: root                                      pydial.py <trainBatch>418 :  *** Training Iteration env1-dqn-eps04-CR-seed0-00.0->env1-dqn-eps04-CR-seed0-00.1: iter=0, error-rate=0, num-dialogs=1000 ***
+ERROR  :: 18:39:16: root                              ContextLogger.py <_exceptHook>263 :  Uncaught exception: <type 'exceptions.AttributeError'>( type object 'Evaluator' has no attribute 'num_turns' )
+          Traceback (most recent call last):
+            File "pydial.py", line 1162, in <module>
+              run()
+            File "/usr/local/lib/python2.7/dist-packages/scriptine/command.py", line 196, in autocmds
+              add_verbosity_option=add_verbosity_option)
+            File "/usr/local/lib/python2.7/dist-packages/scriptine/command.py", line 105, in parse_and_run_function
+              return function(*args[:len(required_args)], **kw)
+            File "pydial.py", line 792, in train_command
+              traindomains=traindomains, dbprefix=dbprefix)
+            File "pydial.py", line 805, in train_command
+              trainBatch(domain, configId, gtrainerrorrate, gtraindialogsperbatch, i, seed=seed)
+            File "pydial.py", line 457, in trainBatch
+              simulator.run_dialogs(ndialogs)
+            File "/home/dial/pw439/pydial/Simulate.py", line 128, in run_dialogs
+              self.run(session_id='simulate_dialog'+str(i), sim_level=self.sim_level)
+            File "/home/dial/pw439/pydial/Simulate.py", line 203, in run
+              domainSimulatedUsers=self.simulator.simUserManagers)
+            File "/home/dial/pw439/pydial/Agent.py", line 291, in continue_call
+              self._evaluate_agents_turn(domainSimulatedUsers, sys_act, state)
+            File "/home/dial/pw439/pydial/Agent.py", line 560, in _evaluate_agents_turn
+              self.reward = self.evaluation_manager.turnReward(domainString=operatingDomain, turnInfo=turnInfo)
+            File "/home/dial/pw439/pydial/evaluation/EvaluationManager.py", line 271, in turnReward
+              return self.domainEvaluators[domainString].turnReward(turnInfo)
+            File "/home/dial/pw439/pydial/evaluation/EvaluationManager.py", line 89, in turnReward
+              reward = self._getTurnReward(turnInfo)
+            File "/home/dial/pw439/pydial/evaluation/SuccessEvaluator.py", line 141, in _getTurnReward
+              if Evaluator.num_turns != 0:
+          AttributeError: type object 'Evaluator' has no attribute 'num_turns'
+          
