@@ -6,17 +6,8 @@
   <component name="ChangeListManager">
     <list default="true" id="b592da6c-6a89-487d-a593-071274b010d5" name="Default" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Agent.py" beforeDir="false" afterPath="$PROJECT_DIR$/Agent.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/_benchmarklogs/env1-dqn-CR-seed0-00.1-4.train.log" beforeDir="false" afterPath="$PROJECT_DIR$/_benchmarklogs/env1-dqn-CR-seed0-00.1-4.train.log" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/_benchmarkpolicies/checkpoint" beforeDir="false" afterPath="$PROJECT_DIR$/_benchmarkpolicies/checkpoint" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/constants_prediction_curiosity.py" beforeDir="false" afterPath="$PROJECT_DIR$/constants_prediction_curiosity.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/evaluation/EvaluationManager.py" beforeDir="false" afterPath="$PROJECT_DIR$/evaluation/EvaluationManager.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/evaluation/SuccessEvaluator.py" beforeDir="false" afterPath="$PROJECT_DIR$/evaluation/SuccessEvaluator.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/policy/DQNPolicy.py" beforeDir="false" afterPath="$PROJECT_DIR$/policy/DQNPolicy.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/policy/DRL/dqn.py" beforeDir="false" afterPath="$PROJECT_DIR$/policy/DRL/dqn.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/policy/ENACPolicy.py" beforeDir="false" afterPath="$PROJECT_DIR$/policy/ENACPolicy.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pydial.py" beforeDir="false" afterPath="$PROJECT_DIR$/pydial.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/utils/Settings.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/Settings.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -30,8 +21,8 @@
       <file leaf-file-name="DQNPolicy.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/policy/DQNPolicy.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="349">
-              <caret line="344" selection-start-line="342" selection-end-line="344" />
+            <state relative-caret-position="599">
+              <caret line="354" lean-forward="true" selection-start-line="354" selection-end-line="354" />
             </state>
           </provider>
         </entry>
@@ -45,9 +36,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="cur_env1-dqn-CR.cfg" pinned="false" current-in-tab="true">
+      <file leaf-file-name="cur_env1-dqn-CR.cfg" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/config/pydial_benchmarks/cur_env1-dqn-CR.cfg">
-          <provider selected="true" editor-type-id="text-editor" />
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="-375" />
+          </provider>
         </entry>
       </file>
       <file leaf-file-name="matmul.py" pinned="false" current-in-tab="false">
@@ -57,6 +50,18 @@
               <caret line="12" column="6" selection-start-line="12" selection-end-line="12" selection-end-column="28" />
               <folding>
                 <element signature="e#0#10#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="SuccessEvaluator.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/evaluation/SuccessEvaluator.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="772">
+              <caret line="175" column="40" lean-forward="true" selection-start-line="175" selection-start-column="40" selection-end-line="175" selection-end-column="40" />
+              <folding>
+                <element signature="e#947#978#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -77,11 +82,20 @@
       <file leaf-file-name="dqn.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/policy/DRL/dqn.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-1290">
-              <caret line="112" column="34" selection-start-line="112" selection-start-column="34" selection-end-line="112" selection-end-column="34" />
+            <state relative-caret-position="710">
+              <caret line="192" column="88" lean-forward="true" selection-start-line="192" selection-start-column="88" selection-end-line="192" selection-end-column="88" />
               <folding>
                 <element signature="e#1073#1096#0" expanded="true" />
               </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="EvaluationManager.py" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/evaluation/EvaluationManager.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="1065">
+              <caret line="89" column="8" lean-forward="true" selection-start-line="89" selection-start-column="8" selection-end-line="89" selection-end-column="8" />
             </state>
           </provider>
         </entry>
@@ -151,7 +165,7 @@
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="28_5backprob" />
+        <entry key="$PROJECT_DIR$" value="running_optimizitaion" />
       </map>
     </option>
     <favorite-branches>
@@ -363,7 +377,28 @@
       <option name="project" value="LOCAL" />
       <updated>1527870824840</updated>
     </task>
-    <option name="localTasksCounter" value="6" />
+    <task id="LOCAL-00006" summary="some fixes">
+      <created>1528371065171</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1528371065171</updated>
+    </task>
+    <task id="LOCAL-00007" summary="some fixes">
+      <created>1528371087493</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1528371087493</updated>
+    </task>
+    <task id="LOCAL-00008" summary="some fixes">
+      <created>1528371220103</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1528371220103</updated>
+    </task>
+    <option name="localTasksCounter" value="9" />
     <servers />
   </component>
   <component name="TodoView">
@@ -377,12 +412,13 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="65" y="-4" width="3775" height="2164" extended-state="6" />
+    <editor active="true" />
     <layout>
       <window_info content_ui="combo" id="Project" order="0" sideWeight="0.4980916" visible="true" weight="0.25260904" />
       <window_info anchor="bottom" id="TODO" order="6" weight="0.32919848" />
-      <window_info anchor="bottom" id="Event Log" order="7" side_tool="true" weight="0.32919848" />
-      <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.32916668" />
-      <window_info anchor="bottom" id="Version Control" order="7" weight="0.32916668" />
+      <window_info anchor="bottom" id="Event Log" order="7" sideWeight="0.5001338" side_tool="true" weight="0.32916668" />
+      <window_info anchor="bottom" id="Run" order="2" weight="0.32916668" />
+      <window_info anchor="bottom" id="Version Control" order="7" sideWeight="0.49986622" visible="true" weight="0.32916668" />
       <window_info anchor="bottom" id="Python Console" order="7" weight="0.32604167" />
       <window_info id="Structure" order="1" sideWeight="0.5019084" side_tool="true" weight="0.19050218" />
       <window_info anchor="bottom" id="Terminal" order="7" weight="0.328125" />
@@ -451,7 +487,8 @@
     <MESSAGE value="stuff from today testing to use github&#10;hopefully i'm in the test branch" />
     <MESSAGE value="before backprob implementation" />
     <MESSAGE value="need clean up" />
-    <option name="LAST_COMMIT_MESSAGE" value="need clean up" />
+    <MESSAGE value="some fixes" />
+    <option name="LAST_COMMIT_MESSAGE" value="some fixes" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -661,13 +698,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/evaluation/EvaluationManager.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="140">
-          <caret line="76" column="11" selection-start-line="76" selection-start-column="11" selection-end-line="76" selection-end-column="11" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/_testlogs/tasks.log">
       <provider selected="true" editor-type-id="text-editor" />
     </entry>
@@ -745,16 +775,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/evaluation/SuccessEvaluator.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="472">
-          <caret line="163" column="39" selection-start-line="163" selection-start-column="39" selection-end-line="163" selection-end-column="39" />
-          <folding>
-            <element signature="e#947#978#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/model_prediction_curiosity.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="365">
@@ -799,30 +819,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/policy/DRL/dqn.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-1290">
-          <caret line="112" column="34" selection-start-line="112" selection-start-column="34" selection-end-line="112" selection-end-column="34" />
-          <folding>
-            <element signature="e#1073#1096#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/constants_prediction_curiosity.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="575">
-          <caret line="23" selection-start-line="23" selection-end-line="23" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/policy/DQNPolicy.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="349">
-          <caret line="344" selection-start-line="342" selection-end-line="344" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/_benchmarklogs/env1-dqn-CR-seed0-00.1-4.train_inital.log">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="750">
@@ -859,7 +855,50 @@
       <provider selected="true" editor-type-id="text-editor" />
     </entry>
     <entry file="file://$PROJECT_DIR$/config/pydial_benchmarks/cur_env1-dqn-CR.cfg">
-      <provider selected="true" editor-type-id="text-editor" />
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-375" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/constants_prediction_curiosity.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="575">
+          <caret line="23" selection-start-line="23" selection-end-line="23" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/policy/DRL/dqn.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="710">
+          <caret line="192" column="88" lean-forward="true" selection-start-line="192" selection-start-column="88" selection-end-line="192" selection-end-column="88" />
+          <folding>
+            <element signature="e#1073#1096#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/policy/DQNPolicy.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="599">
+          <caret line="354" lean-forward="true" selection-start-line="354" selection-end-line="354" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/evaluation/SuccessEvaluator.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="772">
+          <caret line="175" column="40" lean-forward="true" selection-start-line="175" selection-start-column="40" selection-end-line="175" selection-end-column="40" />
+          <folding>
+            <element signature="e#947#978#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/evaluation/EvaluationManager.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1065">
+          <caret line="89" column="8" lean-forward="true" selection-start-line="89" selection-start-column="8" selection-end-line="89" selection-end-column="8" />
+        </state>
+      </provider>
     </entry>
   </component>
   <component name="masterDetails">
