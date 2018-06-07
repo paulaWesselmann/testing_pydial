@@ -650,6 +650,7 @@ def plotTest(dname,rtab,stab,block=True,saveplot=False):
     plt.ylabel('Success')
     plt.show(block=block)
 
+
 def printTable(title, tab):
     firstrow = True
     policylist = sorted(tab.keys())
@@ -665,6 +666,7 @@ def printTable(title, tab):
             s+= "%6.1f +-%4.1f" % (tab[policy]['y'][i],tab[policy]['var'][i])
         print s
     print ""
+
 
 def tabulateTrain(dataSet):
     #pp.pprint(dataSet)
@@ -881,7 +883,7 @@ def test_command(configfile, iteration, seed=None, testerrorrate=None, trainerro
             orig_seed = '0'
             if seed:
                 orig_seed = seed
-                seed = int(seed) + 100 # To have a different seed during training and testing
+                seed = int(seed) + 100  # To have a different seed during training and testing
             initialise(configId, configfile, seed, "eval", iteration=i, testerrorrate=testerrorrate,
                        testenderrorrate=enErr, trainerrorrate=trainerrorrate,
                        numtestdialogs=numtestdialogs,testdomains=testdomains, dbprefix=dbprefix)

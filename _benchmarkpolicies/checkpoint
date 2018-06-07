@@ -1,2 +1,2 @@
-model_checkpoint_path: "env1-dqn-CR-seed2-00.1.dqn.ckpt"
-all_model_checkpoint_paths: "env1-dqn-CR-seed2-00.1.dqn.ckpt"
+model_checkpoint_path: "env1-dqn-CR-00.1.dqn.ckpt"
+all_model_checkpoint_paths: "env1-dqn-CR-00.1.dqn.ckpt"

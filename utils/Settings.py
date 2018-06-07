@@ -89,6 +89,7 @@ def init(config_file, seed = None):
 
     return seed
 
+
 def load_config(config_file):
     '''
     Loads the passed config file into a python ConfigParser().
@@ -107,6 +108,7 @@ def load_config(config_file):
     else:
         # load empty config
         config = ConfigParser.ConfigParser()
+
 
 def load_root(rootIn=None):
     '''

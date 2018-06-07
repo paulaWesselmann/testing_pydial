@@ -623,7 +623,6 @@ class ENACPolicy(Policy.Policy):
                 self.episodes[self.domainString].sample_batch()
 
             discounted_return_batch = []
-        
 
             def weightsImportanceSampling(mu_policy, r_batch):
                 mu_policy = np.asarray(mu_policy)

@@ -649,7 +649,7 @@ class DialogueAgent(object):
         #--------------------------------------------------------------------------------------------------------- 
         self.policy_manager.record(domainString=operatingDomain, reward=self.reward) 
         state_xx = np.asarray(dqn.flatten_belief(state, domainUtil))
-        self.prev_state = state_xx
+        self.prev_state = state_xx # small difference to actual prev state vec due to rounding
         return
 
     def _print_turn(self):
@@ -725,8 +725,7 @@ class DialogueAgent(object):
             # still possibly return true if *special* domains [topictracker, wikipedia] have reached their own limits
             if sys_act.to_string() in ['bye(toptictrackertimedout)', 'bye(wikipediatimedout)', 'bye(topictrackeruserended)']:
                 self.ENDING_DIALOG = True   # SYSTEM ENDS
-            
-    
+
     def _check_USER_ending(self, state = None, sys_act = None):
         '''Sets boolean self.ENDING_DIALOG if user has ended call. 
         

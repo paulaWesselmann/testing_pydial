@@ -29,6 +29,9 @@ Author: Pei-Hao Su
 """
 import tensorflow as tf
 import model_prediction_curiosity as mpc
+import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+
 
 # ===========================
 #   Deep Q Network
@@ -89,27 +92,31 @@ class DeepQNetwork(object):
         #self.action_maxQ_target = tf.reduce_sum(self.target_Qout * action_maxQ_one_hot, reduction_indices=1, name='a_maxQ_target')
 
         # Define loss and optimization Op
+        # todo only if choice in config curious do curious this is for everything now
+        from constants_prediction_curiosity import constants
+        self.predictor = mpc.StateActionPredictor(268, 16, designHead='pydial')  # todo len state len action!
+        self.predloss = constants['PREDICTION_LR_SCALE'] * (
+                    self.predictor.invloss * (1 - constants['FORWARD_LOSS_WT']) +
+                    self.predictor.forwardloss * constants['FORWARD_LOSS_WT'])
+
         self.diff = self.sampled_q - self.pred_q
         self.loss = tf.reduce_mean(self.clipped_error(self.diff), name='loss')
 
         self.optimizer = tf.train.AdamOptimizer(self.learning_rate)
-        self.optimize = self.optimizer.minimize(self.loss)
+        self.optimize = self.optimizer.minimize(self.loss + self.predloss)
 
         gs = tf.gradients(self.loss, self.network_params)
         capped_gvs = [(tf.clip_by_value(grad, -3., 3.), var) for grad, var in zip(gs, self.network_params)]
 
         self.optimize = self.optimizer.apply_gradients(capped_gvs)
 
-        from constants_prediction_curiosity import constants
-        self.predictor = mpc.StateActionPredictor(268, 16, designHead='pydial') #todo len state len action!
-
         # computing predictor loss
         # if self.unsup:
         #     if 'state' in unsupType:
         #         self.predloss = constants['PREDICTION_LR_SCALE'] * predictor.forwardloss
         #     else:
-        self.predloss = constants['PREDICTION_LR_SCALE'] * (self.predictor.invloss * (1 - constants['FORWARD_LOSS_WT']) +
-                                                            self.predictor.forwardloss * constants['FORWARD_LOSS_WT'])
+        # self.predloss = constants['PREDICTION_LR_SCALE'] * (self.predictor.invloss * (1 - constants['FORWARD_LOSS_WT']) +
+        #                                                     self.predictor.forwardloss * constants['FORWARD_LOSS_WT'])
         #
         # # Define loss and optimization Op
         # self.diff = self.sampled_q - self.pred_q
@@ -135,7 +142,7 @@ class DeepQNetwork(object):
 
             W_value = tf.Variable(tf.truncated_normal([h2_size, 1], stddev=0.01))
             b_value = tf.Variable(tf.zeros([1]))
-            value_out  = tf.matmul(h_value, W_value) + b_value
+            value_out = tf.matmul(h_value, W_value) + b_value
 
             # advantage function
             W_advantage = tf.Variable(tf.truncated_normal([h1_size, h2_size], stddev=0.01))
@@ -195,6 +202,24 @@ class DeepQNetwork(object):
             self.action: action,
             self.sampled_q: sampled_q
         })
+
+    def train_curious(self, inputs, action, sampled_q, inputs2):
+        # self.loss = self.loss + self.predloss
+        # self.optimize = self.optimizer.minimize(self.loss + self.predloss)
+        writer = tf.summary.FileWriter('./graphs', tf.get_default_graph())
+        predicted_q_value, _, currentLoss, curiosity_loss = self.sess.run([self.pred_q, self.optimize, self.loss, self.predloss], feed_dict={
+            self.inputs: inputs,
+            self.action: action,
+            self.sampled_q: sampled_q,
+
+            self.predictor.s1: inputs,
+            self.predictor.s2: inputs2,
+            self.predictor.asample: action
+        })
+        writer = tf.summary.FileWriter('./graphs', self.sess.graph)
+        writer.close()
+        return predicted_q_value, currentLoss, curiosity_loss
+        #todo figure out inputs for predloss(batch vs single? s1 vs s2 is it really state and prev? )
 
     def train_curiosity(self, prev_state_vec, state_vec, action_1hot):
         return self.sess.run([self.predloss], feed_dict={self.predictor.s1: [prev_state_vec],
