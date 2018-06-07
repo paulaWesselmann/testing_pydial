@@ -39,6 +39,7 @@ Copyright CUED Dialogue Systems Group 2015 - 2017
 
 '''
 
+import time
 import copy
 import os
 import sys
@@ -148,7 +149,7 @@ class DQNPolicy(Policy.Policy):
 
         # self.prev_state = None
         # self.predloss = None
-
+        self.curiosityreward = True #todo change to false when config file fixed!
 
         # parameter settings
         if 0:#cfg.has_option('dqnpolicy', 'n_in'): #ic304: this was giving me a weird error, disabled it until i can check it deeper
@@ -338,6 +339,9 @@ class DQNPolicy(Policy.Policy):
         if cfg.has_option('dqnpolicy_' + domainString, 'training_frequency'):
             self.training_frequency = cfg.getint('dqnpolicy_' + domainString, 'training_frequency')
 
+        if cfg.has_option('eval', 'curiosityreward'):
+            self.curiosityreward = cfg.getboolean('eval', 'curiosityreward')
+
         """
         self.shuffle = False
         if cfg.has_option('dqnpolicy_'+domainString, 'experience_replay'):
@@ -360,6 +364,7 @@ class DQNPolicy(Policy.Policy):
             policytype = cfg.get('policy', 'policytype')
         if policytype != 'feudal':
             # init session
+            writer = tf.summary.FileWriter('./graphs', tf.get_default_graph()) #todo test test
             self.sess = tf.Session()
             with tf.device("/cpu:0"):
 
@@ -762,16 +767,36 @@ class DQNPolicy(Policy.Policy):
             # reshaped_yi = np.reshape(y_i, (min(self.minibatch_size, self.episodes[self.domainString].size()), 1))
             #print reshaped_yi.shape[0]
             #print self.episodes[self.domainString].size()
-            predicted_q_value, xx, currentLoss = self.dqn.train(s_batch, a_batch_one_hot, reshaped_yi)
-            # print 'pred V and loss:', predicted_q_value, currentLoss, xx
-            s = s_batch[5, :]
-            pred_loss = self.dqn.train_curiosity(s_batch[5, :], s2_batch[5, :], a_batch_one_hot[5, :])
 
+            # # opt1:
+            # start = time.time()
+            # predicted_q_value, _, currentLoss = self.dqn.train(s_batch, a_batch_one_hot, reshaped_yi) #opt1
+            # end = time.time()
+            # print 'dqn.train time: ', end-start
+            # # print 'pred V and loss:', predicted_q_value, currentLoss
+            #
+            # start = time.time()
+            # pred_loss = self.dqn.train_curiosity(s_batch[5, :], s2_batch[5, :], a_batch_one_hot[5, :]) #opt1
+            # end = time.time()
+            # print 'dqn.train_curiosity time: ', end - start
+
+            #print 'curiosity pred loss: ', pred_loss
+
+            # opt2: better (more tidy) below
+            start = time.time()
+            if self.curiosityreward:
+                predicted_q_value, currentLoss, curiosity_loss = self.dqn.train_curious(s_batch, a_batch_one_hot, reshaped_yi, s2_batch)
+            else:
+                predicted_q_value, _, currentLoss = self.dqn.train(s_batch, a_batch_one_hot, reshaped_yi)
+            end = time.time()
+
+            print 'train time: ', end - start
             #print 'y_i'
             #print y_i
-            #print 'currentLoss', currentLoss
+            print 'currentLoss', currentLoss
             #print 'predict Q'
             #print predicted_q_value
+            print 'curiosity loss: ', curiosity_loss
 
             if self.episodecount % 1 == 0:
                 # Update target networks
