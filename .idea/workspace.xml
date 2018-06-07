@@ -4,7 +4,7 @@
     <bookmark url="file://$USER_HOME$/noreward-rl/src/model.py" description="w = tf.get_variable(name + &quot;/w&quot;, [x.get_shape()[1]..." line="75" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="b592da6c-6a89-487d-a593-071274b010d5" name="Default" comment="">
+    <list default="true" id="b592da6c-6a89-487d-a593-071274b010d5" name="Default" comment="to check file">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/evaluation/EvaluationManager.py" beforeDir="false" afterPath="$PROJECT_DIR$/evaluation/EvaluationManager.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/evaluation/SuccessEvaluator.py" beforeDir="false" afterPath="$PROJECT_DIR$/evaluation/SuccessEvaluator.py" afterDir="false" />
@@ -18,7 +18,7 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="DQNPolicy.py" pinned="false" current-in-tab="false">
+      <file leaf-file-name="DQNPolicy.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/policy/DQNPolicy.py">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="599">
@@ -91,11 +91,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="EvaluationManager.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="EvaluationManager.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/evaluation/EvaluationManager.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1065">
-              <caret line="89" column="8" lean-forward="true" selection-start-line="89" selection-start-column="8" selection-end-line="89" selection-end-column="8" />
+            <state relative-caret-position="665">
+              <caret line="73" column="63" lean-forward="true" selection-start-line="73" selection-start-column="63" selection-end-line="73" selection-end-column="63" />
             </state>
           </provider>
         </entry>
@@ -176,6 +176,7 @@
               <list>
                 <branch-info repo="$PROJECT_DIR$" source="28_5backprob" />
                 <branch-info repo="$PROJECT_DIR$" source="running_optimizitaion" />
+                <branch-info repo="$PROJECT_DIR$" source="Yen-Chen" />
               </list>
             </value>
           </entry>
@@ -398,7 +399,14 @@
       <option name="project" value="LOCAL" />
       <updated>1528371220103</updated>
     </task>
-    <option name="localTasksCounter" value="9" />
+    <task id="LOCAL-00009" summary="to check file">
+      <created>1528371522724</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1528371522724</updated>
+    </task>
+    <option name="localTasksCounter" value="10" />
     <servers />
   </component>
   <component name="TodoView">
@@ -418,7 +426,7 @@
       <window_info anchor="bottom" id="TODO" order="6" weight="0.32919848" />
       <window_info anchor="bottom" id="Event Log" order="7" sideWeight="0.5001338" side_tool="true" weight="0.32916668" />
       <window_info anchor="bottom" id="Run" order="2" weight="0.32916668" />
-      <window_info anchor="bottom" id="Version Control" order="7" sideWeight="0.49986622" visible="true" weight="0.32916668" />
+      <window_info active="true" anchor="bottom" id="Version Control" order="7" sideWeight="0.49986622" visible="true" weight="0.32916668" />
       <window_info anchor="bottom" id="Python Console" order="7" weight="0.32604167" />
       <window_info id="Structure" order="1" sideWeight="0.5019084" side_tool="true" weight="0.19050218" />
       <window_info anchor="bottom" id="Terminal" order="7" weight="0.328125" />
@@ -488,7 +496,8 @@
     <MESSAGE value="before backprob implementation" />
     <MESSAGE value="need clean up" />
     <MESSAGE value="some fixes" />
-    <option name="LAST_COMMIT_MESSAGE" value="some fixes" />
+    <MESSAGE value="to check file" />
+    <option name="LAST_COMMIT_MESSAGE" value="to check file" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -876,10 +885,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/policy/DQNPolicy.py">
+    <entry file="file://$PROJECT_DIR$/evaluation/EvaluationManager.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="599">
-          <caret line="354" lean-forward="true" selection-start-line="354" selection-end-line="354" />
+        <state relative-caret-position="665">
+          <caret line="73" column="63" lean-forward="true" selection-start-line="73" selection-start-column="63" selection-end-line="73" selection-end-column="63" />
         </state>
       </provider>
     </entry>
@@ -893,10 +902,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/evaluation/EvaluationManager.py">
+    <entry file="file://$PROJECT_DIR$/policy/DQNPolicy.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1065">
-          <caret line="89" column="8" lean-forward="true" selection-start-line="89" selection-start-column="8" selection-end-line="89" selection-end-column="8" />
+        <state relative-caret-position="599">
+          <caret line="354" lean-forward="true" selection-start-line="354" selection-end-line="354" />
         </state>
       </provider>
     </entry>
