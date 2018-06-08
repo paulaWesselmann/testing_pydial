@@ -364,7 +364,7 @@ class DQNPolicy(Policy.Policy):
             policytype = cfg.get('policy', 'policytype')
         if policytype != 'feudal':
             # init session
-            writer = tf.summary.FileWriter('./graphs', tf.get_default_graph()) #todo test test
+            # writer = tf.summary.FileWriter('./graphs', tf.get_default_graph()) #todo test test
             self.sess = tf.Session()
             with tf.device("/cpu:0"):
 

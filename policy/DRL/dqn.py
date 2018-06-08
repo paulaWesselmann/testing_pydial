@@ -94,21 +94,27 @@ class DeepQNetwork(object):
         # Define loss and optimization Op
         # todo only if choice in config curious do curious this is for everything now
         from constants_prediction_curiosity import constants
-        self.predictor = mpc.StateActionPredictor(268, 16, designHead='pydial')  # todo len state len action!
-        self.predloss = constants['PREDICTION_LR_SCALE'] * (
+        with tf.variable_scope('curiosity'):
+            self.predictor = mpc.StateActionPredictor(268, 16, designHead='pydial')  # todo len state len action!
+            self.predloss = constants['PREDICTION_LR_SCALE'] * (
                     self.predictor.invloss * (1 - constants['FORWARD_LOSS_WT']) +
                     self.predictor.forwardloss * constants['FORWARD_LOSS_WT'])
+        self.optimizer2 = tf.train.AdamOptimizer(self.learning_rate)
+        self.optimize2 = self.optimizer2.minimize(self.predloss)
+        # gs2 = tf.gradients(self.predloss,tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope='curiosity'))
+        # gs2 = tf.gradients(self.predloss, self.network_params)
+        # capped_gvs2 = [(tf.clip_by_value(grad, -3., 3.), var) for grad, var in zip(gs2, self.network_params)]
+        # self.optimize2 = self.optimizer2.apply_gradients(capped_gvs2)
 
-        self.diff = self.sampled_q - self.pred_q
-        self.loss = tf.reduce_mean(self.clipped_error(self.diff), name='loss')
-
+        with tf.variable_scope('policy'):
+            self.diff = self.sampled_q - self.pred_q
+            self.loss = tf.reduce_mean(self.clipped_error(self.diff), name='loss')
         self.optimizer = tf.train.AdamOptimizer(self.learning_rate)
-        self.optimize = self.optimizer.minimize(self.loss + self.predloss)
-
+        self.optimize = self.optimizer.minimize(self.loss)
         gs = tf.gradients(self.loss, self.network_params)
         capped_gvs = [(tf.clip_by_value(grad, -3., 3.), var) for grad, var in zip(gs, self.network_params)]
-
         self.optimize = self.optimizer.apply_gradients(capped_gvs)
+
 
         # computing predictor loss
         # if self.unsup:
@@ -206,8 +212,8 @@ class DeepQNetwork(object):
     def train_curious(self, inputs, action, sampled_q, inputs2):
         # self.loss = self.loss + self.predloss
         # self.optimize = self.optimizer.minimize(self.loss + self.predloss)
-        writer = tf.summary.FileWriter('./graphs', tf.get_default_graph())
-        predicted_q_value, _, currentLoss, curiosity_loss = self.sess.run([self.pred_q, self.optimize, self.loss, self.predloss], feed_dict={
+        # writer = tf.summary.FileWriter('./graphs', tf.get_default_graph())
+        predicted_q_value, _, _, currentLoss, curiosity_loss = self.sess.run([self.pred_q, self.optimize,self.optimize2, self.loss, self.predloss], feed_dict={
             self.inputs: inputs,
             self.action: action,
             self.sampled_q: sampled_q,
@@ -216,8 +222,8 @@ class DeepQNetwork(object):
             self.predictor.s2: inputs2,
             self.predictor.asample: action
         })
-        writer = tf.summary.FileWriter('./graphs', self.sess.graph)
-        writer.close()
+        # writer = tf.summary.FileWriter('./graphs', self.sess.graph)
+        # writer.close()
         return predicted_q_value, currentLoss, curiosity_loss
         #todo figure out inputs for predloss(batch vs single? s1 vs s2 is it really state and prev? )
 
