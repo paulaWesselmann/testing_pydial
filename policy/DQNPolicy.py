@@ -611,6 +611,8 @@ class DQNPolicy(Policy.Policy):
             dip_state = DIP_state(beliefstate.domainStates[beliefstate.currentdomain], self.domainString)
         execMask = self.summaryaction.getExecutableMask(beliefstate, self.lastSystemAction)
 
+        # self.epsilon = 0 #todo this is for curiosity purpose
+
         if self.exploration_type == 'e-greedy':
             # epsilon greedy
             if self.is_training and utils.Settings.random.rand() < self.epsilon:
@@ -771,32 +773,32 @@ class DQNPolicy(Policy.Policy):
             # # opt1:
             # start = time.time()
             # predicted_q_value, _, currentLoss = self.dqn.train(s_batch, a_batch_one_hot, reshaped_yi) #opt1
-            # end = time.time()
-            # print 'dqn.train time: ', end-start
+            # # end = time.time()
+            # # print 'dqn.train time: ', end-start
             # # print 'pred V and loss:', predicted_q_value, currentLoss
             #
-            # start = time.time()
+            # # start = time.time()
             # pred_loss = self.dqn.train_curiosity(s_batch[5, :], s2_batch[5, :], a_batch_one_hot[5, :]) #opt1
-            # end = time.time()
-            # print 'dqn.train_curiosity time: ', end - start
-
-            #print 'curiosity pred loss: ', pred_loss
+            # # end = time.time()
+            # # print 'dqn.train_curiosity time: ', end - start
+            #
+            # #print 'curiosity pred loss: ', pred_loss
 
             # opt2: better (more tidy) below
-            start = time.time()
+            # start = time.time()
             if self.curiosityreward:
                 predicted_q_value, currentLoss, curiosity_loss = self.dqn.train_curious(s_batch, a_batch_one_hot, reshaped_yi, s2_batch)
             else:
                 predicted_q_value, _, currentLoss = self.dqn.train(s_batch, a_batch_one_hot, reshaped_yi)
-            end = time.time()
+            # end = time.time()
 
-            print 'train time: ', end - start
+            # print 'train time: ', end - start
             #print 'y_i'
             #print y_i
-            print 'currentLoss', currentLoss
+            # print 'currentLoss', currentLoss
             #print 'predict Q'
             #print predicted_q_value
-            print 'curiosity loss: ', curiosity_loss
+            # print 'curiosity loss: ', curiosity_loss
 
             if self.episodecount % 1 == 0:
                 # Update target networks
@@ -820,12 +822,14 @@ class DQNPolicy(Policy.Policy):
             #print "episode", self.episodecount
             # save_path = self.saver.save(self.sess, self.out_policy_file+'.ckpt')
             self.dqn.save_network(self.out_policy_file + '.dqn.ckpt')
-
+            # print('saved successfully')
             f = open(self.out_policy_file + '.episode', 'wb')
+            # print('opend f')
             for obj in [self.samplecount, self.episodes[self.domainString]]:
                 pickle.dump(obj, f, protocol=pickle.HIGHEST_PROTOCOL)
             f.close()
             # logger.info("Saving model to %s and replay buffer..." % save_path)
+            print('done saving stuff continuing normal')
 
     def loadPolicy(self, filename):
         """
