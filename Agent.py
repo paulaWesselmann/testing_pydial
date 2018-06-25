@@ -53,6 +53,7 @@ import numpy as np
 import model_prediction_curiosity as mpc
 from model_prediction_curiosity import constants
 import tensorflow as tf
+import policy.DQNPolicy as dqn
 
 import time, re
 logger = ContextLogger.getLogger('')
@@ -151,6 +152,8 @@ class DialogueAgent(object):
 
         # Finally, enforce some cross module requirements:
         self._logical_requirements()
+
+        self.domainUtil = FlatOnt.FlatDomainOntology(operatingDomain)
 
     def start_call(self, session_id, domainSimulatedUsers=None, maxNumTurnsScaling=1.0, start_domain=None):
         '''
@@ -602,8 +605,7 @@ class DialogueAgent(object):
         # 1. Get reward
         #---------------------------------------------------------------------------------------------------------
         self.reward = None
-        import policy.DQNPolicy as dqn
-        domainUtil = FlatOnt.FlatDomainOntology(operatingDomain)
+
         action_names = []  # hardcoded to include slots for specific actions (request, confirm, select)
         action_names += ["request(food)", "request(area)", "request(pricerange)",
                          "confirm(food", "confirm(area", "confirm(pricerange",
@@ -628,7 +630,7 @@ class DialogueAgent(object):
         turnInfo['sys_act'] = sys_act.to_string()
         turnInfo['state'] = state
         turnInfo['prev_sys_act'] = state.getLastSystemAct(operatingDomain)
-        turnInfo['state_vec'] = np.asarray(dqn.flatten_belief(state, domainUtil))
+        turnInfo['state_vec'] = np.asarray(dqn.flatten_belief(state, self.domainUtil))
         if self.prev_state is None:
             prev_state_vec = np.zeros(len(turnInfo['state_vec']))
         else:
