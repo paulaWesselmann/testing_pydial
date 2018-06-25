@@ -829,7 +829,7 @@ class DQNPolicy(Policy.Policy):
                 pickle.dump(obj, f, protocol=pickle.HIGHEST_PROTOCOL)
             f.close()
             # logger.info("Saving model to %s and replay buffer..." % save_path)
-            print('done saving stuff continuing normal')
+            # print('done saving stuff continuing normal')
 
     def loadPolicy(self, filename):
         """
