@@ -321,6 +321,9 @@ class StateActionPredictor(object):
         # variable list
         self.var_list = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, tf.get_variable_scope().name)
 
+        self.predstate = phi1
+        self.origstate = f
+
     def pred_act(self, s1, s2):
         '''
         returns action probability distribution predicted by inverse model
@@ -347,6 +350,18 @@ class StateActionPredictor(object):
             {self.s1: [s1], self.s2: [s2], self.asample: [asample]})
         # error = error * constants['PREDICTION_BETA']
         return error
+
+    def pred_state(self, s1, asample):
+        '''
+        returns state predicted by forward model
+            input: s1: [h, w, ch], asample: [ac_space] 1-hot encoding
+            output: s2: [h, w, ch]                                           phi1
+        '''
+        sess = tf.Session()
+        sess.run(tf.global_variables_initializer())
+        prediction_s, original_s = sess.run([self.predstate, self.origstate], {self.s1: [s1], self.asample: [asample]}) #[0, :] #what is thsi [0,:]? todo
+
+        return prediction_s, original_s
 
 
 class StatePredictor(object):

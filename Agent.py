@@ -50,10 +50,10 @@ from ontology import Ontology
 import ontology.FlatOntologyManager as FlatOnt
 from utils.DiaAct import DiaAct, DiaActWithProb
 import numpy as np
-import model_prediction_curiosity as mpc
-from model_prediction_curiosity import constants
-import tensorflow as tf
-import policy.DQNPolicy as dqn
+# import model_prediction_curiosity as mpc
+# from model_prediction_curiosity import constants
+# import tensorflow as tf
+import policy.DQNPolicy as dqnpolicy
 
 import time, re
 logger = ContextLogger.getLogger('')
@@ -124,11 +124,11 @@ class DialogueAgent(object):
 
 
         # SemI + Belief tracker
-        self.semi_belief_manager = self._load_manger('semanticbelieftrackingmanager','semanticbelieftracking.SemanticBeliefTrackingManager.SemanticBeliefTrackingManager')
+        self.semi_belief_manager = self._load_manger('semanticbelieftrackingmanager', 'semanticbelieftracking.SemanticBeliefTrackingManager.SemanticBeliefTrackingManager')
 
         # Policy.
         #-----------------------------------------
-        self.policy_manager = self._load_manger('policymanager','policy.PolicyManager.PolicyManager')
+        self.policy_manager = self._load_manger('policymanager', 'policy.PolicyManager.PolicyManager')
 
         # SemO.
         #-----------------------------------------
@@ -139,13 +139,13 @@ class DialogueAgent(object):
         else:
             generate_prompts = True  # default for Texthub and DialogueServer
         if generate_prompts:
-            self.semo_manager = self._load_manger('semomanager','semo.SemOManager.SemOManager')
+            self.semo_manager = self._load_manger('semomanager', 'semo.SemOManager.SemOManager')
         else:
             self.semo_manager = None
 
         # Evaluation Manager.
         #-----------------------------------------
-        self.evaluation_manager = self._load_manger('evaluationmanager','evaluation.EvaluationManager.EvaluationManager')
+        self.evaluation_manager = self._load_manger('evaluationmanager', 'evaluation.EvaluationManager.EvaluationManager')
 
         # Restart components - NB: inefficient - will be called again before 1st dialogue - but enables _logical_requirements()
         self.restart_agent(session_id=None)
@@ -153,7 +153,7 @@ class DialogueAgent(object):
         # Finally, enforce some cross module requirements:
         self._logical_requirements()
 
-        self.domainUtil = FlatOnt.FlatDomainOntology(operatingDomain)
+        self.domainUtil = FlatOnt.FlatDomainOntology(self.topic_tracker.operatingDomain)  # todo was operating domain only before, where was this placed before error?
 
     def start_call(self, session_id, domainSimulatedUsers=None, maxNumTurnsScaling=1.0, start_domain=None):
         '''
@@ -177,6 +177,10 @@ class DialogueAgent(object):
 
         :return: string -- the system's reponse
         '''
+
+        if self.NUM_DIALOGS > 980:  # for eval purposes researchhhhhhh todo
+            self.traceDialog = 2
+
         self._check_agent_not_on_call()
         self.NUM_DIALOGS += 1
         logger.dial(">> NEW DIALOGUE SESSION. Number: "+str(self.NUM_DIALOGS))
@@ -360,6 +364,7 @@ class DialogueAgent(object):
         #
         # self.prev_statexx = state
         #---Return the generated prompt---------------------------------------------------
+        self._print_reward()
         return sys_act
 
     def end_call(self, domainSimulatedUsers=None, noTraining=False):
@@ -394,6 +399,7 @@ class DialogueAgent(object):
             if self.callValidator.isTrainable:
                 self.policy_manager.train(self.evaluation_manager.doTraining())
         # Print dialog summary.
+        self.evaluation_manager.print_dialog_summary()
         self.evaluation_manager.print_dialog_summary()
         # Save the policy:
         self._save_policy()
@@ -587,7 +593,6 @@ class DialogueAgent(object):
             return   
         operatingDomain = self.topic_tracker.operatingDomain       # Simply for easy access:
         
-        
 #         # 0. If using RNN evaluator, extract turn level feature:
 #         #---------------------------------------------------------------------------------------------------------
 #         
@@ -607,9 +612,9 @@ class DialogueAgent(object):
         self.reward = None
 
         action_names = []  # hardcoded to include slots for specific actions (request, confirm, select)
-        action_names += ["request(food)", "request(area)", "request(pricerange)",
+        action_names += ["request(food", "request(area", "request(pricerange",
                          "confirm(food", "confirm(area", "confirm(pricerange",
-                         "select(food)", "select(area)", "select(pricerange)",
+                         "select(food", "select(area", "select(pricerange",
                          "inform",
                          "inform_byname",
                          "inform_alternatives",
@@ -630,7 +635,7 @@ class DialogueAgent(object):
         turnInfo['sys_act'] = sys_act.to_string()
         turnInfo['state'] = state
         turnInfo['prev_sys_act'] = state.getLastSystemAct(operatingDomain)
-        turnInfo['state_vec'] = np.asarray(dqn.flatten_belief(state, self.domainUtil))
+        turnInfo['state_vec'] = np.asarray(dqnpolicy.flatten_belief(state, self.domainUtil))
         if self.prev_state is None:
             prev_state_vec = np.zeros(len(turnInfo['state_vec']))
         else:
@@ -650,7 +655,7 @@ class DialogueAgent(object):
         # 2. Pass reward to dialogue management:
         #--------------------------------------------------------------------------------------------------------- 
         self.policy_manager.record(domainString=operatingDomain, reward=self.reward) 
-        state_xx = np.asarray(dqn.flatten_belief(state, domainUtil))
+        state_xx = np.asarray(dqnpolicy.flatten_belief(state, self.domainUtil))
         self.prev_state = state_xx # small difference to actual prev state vec due to rounding
         return
 
@@ -663,8 +668,17 @@ class DialogueAgent(object):
         if self.hub_id == 'dialogueserver':
             logger.dial('Turn %d' % self.currentTurn)
         else:
-            if self.traceDialog>1: print '   Turn %d' % self.currentTurn
+            if self.traceDialog > 1:
+                print '   Turn %d ' % self.currentTurn
             logger.dial('** Turn %d **' % self.currentTurn)
+        return
+
+    def _print_reward(self):
+        if self.traceDialog > 1:
+            # if self.currentTurn == 0:
+            #     # Note that we are ignoring any evaluation of the systems first action
+            #     return
+            print '   reward: %f ' % self.reward
         return
     
     def _print_sys_act(self, sys_act):
@@ -675,10 +689,10 @@ class DialogueAgent(object):
 
         :return: None
         '''
-        if self.hub_id=='dialogueserver':
+        if self.hub_id == 'dialogueserver':
             logger.dial('Sys > {}'.format(sys_act))
         else:
-            if self.traceDialog>1: print '   Sys > {}'.format(sys_act)
+            if self.traceDialog > 1: print '   Sys > {}'.format(sys_act)
             logger.dial('| Sys > {}'.format(sys_act))
     
     def _print_usr_act(self, state, currentDomain):

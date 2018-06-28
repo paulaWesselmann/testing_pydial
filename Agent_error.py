@@ -386,6 +386,8 @@ class DialogueAgent(object):
         # returns bonus predicted by forward model
         bonus = predictor.pred_bonus(prev_state_vec, state_vec, ac_1hot)  # input: last_state, state, action
         print bonus
+        state_pred, state_orig = predictor.pred_state(prev_state_vec, ac_1hot)
+        print state_pred, state_orig
 
         self.prev_state = state
         #---Return the generated prompt---------------------------------------------------
