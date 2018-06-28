@@ -39,6 +39,7 @@ Copyright CUED Dialogue Systems Group 2015 - 2017
 
 '''
 
+import time
 import copy
 import os
 import sys
@@ -60,6 +61,9 @@ import Policy
 import SummaryAction
 from Policy import TerminalAction, TerminalState
 from policy.feudalRL.DIP_parametrisation import DIP_state
+
+import model_prediction_curiosity as mpc
+from model_prediction_curiosity import constants
 
 logger = utils.ContextLogger.getLogger('')
 
@@ -142,6 +146,10 @@ class DQNPolicy(Policy.Policy):
 
         self.domainUtil = FlatOnt.FlatDomainOntology(self.domainString)
         self.prev_state_check = None
+
+        # self.prev_state = None
+        # self.predloss = None
+        self.curiosityreward = True #todo change to false when config file fixed!
 
         # parameter settings
         if 0:#cfg.has_option('dqnpolicy', 'n_in'): #ic304: this was giving me a weird error, disabled it until i can check it deeper
@@ -331,6 +339,9 @@ class DQNPolicy(Policy.Policy):
         if cfg.has_option('dqnpolicy_' + domainString, 'training_frequency'):
             self.training_frequency = cfg.getint('dqnpolicy_' + domainString, 'training_frequency')
 
+        if cfg.has_option('eval', 'curiosityreward'):
+            self.curiosityreward = cfg.getboolean('eval', 'curiosityreward')
+
         """
         self.shuffle = False
         if cfg.has_option('dqnpolicy_'+domainString, 'experience_replay'):
@@ -353,6 +364,7 @@ class DQNPolicy(Policy.Policy):
             policytype = cfg.get('policy', 'policytype')
         if policytype != 'feudal':
             # init session
+            # writer = tf.summary.FileWriter('./graphs', tf.get_default_graph()) #todo test test
             self.sess = tf.Session()
             with tf.device("/cpu:0"):
 
@@ -413,10 +425,10 @@ class DQNPolicy(Policy.Policy):
         else:
             print 'DOMAIN {} SIZE NOT SPECIFIED, PLEASE DEFINE n_in'.format(domain_string)
 
-
     def act_on(self, state, hyps=None):
         if self.lastSystemAction is None and self.startwithhello:
             systemAct, nextaIdex = 'hello()', -1
+            self.prev_state = state
         else:
             systemAct, nextaIdex = self.nextAction(state)
         self.lastSystemAction = systemAct
@@ -424,6 +436,7 @@ class DQNPolicy(Policy.Policy):
         self.prevbelief = state
 
         systemAct = DiaAct.DiaAct(systemAct)
+
         return systemAct
 
     def record(self, reward, domainInControl=None, weight=None, state=None, action=None):
@@ -442,7 +455,7 @@ class DQNPolicy(Policy.Policy):
         else:
             cState, cAction = self.convertDIPStateAction(state, action)
         # normalising total return to -1~1
-        reward /= 20.0
+        reward /= 20.0 #whut?
 
         cur_cState = np.vstack([np.expand_dims(x, 0) for x in [cState]])
         Action_idx = np.eye(self.action_dim, self.action_dim)[[cAction]]
@@ -598,6 +611,8 @@ class DQNPolicy(Policy.Policy):
             dip_state = DIP_state(beliefstate.domainStates[beliefstate.currentdomain], self.domainString)
         execMask = self.summaryaction.getExecutableMask(beliefstate, self.lastSystemAction)
 
+        # self.epsilon = 0 #todo this is for curiosity purpose
+
         if self.exploration_type == 'e-greedy':
             # epsilon greedy
             if self.is_training and utils.Settings.random.rand() < self.epsilon:
@@ -690,7 +705,7 @@ class DQNPolicy(Policy.Policy):
         logger.info("Sample Num so far: %s" % (self.samplecount))
         logger.info("Episode Num so far: %s" % (self.episodecount))
 
-        if self.samplecount >= self.minibatch_size * 10 and self.episodecount % self.training_frequency == 0:
+        if self.samplecount >= self.minibatch_size * 10 and self.episodecount % self.training_frequency == 0:  # what is this condition?
             logger.info('start training...')
 
             s_batch, s_ori_batch, a_batch, r_batch, s2_batch, s2_ori_batch, t_batch, idx_batch, _ = \
@@ -709,7 +724,6 @@ class DQNPolicy(Policy.Policy):
                 action_q = self.dqn.predict_dip(s2_batch, a_batch_one_hot)
                 target_q = self.dqn.predict_target_dip(s2_batch, a_batch_one_hot)
             #print 'action Q and target Q:', action_q, target_q
-
 
             y_i = []
             for k in xrange(min(self.minibatch_size, self.episodes[self.domainString].size())):
@@ -745,18 +759,46 @@ class DQNPolicy(Policy.Policy):
             # Update the critic given the targets
             reshaped_yi = np.vstack([np.expand_dims(x, 0) for x in y_i])
 
+            # similar approach? predicted state, optimization, predloss? run together?
+            # predgrads, predloss = self.dqn.curiosity_backprop(s_batch[5, :], s2_batch[5, :], a_batch_one_hot[5, :],
+            #                                                   mpc)  # in batches? or every episode? or every turn?
+            # need to add loss into policy optimization instead
+            # i'd say in batches and same fashion as other trg?
+            # print predgrads
+
             # reshaped_yi = np.reshape(y_i, (min(self.minibatch_size, self.episodes[self.domainString].size()), 1))
             #print reshaped_yi.shape[0]
             #print self.episodes[self.domainString].size()
-            predicted_q_value, _, currentLoss = self.dqn.train(s_batch, a_batch_one_hot, reshaped_yi)
-            #print 'pred V and loss:', predicted_q_value, currentLoss
 
+            # # opt1:
+            # start = time.time()
+            # predicted_q_value, _, currentLoss = self.dqn.train(s_batch, a_batch_one_hot, reshaped_yi) #opt1
+            # # end = time.time()
+            # # print 'dqn.train time: ', end-start
+            # # print 'pred V and loss:', predicted_q_value, currentLoss
+            #
+            # # start = time.time()
+            # pred_loss = self.dqn.train_curiosity(s_batch[5, :], s2_batch[5, :], a_batch_one_hot[5, :]) #opt1
+            # # end = time.time()
+            # # print 'dqn.train_curiosity time: ', end - start
+            #
+            # #print 'curiosity pred loss: ', pred_loss
 
+            # opt2: better (more tidy) below
+            # start = time.time()
+            if self.curiosityreward:
+                predicted_q_value, currentLoss, curiosity_loss = self.dqn.train_curious(s_batch, a_batch_one_hot, reshaped_yi, s2_batch)
+            else:
+                predicted_q_value, _, currentLoss = self.dqn.train(s_batch, a_batch_one_hot, reshaped_yi)
+            # end = time.time()
+
+            # print 'train time: ', end - start
             #print 'y_i'
             #print y_i
-            #print 'currentLoss', currentLoss
+            # print 'currentLoss', currentLoss
             #print 'predict Q'
             #print predicted_q_value
+            # print 'curiosity loss: ', curiosity_loss
 
             if self.episodecount % 1 == 0:
                 # Update target networks
@@ -780,12 +822,14 @@ class DQNPolicy(Policy.Policy):
             #print "episode", self.episodecount
             # save_path = self.saver.save(self.sess, self.out_policy_file+'.ckpt')
             self.dqn.save_network(self.out_policy_file + '.dqn.ckpt')
-
+            # print('saved successfully')
             f = open(self.out_policy_file + '.episode', 'wb')
+            # print('opend f')
             for obj in [self.samplecount, self.episodes[self.domainString]]:
                 pickle.dump(obj, f, protocol=pickle.HIGHEST_PROTOCOL)
             f.close()
             # logger.info("Saving model to %s and replay buffer..." % save_path)
+            print('done saving stuff continuing normal')
 
     def loadPolicy(self, filename):
         """

@@ -55,8 +55,8 @@ class BeliefTrackingManager(object):
         self.domainBeliefTrackers = dict.fromkeys(OntologyUtils.available_domains, None)
         self.SPECIAL_DOMAINS = ['topicmanager','wikipedia','ood']
         self.CONDITIONAL_BELIEF = False
-        if Settings.config.has_option("conditional","conditionalbeliefs"):
-            self.CONDITIONAL_BELIEF = Settings.config.getboolean("conditional","conditionalbeliefs")
+        if Settings.config.has_option("conditional", "conditionalbeliefs"):
+            self.CONDITIONAL_BELIEF = Settings.config.getboolean("conditional", "conditionalbeliefs")
         self.prev_domain_constraints = None
     
     def restart(self):
@@ -89,7 +89,6 @@ class BeliefTrackingManager(object):
         '''
         self._load_domains_belieftracker(domainString)
         return self.conditionally_init_new_domains_belief(domainString, previousDomainString)
-        
 
     def conditionally_init_new_domains_belief(self, domainString, previousDomainString):
         """

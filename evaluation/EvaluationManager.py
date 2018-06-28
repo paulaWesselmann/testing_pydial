@@ -40,6 +40,7 @@ __author__ = "cued_dialogue_systems_group"
 import numpy as np
 from ontology import OntologyUtils
 from utils import Settings, ContextLogger
+
 logger = ContextLogger.getLogger('')
 
 
@@ -72,15 +73,16 @@ class Evaluator(object):
         
         self.evaluator_label = "{}".format(type(self).__name__)
         self.evaluator_short_label = self.evaluator_label[0:3]
-        
+
     def turnReward(self, turnInfo):
         '''
         Computes the turn reward using turnInfo by calling :func:`_getTurnReward`. Updates total reward and number of turns
-        
+        python pydial.py train config/pydial_benchmarks/env1-hdc-CR.cfg --seed=(0,9)
         :param turnInfo: parameters necessary for computing the turn reward, eg., system act or model of the simulated user.
         :type turnInfo: dict
         :return: int -- the turn reward.
         '''
+
         reward = self._getTurnReward(turnInfo)
         
         self.total_reward += reward
@@ -105,9 +107,7 @@ class Evaluator(object):
             self.turns.append(self.num_turns)
         else:
             final_reward = 0
-            
-        
-            
+
         return final_reward
     
     def restart(self):
@@ -214,8 +214,6 @@ class Evaluator(object):
             self._prstr(1, 'Average turns   = %.2f +- %.2f' % (np.mean(self.turns), \
                                                             tinv * np.std(self.turns) / np.sqrt(num_dialogs)), 'results')
         return
-    
-    
 
     
 class EvaluationManager(object):

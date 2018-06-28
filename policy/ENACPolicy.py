@@ -124,9 +124,11 @@ def flatten_belief(belief, domainUtil, merge=False):
 
     return flat_belief
 
+
 # Discounting function used to calculate discounted returns.
 def discount(x, gamma):
     return scipy.signal.lfilter([1], [1, -gamma], x[::-1], axis=0)[::-1]
+
 
 class ENACPolicy(Policy.Policy):
     '''Derived from :class:`Policy`
@@ -370,7 +372,7 @@ class ENACPolicy(Policy.Policy):
         self.episode_ave_max_q = []
         self.mu_prob = 0.  # behavioral policy
 
-        os.environ["CUDA_VISIBLE_DEVICES"]=""
+        os.environ["CUDA_VISIBLE_DEVICES"] = ""
 
         # init session
         self.sess = tf.Session()
@@ -621,7 +623,6 @@ class ENACPolicy(Policy.Policy):
                 self.episodes[self.domainString].sample_batch()
 
             discounted_return_batch = []
-        
 
             def weightsImportanceSampling(mu_policy, r_batch):
                 mu_policy = np.asarray(mu_policy)

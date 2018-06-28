@@ -21,6 +21,7 @@
 ###############################################################################
 from utils.dact import DactItem
 
+import time
 '''
 SuccessEvaluator.py - module for determining objective and subjective dialogue success 
 ======================================================================================
@@ -39,12 +40,14 @@ Copyright CUED Dialogue Systems Group 2016
 
 '''
 __author__ = "cued_dialogue_systems_group"
-
 from EvaluationManager import Evaluator
 from utils import Settings, ContextLogger, DiaAct, dact
 from ontology import Ontology
 import numpy as np
 import copy
+
+import model_prediction_curiosity as mpc
+
 logger = ContextLogger.getLogger('')
 
 
@@ -62,6 +65,8 @@ class ObjectiveSuccessEvaluator(Evaluator):
         self.evaluator_short_label = "suc"
                
         # DEFAULTS:
+        self.curiosityreward = True  # prediction error as reward for curiosity for efficient exploring
+        self.delayed_turn_penalty_set_in = 0  # number of batch sizes after which turn penalty is used for learning
         self.reward_venue_recommended = 0  # we dont use this. 100
         self.penalise_all_turns = True   # We give -1 each turn. Note that this is done thru this boolean
         self.wrong_venue_penalty = 0   # we dont use this. 4
@@ -70,8 +75,15 @@ class ObjectiveSuccessEvaluator(Evaluator):
         self.using_tasks = False
         self.failPenalty = 0
         self.user_goal = None
+        self.turn_thresh = 0  # threshold, if not all turns are penalized
         
         # CONFIG:
+        if Settings.config.has_option('eval', 'curiosityreward'):
+            self.curiosityreward = Settings.config.getboolean('eval', 'curiosityreward')
+        if Settings.config.has_option('eval', 'delayed_turn_penalty_set_in'):
+            self.delayed_turn_penalty_set_in = Settings.config.getint('eval', 'delayed_turn_penalty_set_in')
+        if Settings.config.has_option('eval', 'turn_thresh'):
+            self.turn_thresh = Settings.config.getint('eval', 'turn_thresh')
         if Settings.config.has_option('eval', 'rewardvenuerecommended'):
             self.reward_venue_recommended = Settings.config.getint('eval', 'rewardvenuerecommended')
         if Settings.config.has_option('eval', 'penaliseallturns'):
@@ -89,7 +101,7 @@ class ObjectiveSuccessEvaluator(Evaluator):
         if Settings.config.has_option("eval_"+domainString, "successreward"):
             self.successReward = Settings.config.getint("eval_"+domainString, "successreward")
 
-        if Settings.config.has_option("dialogueserver","tasksfile"):
+        if Settings.config.has_option("dialogueserver", "tasksfile"):
             self.using_tasks = True     # will record DM actions to deduce objective success against a given task:
             
         self.venue_recommended = False
@@ -120,7 +132,7 @@ class ObjectiveSuccessEvaluator(Evaluator):
         if self.using_tasks:
             self.DM_history = []
         
-    def _getTurnReward(self,turnInfo):
+    def _getTurnReward(self, turnInfo):
         '''
         Computes the turn reward regarding turnInfo. The default turn reward is -1 unless otherwise computed. 
         
@@ -128,17 +140,38 @@ class ObjectiveSuccessEvaluator(Evaluator):
         :type turnInfo: dict
         :return: int -- the turn reward.
         '''
-        
+
         # Immediate reward for each turn.
         reward = -self.penalise_all_turns
 
+        # turn threshold option
+        if self.num_turns < self.turn_thresh:
+            reward = 0
+
+        # delayed turn penalty set-in in learning
+        if Settings.global_numiter <= self.delayed_turn_penalty_set_in:
+            reward = 0
+
         if turnInfo is not None and isinstance(turnInfo, dict):
+
+            # use curiosity reward
+            if self.curiosityreward: #todo change to false for initialization ^  once changed in config file
+                start = time.time()
+                prev_state_vec = turnInfo['prev_state_vec']
+                state_vec = turnInfo['state_vec']
+                ac_1hot = turnInfo['ac_1hot']
+                predictor = mpc.StateActionPredictor(len(prev_state_vec), len(ac_1hot), designHead='pydial')
+                bonus = predictor.pred_bonus(prev_state_vec, state_vec, ac_1hot)
+                reward += bonus*20  # tune params later!!
+                end = time.time()
+                # print('bonus time: ', end-start)
+
             if 'usermodel' in turnInfo and 'sys_act' in turnInfo:
                 um = turnInfo['usermodel']
                 self.user_goal = um.goal.constraints
                 
                 # unpack input user model um.
-                #prev_consts = um.prev_goal.constraints
+                # prev_consts = um.prev_goal.constraints
                 prev_consts = copy.deepcopy(um.goal.constraints)
                 for item in prev_consts:
                     if item.slot == 'name' and item.op == '=':
@@ -152,8 +185,8 @@ class ObjectiveSuccessEvaluator(Evaluator):
                 lvr = self.last_venue_recomended if hasattr(self, 'last_venue_recomended') else 'not existing'
                 if name not in ['none', None]:
                     # Venue is recommended.
-                    #possible_entities = Ontology.global_ontology.entity_by_features(self.domainString, constraints=prev_consts)
-                    #is_valid_venue = name in [e['name'] for e in possible_entities]
+                    # possible_entities = Ontology.global_ontology.entity_by_features(self.domainString, constraints=prev_consts)
+                    # is_valid_venue = name in [e['name'] for e in possible_entities]
                     self.last_venue_recomended = name
                     is_valid_venue = self._isValidVenue(name, prev_consts)
                     if is_valid_venue:
@@ -197,7 +230,7 @@ class ObjectiveSuccessEvaluator(Evaluator):
                 self._update_mentioned_value(user_act)
             if 'sys_act' in turnInfo and self.using_tasks:
                 self.DM_history.append(turnInfo['sys_act'])
-                
+
         return reward
 
     def _isValidVenue(self, name, constraints):    
@@ -237,7 +270,7 @@ class ObjectiveSuccessEvaluator(Evaluator):
         
         return any(entities)
 
-    def _getFinalReward(self,finalInfo):
+    def _getFinalReward(self, finalInfo):
         '''
         Computes the final reward using finalInfo. Should be overridden by sub-class if values others than 0 should be returned.
         
@@ -327,8 +360,6 @@ class ObjectiveSuccessEvaluator(Evaluator):
                     logger.warning('assuming inform() that does not mention a name refers to last entity mentioned')
                     informs[currentEnt] += details
         return informs
-
-    
     
     def _update_mentioned_value(self, act):
         # internal, called by :func:`RewardComputer.get_reward` for both sys and user acts to update values mentioned in dialog
@@ -341,8 +372,7 @@ class ObjectiveSuccessEvaluator(Evaluator):
         for item in act.items:
             if item.slot in sys_requestable_slots and item.val not in [None, '**NONE**', 'none']:
                 self.mentioned_values[item.slot].add(item.val)
-                
-                
+
     def _getResultString(self, outcomes):
         num_dialogs = len(outcomes)
         from scipy import stats
@@ -352,7 +382,8 @@ class ObjectiveSuccessEvaluator(Evaluator):
             tinv = stats.t.ppf(1 - 0.025, num_dialogs - 1)
         return 'Average success = {0:0.2f} +- {1:0.2f}'.format(100 * np.mean(outcomes), \
                                                             100 * tinv * np.std(outcomes) / np.sqrt(num_dialogs))
-                
+
+
 class Sys2TextSuccessEvaluator(Evaluator):
     def __init__(self):
         self.goal = {}

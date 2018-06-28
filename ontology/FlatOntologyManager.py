@@ -48,6 +48,7 @@ from ontology import OntologyUtils
 from utils import Settings, ContextLogger
 logger = ContextLogger.getLogger('')
 
+import pdb
 
 
 #------------------------------------------------------------------------------------------------------------
@@ -91,8 +92,10 @@ class FlatDomainOntology(object):
         """
         ontology_fname = OntologyUtils.get_ontology_path(self.domainString)
         logger.info('Loading ontology: '+ontology_fname)
+        # self.ontology = json.load(open(ontology_fname))
         try:
             self.ontology = json.load(open(ontology_fname))
+            # pdb.set_trace()
         except IOError:
             #print IOError
             logger.error("No such file or directory: "+ontology_fname+". Probably <Settings.root> is not set/set wrong by config.")
@@ -283,7 +286,6 @@ class FlatDomainOntology(object):
 
     def get_length_entity_by_features(self, constraints): 
         return self.db.get_length_entity_by_features(constraints=constraints)
-        
 
 
 class FlatOntologyManager(object):

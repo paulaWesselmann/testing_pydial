@@ -122,7 +122,7 @@ class SemanticBeliefTrackingManager(object):
     def __init__(self):
         self.domainSemiBelieftrackers = dict.fromkeys(OntologyUtils.available_domains, None)
         self.constraints = None
-        self.SPECIAL_DOMAINS = ['topicmanager','wikipedia','ood']
+        self.SPECIAL_DOMAINS = ['topicmanager', 'wikipedia', 'ood']
         
         self.state = DialogueState()
         

@@ -1,0 +1,53 @@
+RESULTS:: 21:27:49: root                                   pydial.py <train_command>801 :  List of domains: CamRestaurants
+RESULTS:: 21:27:49: root                                      pydial.py <trainBatch>415 :  *** Training Iteration env1-dqn-eps06-no_step_pen-CR-seed7-00.0->env1-dqn-eps06-no_step_pen-CR-seed7-00.1: iter=0, error-rate=0, num-dialogs=1000 ***
+RESULTS:: 21:36:28: root                               EvaluationManager.py <_prstr>182 :  Results for domain: CamRestaurants --evaluated by: objective success evaluator
+RESULTS:: 21:36:28: root                               EvaluationManager.py <_prstr>182 :  # of dialogues  = 1000
+RESULTS:: 21:36:28: root                               EvaluationManager.py <_prstr>182 :  Average reward  = 18.44 +- 0.33
+RESULTS:: 21:36:28: root                               EvaluationManager.py <_prstr>182 :  Average success = 92.20 +- 1.66
+RESULTS:: 21:36:28: root                               EvaluationManager.py <_prstr>182 :  Average turns   = 9.38 +- 0.29
+RESULTS:: 21:36:28: root                                   pydial.py <setEvalConfig>476 :  *** Evaluating env1-dqn-eps06-no_step_pen-CR-seed7-00.1: error-rate=0 num-dialogs=500 ***
+RESULTS:: 21:39:17: root                               EvaluationManager.py <_prstr>182 :  Results for domain: CamRestaurants --evaluated by: objective success evaluator
+RESULTS:: 21:39:17: root                               EvaluationManager.py <_prstr>182 :  # of dialogues  = 500
+RESULTS:: 21:39:17: root                               EvaluationManager.py <_prstr>182 :  Average reward  = 18.52 +- 0.46
+RESULTS:: 21:39:17: root                               EvaluationManager.py <_prstr>182 :  Average success = 92.60 +- 2.30
+RESULTS:: 21:39:17: root                               EvaluationManager.py <_prstr>182 :  Average turns   = 6.11 +- 0.19
+RESULTS:: 21:39:17: root                                   pydial.py <train_command>801 :  List of domains: CamRestaurants
+RESULTS:: 21:39:17: root                                      pydial.py <trainBatch>415 :  *** Training Iteration env1-dqn-eps06-no_step_pen-CR-seed7-00.1->env1-dqn-eps06-no_step_pen-CR-seed7-00.2: iter=1, error-rate=0, num-dialogs=1000 ***
+RESULTS:: 21:47:50: root                               EvaluationManager.py <_prstr>182 :  Results for domain: CamRestaurants --evaluated by: objective success evaluator
+RESULTS:: 21:47:50: root                               EvaluationManager.py <_prstr>182 :  # of dialogues  = 1000
+RESULTS:: 21:47:50: root                               EvaluationManager.py <_prstr>182 :  Average reward  = 19.14 +- 0.25
+RESULTS:: 21:47:50: root                               EvaluationManager.py <_prstr>182 :  Average success = 95.70 +- 1.26
+RESULTS:: 21:47:50: root                               EvaluationManager.py <_prstr>182 :  Average turns   = 8.85 +- 0.28
+RESULTS:: 21:47:50: root                                   pydial.py <setEvalConfig>476 :  *** Evaluating env1-dqn-eps06-no_step_pen-CR-seed7-00.2: error-rate=0 num-dialogs=500 ***
+RESULTS:: 21:50:36: root                               EvaluationManager.py <_prstr>182 :  Results for domain: CamRestaurants --evaluated by: objective success evaluator
+RESULTS:: 21:50:36: root                               EvaluationManager.py <_prstr>182 :  # of dialogues  = 500
+RESULTS:: 21:50:36: root                               EvaluationManager.py <_prstr>182 :  Average reward  = 19.48 +- 0.28
+RESULTS:: 21:50:36: root                               EvaluationManager.py <_prstr>182 :  Average success = 97.40 +- 1.40
+RESULTS:: 21:50:36: root                               EvaluationManager.py <_prstr>182 :  Average turns   = 5.95 +- 0.19
+RESULTS:: 21:50:36: root                                   pydial.py <train_command>801 :  List of domains: CamRestaurants
+RESULTS:: 21:50:36: root                                      pydial.py <trainBatch>415 :  *** Training Iteration env1-dqn-eps06-no_step_pen-CR-seed7-00.2->env1-dqn-eps06-no_step_pen-CR-seed7-00.3: iter=2, error-rate=0, num-dialogs=1000 ***
+RESULTS:: 21:59:19: root                               EvaluationManager.py <_prstr>182 :  Results for domain: CamRestaurants --evaluated by: objective success evaluator
+RESULTS:: 21:59:19: root                               EvaluationManager.py <_prstr>182 :  # of dialogues  = 1000
+RESULTS:: 21:59:19: root                               EvaluationManager.py <_prstr>182 :  Average reward  = 19.18 +- 0.25
+RESULTS:: 21:59:19: root                               EvaluationManager.py <_prstr>182 :  Average success = 95.90 +- 1.23
+RESULTS:: 21:59:19: root                               EvaluationManager.py <_prstr>182 :  Average turns   = 9.11 +- 0.29
+RESULTS:: 21:59:19: root                                   pydial.py <setEvalConfig>476 :  *** Evaluating env1-dqn-eps06-no_step_pen-CR-seed7-00.3: error-rate=0 num-dialogs=500 ***
+RESULTS:: 22:02:08: root                               EvaluationManager.py <_prstr>182 :  Results for domain: CamRestaurants --evaluated by: objective success evaluator
+RESULTS:: 22:02:08: root                               EvaluationManager.py <_prstr>182 :  # of dialogues  = 500
+RESULTS:: 22:02:08: root                               EvaluationManager.py <_prstr>182 :  Average reward  = 14.88 +- 0.77
+RESULTS:: 22:02:08: root                               EvaluationManager.py <_prstr>182 :  Average success = 74.40 +- 3.83
+RESULTS:: 22:02:08: root                               EvaluationManager.py <_prstr>182 :  Average turns   = 6.24 +- 0.20
+RESULTS:: 22:02:08: root                                   pydial.py <train_command>801 :  List of domains: CamRestaurants
+RESULTS:: 22:02:08: root                                      pydial.py <trainBatch>415 :  *** Training Iteration env1-dqn-eps06-no_step_pen-CR-seed7-00.3->env1-dqn-eps06-no_step_pen-CR-seed7-00.4: iter=3, error-rate=0, num-dialogs=1000 ***
+RESULTS:: 22:10:48: root                               EvaluationManager.py <_prstr>182 :  Results for domain: CamRestaurants --evaluated by: objective success evaluator
+RESULTS:: 22:10:48: root                               EvaluationManager.py <_prstr>182 :  # of dialogues  = 1000
+RESULTS:: 22:10:48: root                               EvaluationManager.py <_prstr>182 :  Average reward  = 18.88 +- 0.29
+RESULTS:: 22:10:48: root                               EvaluationManager.py <_prstr>182 :  Average success = 94.40 +- 1.43
+RESULTS:: 22:10:48: root                               EvaluationManager.py <_prstr>182 :  Average turns   = 9.06 +- 0.29
+RESULTS:: 22:10:48: root                                   pydial.py <setEvalConfig>476 :  *** Evaluating env1-dqn-eps06-no_step_pen-CR-seed7-00.4: error-rate=0 num-dialogs=500 ***
+RESULTS:: 22:13:37: root                               EvaluationManager.py <_prstr>182 :  Results for domain: CamRestaurants --evaluated by: objective success evaluator
+RESULTS:: 22:13:37: root                               EvaluationManager.py <_prstr>182 :  # of dialogues  = 500
+RESULTS:: 22:13:37: root                               EvaluationManager.py <_prstr>182 :  Average reward  = 16.12 +- 0.69
+RESULTS:: 22:13:37: root                               EvaluationManager.py <_prstr>182 :  Average success = 80.60 +- 3.47
+RESULTS:: 22:13:37: root                               EvaluationManager.py <_prstr>182 :  Average turns   = 6.23 +- 0.19
+RESULTS:: 22:13:37: root                                   pydial.py <train_command>817 :  *** Training complete. log: env1-dqn-eps06-no_step_pen-CR-seed7-00.1-4.train.log - final policy is env1-dqn-eps06-no_step_pen-CR-00-04

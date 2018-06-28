@@ -195,7 +195,7 @@ def Uacts(turn):
     if "dialog-acts" in turn["output"] :
         mact = turn["output"]["dialog-acts"]
     this_slot = None
-    for act in mact :
+    for act in mact:
         if act["act"] == "request" :
             this_slot = act["slots"][0][1]
     this_output = []
@@ -228,6 +228,7 @@ class RuleBasedTracker(BeliefTracker):
         :return: None
         '''
         track = self._addTurn(turn)
+        # print track, 'track baseline 231'
         return self._tobelief(self.prevbelief, track)
     
     def _addTurn(self, turn):
@@ -257,7 +258,7 @@ class RuleBasedTracker(BeliefTracker):
         belief = {}
         for slot in Ontology.global_ontology.get_informable_slots_and_values(self.domainString):
             if slot in track['goal-labels']:
-                infom_slot_vals = Ontology.global_ontology.get_informable_slot_values(self.domainString,slot)
+                infom_slot_vals = Ontology.global_ontology.get_informable_slot_values(self.domainString, slot)
                 # su259: user simulator may issue a dontcare for all informable slots, not only system requestable
 #                 if slot not in Ontology.global_ontology.get_system_requestable_slots(self.domainString):
 #                     belief[slot] = dict.fromkeys(infom_slot_vals, 0.0)
@@ -280,6 +281,7 @@ class RuleBasedTracker(BeliefTracker):
             belief['requested'][v] = track['requested-slots'][v]
 
         return {'beliefs': belief}
+
 
 class BaselineTracker(RuleBasedTracker):
     """
@@ -308,7 +310,7 @@ class BaselineTracker(RuleBasedTracker):
         else :
             mact = []
         # clear requested-slots that have been informed
-        for act in mact :
+        for act in mact:
             if act["act"] == "inform" :
                 for slot,value in act["slots"]:
                     if slot in hyps["requested-slots"] :
@@ -388,7 +390,8 @@ class BaselineTracker(RuleBasedTracker):
         '''
         super(BaselineTracker, self).restart()
         self.hyps = {"goal-labels":{}, "goal-labels-joint":[], "requested-slots":{}, "method-label":{}, "discourseAct-labels":{}}
-    
+
+
 class FocusTracker(RuleBasedTracker):
     """
     It accumulates evidence and has a simple model of how the state changes throughout the dialogue.

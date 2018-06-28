@@ -103,6 +103,7 @@ class BeliefTracker(object):
         :return: dict -- previous belief state
         '''
         curturn = self._convertHypToTurn(lastact, obs)
+
         last_feature = None
 
         if self.prevbelief is not None and 'features' in self.prevbelief.keys():
@@ -121,7 +122,8 @@ class BeliefTracker(object):
         logger.debug(self.str())
         
 #         self._printTopBeliefs()
-        
+
+        # print self.prevbelief, 'prev'
         return self.prevbelief
     
     def getBelief80_pairs(self):

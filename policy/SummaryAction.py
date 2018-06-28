@@ -101,6 +101,7 @@ class SummaryAction(object):
                                    "reqmore",
                                    "restart"
                                  ]
+            # print self.action_names
         self.reset()
 
     def reset(self):
