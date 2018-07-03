@@ -94,19 +94,19 @@ class DeepQNetwork(object):
 
         # Define loss and optimization Op
         with tf.variable_scope('curiosity'):
-            self.predictor = mpc.StateActionPredictor(268, 16, designHead='pydial')  # todo len state len action!
+            self.predictor = mpc.StateActionPredictor(268, 16, designHead='pydial')  # todo len state len action
             # self.predictor = mpc.Prediction_state(268, 16)
-            # self.predloss = constants['PREDICTION_LR_SCALE'] * (
-            #         self.predictor.invloss * (1 - constants['FORWARD_LOSS_WT']) +
-            #         self.predictor.forwardloss * constants['FORWARD_LOSS_WT'])
-            self.predloss = self.predictor.forwardloss #todo: no invloss?
+            self.predloss = constants['PREDICTION_LR_SCALE'] * (
+                    self.predictor.invloss * (1 - constants['FORWARD_LOSS_WT']) +
+                    self.predictor.forwardloss * constants['FORWARD_LOSS_WT'])
+            # self.predloss = self.predictor.forwardloss #todo: invloss?
         self.optimizer2 = tf.train.AdamOptimizer(self.learning_rate)
         self.optimize2 = self.optimizer2.minimize(self.predloss)
         # gs2 = tf.gradients(self.predloss,tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope='curiosity'))
         # gs2 = tf.gradients(self.predloss, self.network_params)
         # capped_gvs2 = [(tf.clip_by_value(grad, -3., 3.), var) for grad, var in zip(gs2, self.network_params)]
         # self.optimize2 = self.optimizer2.apply_gradients(capped_gvs2)
-        predgrads = tf.gradients(self.predloss * 20.0, self.predictor.var_list)  # todo change constant add gradients back in
+        predgrads = tf.gradients(self.predloss * 20.0, self.predictor.var_list)  # todo change constant
         predgrads, _ = tf.clip_by_global_norm(predgrads, constants['GRAD_NORM_CLIP'])
         pred_grads_and_vars = list(zip(predgrads, self.predictor.var_list))
         # self.optimizer2 = tf.train.AdamOptimizer(constants['LEARNING_RATE'])
@@ -234,13 +234,6 @@ class DeepQNetwork(object):
         return predicted_q_value, currentLoss, curiosity_loss
         #todo figure out inputs for predloss(batch vs single? s1 vs s2 is it really state and prev? )
 
-    def train_curiosity(self, prev_state_vec, state_vec, action_1hot):
-        _, predictionloss = self.sess.run([self.optimize2, self.predloss], feed_dict={self.predictor.s1: prev_state_vec,
-                     self.predictor.s2: state_vec,
-                     self.predictor.asample: action_1hot
-                     })
-        return predictionloss
-
     def predict(self, inputs):
         return self.sess.run(self.Qout, feed_dict={
             self.inputs: inputs
@@ -303,47 +296,47 @@ class DeepQNetwork(object):
     def clipped_error(self, x):
         return tf.where(tf.abs(x) < 1.0, 0.5 * tf.square(x), tf.abs(x) - 0.5)  # condition, true, false
 
-    def curiosity_backprop(self, prev_state, state, action, mpc):
-        from constants_prediction_curiosity import constants
-        predictor = mpc.StateActionPredictor(len(prev_state), len(action), designHead='pydial')
-
-        # # computing predictor loss
-        # if self.unsup:
-        #     if 'state' in unsupType:
-        #         self.predloss = constants['PREDICTION_LR_SCALE'] * predictor.forwardloss
-        #     else:
-        self.predloss = constants['PREDICTION_LR_SCALE'] * (predictor.invloss * (1 - constants['FORWARD_LOSS_WT']) +
-                                                            predictor.forwardloss * constants['FORWARD_LOSS_WT'])
-        predgrads = tf.gradients(self.predloss * 20.0,  # our batch size is?
-                                 predictor.var_list)  # batchsize=20. Factored out to make hyperparams not depend on it.
-
-        predgrads, _ = tf.clip_by_global_norm(predgrads, constants['GRAD_NORM_CLIP'])
-        pred_grads_and_vars = list(zip(predgrads, predictor.var_list))
-        grads_and_vars = pred_grads_and_vars  # prediction only here for now, do i want to combine it with policy?
-        # each worker has a different set of adam optimizer parameters
-        # make optimizer global shared, if needed
-        print("Optimizer: ADAM with lr: %f" % (constants['LEARNING_RATE']))
-        # print("Input observation shape: ", env.observation_space.shape)
-        opt = tf.train.AdamOptimizer(constants['LEARNING_RATE'])
-        # train_op = tf.group(opt.apply_gradients(grads_and_vars), inc_step)
-        with tf.variable_scope('what_goes_here', reuse=tf.AUTO_REUSE):  # why? and what goes into varscope?
-            train_op = opt.apply_gradients(grads_and_vars)
-            # next, run op session
-            sess = tf.Session()
-            sess.run(tf.global_variables_initializer())
-            feed_dict = {predictor.s1: [prev_state],
-                         predictor.s2: [state],
-                         predictor.asample: [action]
-                         }
-            sess.run(train_op, feed_dict=feed_dict)
-        #use train function to train this?
-        # def train(self, inputs, action, sampled_q):
-        #     return self.sess.run([self.pred_q, self.optimize, self.loss], feed_dict={  # yes, needs to be changed too
-        #         self.inputs: inputs,  # believe state
-        #         self.action: action,
-        #         self.sampled_q: sampled_q
-        #     })
-        return train_op, self.predloss
+    # def curiosity_backprop(self, prev_state, state, action, mpc): TODO
+    #     from constants_prediction_curiosity import constants
+    #     predictor = mpc.StateActionPredictor(len(prev_state), len(action), designHead='pydial')
+    #
+    #     # # computing predictor loss
+    #     # if self.unsup:
+    #     #     if 'state' in unsupType:
+    #     #         self.predloss = constants['PREDICTION_LR_SCALE'] * predictor.forwardloss
+    #     #     else:
+    #     self.predloss = constants['PREDICTION_LR_SCALE'] * (predictor.invloss * (1 - constants['FORWARD_LOSS_WT']) +
+    #                                                         predictor.forwardloss * constants['FORWARD_LOSS_WT'])
+    #     predgrads = tf.gradients(self.predloss * 20.0,  # our batch size is?
+    #                              predictor.var_list)  # batchsize=20. Factored out to make hyperparams not depend on it.
+    #
+    #     predgrads, _ = tf.clip_by_global_norm(predgrads, constants['GRAD_NORM_CLIP'])
+    #     pred_grads_and_vars = list(zip(predgrads, predictor.var_list))
+    #     grads_and_vars = pred_grads_and_vars  # prediction only here for now, do i want to combine it with policy?
+    #     # each worker has a different set of adam optimizer parameters
+    #     # make optimizer global shared, if needed
+    #     print("Optimizer: ADAM with lr: %f" % (constants['LEARNING_RATE']))
+    #     # print("Input observation shape: ", env.observation_space.shape)
+    #     opt = tf.train.AdamOptimizer(constants['LEARNING_RATE'])
+    #     # train_op = tf.group(opt.apply_gradients(grads_and_vars), inc_step)
+    #     with tf.variable_scope('what_goes_here', reuse=tf.AUTO_REUSE):  # why? and what goes into varscope?
+    #         train_op = opt.apply_gradients(grads_and_vars)
+    #         # next, run op session
+    #         sess = tf.Session()
+    #         sess.run(tf.global_variables_initializer())
+    #         feed_dict = {predictor.s1: [prev_state],
+    #                      predictor.s2: [state],
+    #                      predictor.asample: [action]
+    #                      }
+    #         sess.run(train_op, feed_dict=feed_dict)
+    #     #use train function to train this?
+    #     # def train(self, inputs, action, sampled_q):
+    #     #     return self.sess.run([self.pred_q, self.optimize, self.loss], feed_dict={  # yes, needs to be changed too
+    #     #         self.inputs: inputs,  # believe state
+    #     #         self.action: action,
+    #     #         self.sampled_q: sampled_q
+    #     #     })
+    #     return train_op, self.predloss
 
 
 class NNFDeepQNetwork(object):

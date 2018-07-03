@@ -414,7 +414,7 @@ def setupPolicy(domain, configId, trainerr, source_iteration, target_iteration, 
 
 def trainBatch(domain, configId, trainerr, ndialogs, source_iteration, seed=None):
     if isSingleDomain:
-        (inpolicy, outpolicy) = setupPolicy(domain, configId, trainerr, source_iteration, source_iteration + 1,seed=seed)
+        (inpolicy, outpolicy) = setupPolicy(domain, configId, trainerr, source_iteration, source_iteration + 1, seed=seed)
         mess = "*** Training Iteration %s->%s: iter=%d, error-rate=%d, num-dialogs=%d ***" % (
             inpolicy, outpolicy, source_iteration, trainerr, ndialogs)
         if tracedialog > 0: print mess

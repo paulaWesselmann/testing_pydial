@@ -719,6 +719,7 @@ class DQNPolicy(Policy.Policy):
             s_batch = np.vstack([np.expand_dims(x, 0) for x in s_batch])
             s2_batch = np.vstack([np.expand_dims(x, 0) for x in s2_batch])
 
+
             a_batch_one_hot = np.eye(self.action_dim, self.action_dim)[a_batch]
             # target_q = self.dqn.predict_target_with_action_maxQ(s2_batch)
             if self.architecture != 'dip':
@@ -763,7 +764,7 @@ class DQNPolicy(Policy.Policy):
             # Update the critic given the targets
             reshaped_yi = np.vstack([np.expand_dims(x, 0) for x in y_i])
 
-            # similar approach? predicted state, optimization, predloss? run together?
+            # similar approach? predicted state, optimization, predloss? run together? TODO clean up
             # predgrads, predloss = self.dqn.curiosity_backprop(s_batch[5, :], s2_batch[5, :], a_batch_one_hot[5, :],
             #                                                   mpc)  # in batches? or every episode? or every turn?
             # need to add loss into policy optimization instead

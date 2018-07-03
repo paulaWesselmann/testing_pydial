@@ -3,7 +3,7 @@ import numpy as np
 import tensorflow as tf
 import tensorflow.contrib.rnn as rnn
 from constants_prediction_curiosity import constants
-
+import os
 
 def normalized_columns_initializer(std=1.0):
     def _initializer(shape, dtype=None, partition_info=None):
@@ -142,7 +142,8 @@ def pydialHead(x):
             input: [None, 1, 268]; output: [None, ?];
     '''
     # print('Using pydial head design')
-    x = tf.nn.elu(x)
+    # x = tf.nn.elu(x) #todo need elu/relu or only linear?
+    x = tf.nn.elu(linear(x, 77, 'fc', normalized_columns_initializer(0.01)))
     # print(x.get_shape())
     # x = flatten(x)
     # print(x.get_shape())
@@ -273,7 +274,7 @@ class StateActionPredictor(object):
         self.asample = asample = tf.placeholder(tf.float32, [None, ac_space])
 
         # feature encoding: phi1, phi2: [None, LEN]
-        size = 268  # 256 for pathak et al.
+        size = 77  # 256 for pathak et al., 268 for full believstate
         if designHead == 'pydial':
             phi1 = pydialHead(phi1)
             with tf.variable_scope(tf.get_variable_scope(), reuse=True):
@@ -299,7 +300,7 @@ class StateActionPredictor(object):
             with tf.variable_scope(tf.get_variable_scope(), reuse=True):
                 phi2 = universeHead(phi2)
 
-        # inverse model: g(phi1,phi2) -> a_inv: [None, ac_space]
+        # inverse model: g(phi1,phi2) -> a_inv: [None, ac_space]  TODO reactivate inverse model (now includes new feat enc to 77)
         g = tf.concat([phi1, phi2], 1)   # changed place of 1
         g = tf.nn.relu(linear(g, size, "g1", normalized_columns_initializer(0.01)))
         aindex = tf.argmax(asample, axis=1)  # aindex: [batch_size,]
@@ -324,6 +325,10 @@ class StateActionPredictor(object):
         self.predstate = phi1
         self.origstate = f
 
+        # #for pretrg
+        # if not os.path.exists('_curiosity_model/pretrg_model'):
+        #     os.mkdir('_curiosity_model/pretrg_model')
+
     def pred_act(self, s1, s2):
         '''
         returns action probability distribution predicted by inverse model
@@ -340,15 +345,19 @@ class StateActionPredictor(object):
             input: s1,s2: [h, w, ch], asample: [ac_space] 1-hot encoding
             output: scalar bonus
         '''
-        # sess = tf.get_default_session()
-        sess = tf.Session()
-        sess.run(tf.global_variables_initializer())
-        # error = sess.run([self.forwardloss, self.invloss],
-        #     {self.s1: [s1], self.s2: [s2], self.asample: [asample]})
-        # print('ErrorF: ', error[0], ' ErrorI:', error[1])
-        error = sess.run(self.forwardloss,
-            {self.s1: [s1], self.s2: [s2], self.asample: [asample]})
-        # error = error * constants['PREDICTION_BETA']
+        # sess = tf.get_default_session()  #todo how do iget default session???
+        # sess = tf.Session()
+        with tf.Session() as sess:
+            sess.run(tf.global_variables_initializer())
+            # saver = tf.train.Saver() #todo save in trg not use?
+            # error = sess.run([self.forwardloss, self.invloss],
+            #     {self.s1: [s1], self.s2: [s2], self.asample: [asample]})
+            # print('ErrorF: ', error[0], ' ErrorI:', error[1])
+            error = sess.run(self.forwardloss,
+                {self.s1: [s1], self.s2: [s2], self.asample: [asample]})
+            # saver.save(sess, '_curiosity_model/pretrg_model/my_test_model_hcd1')
+            # error = error * constants['PREDICTION_BETA']
+
         return error
 
     def pred_state(self, s1, asample):
@@ -443,8 +452,10 @@ class StatePredictor(object):
         # sess = tf.get_default_session()
         sess = tf.Session()
         sess.run(tf.global_variables_initializer())
+        saver = tf.train.Saver()
         bonus = self.aencBonus if self.stateAenc else self.forwardloss
         error = sess.run(bonus, {self.s1: [s1], self.s2: [s2], self.asample: [asample]})
+        saver.save(sess, 'my_test_model')
         # print('ErrorF: ', error)
         error = error  # * constants['PREDICTION_BETA']
         return error
