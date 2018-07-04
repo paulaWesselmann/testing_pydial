@@ -59,7 +59,7 @@ from utils import ContextLogger, DiaAct
 
 import ontology.FlatOntologyManager as FlatOnt
 import tensorflow as tf
-from DRL.replay_buffer_episode_acer import ReplayBufferEpisode   #TODO download files needed once available!
+from DRL.replay_buffer_episode_acer import ReplayBufferEpisode
 from DRL.replay_prioritised_episode import ReplayPrioritisedEpisode
 import DRL.utils as drlutils
 import DRL.acer as acer
