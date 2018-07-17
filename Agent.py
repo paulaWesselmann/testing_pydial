@@ -235,6 +235,7 @@ class DialogueAgent(object):
 
         sys_act.prompt = self.prompt_str
         state.setLastSystemAct(sys_act)
+        self.prev_state = None
 
         #---Return the generated prompt---------------------------------------------------
         return sys_act
@@ -290,7 +291,6 @@ class DialogueAgent(object):
         # SYSTEM ACT:
                 # 1. Belief state tracking -- (currently just in single domain as directed by topic tracker)
         logger.debug('active domain is: '+currentDomain)
-
 
         state = self.semi_belief_manager.update_belief_state(ASR_obs=asr_info, sys_act=prev_sys_act,
                                                      dstring=currentDomain, turn=self.currentTurn, hub_id=self.hub_id, sim_lvl=self.sim_level)

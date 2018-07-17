@@ -264,6 +264,7 @@ class StateActionPredictor(object):
     def __init__(self, ob_space, ac_space, designHead='universe'):
         # input: s1,s2: : [None, h, w, ch] (usually ch=1 or 4) /pydial: [None, size]
         # asample: 1-hot encoding of sampled action from policy: [None, ac_space]
+        # with tf.variable_scope('curiosity'): #todo is scope needed here?!
         if designHead == 'pydial':
             input_shape = [None, ob_space]
         else:
@@ -322,8 +323,25 @@ class StateActionPredictor(object):
         # variable list
         self.var_list = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, tf.get_variable_scope().name)
 
+        # print(self.var_list)
         self.predstate = phi1
         self.origstate = f
+
+        # self.sess = tf.Session() #todo: don't do this! feed existing session from dqn!!! else also results wrong?!
+        # self.sess.run(tf.global_variables_initializer())
+        # self.saver = tf.train.Saver()
+        # all_variables = tf.get_collection_ref(tf.GraphKeys.GLOBAL_VARIABLES)
+        # self.sess.run(tf.variables_initializer(all_variables))
+
+        # self.saver.restore(self.sess, '_curiosity_model/pretrg_model/trained_curiosity100') #TODO
+        # print("Successfully loaded: trained_curiosity100")
+        # vars_in_checkpoint = tf.train.list_variables(os.path.join("_curiosity_model/pretrg_model/trained_curiosity100"))
+        # vars_in_checkpoint = tf.train.list_variables(os.path.join("_benchmarkpolicies/cur_env3-dqn-CR-seed2-15.4.dqn.ckpt"))
+        # print(vars_in_checkpoint)
+        #
+        # var_name_list = [v.name for v in tf.trainable_variables()]
+        #         # print(var_name_list)
+        # print('mpc line 340')
 
         # #for pretrg
         # if not os.path.exists('_curiosity_model/pretrg_model'):
@@ -345,19 +363,12 @@ class StateActionPredictor(object):
             input: s1,s2: [h, w, ch], asample: [ac_space] 1-hot encoding
             output: scalar bonus
         '''
-        # sess = tf.get_default_session()  #todo how do iget default session???
-        # sess = tf.Session()
-        with tf.Session() as sess:
-            sess.run(tf.global_variables_initializer())
-            # saver = tf.train.Saver() #todo save in trg not use?
-            # error = sess.run([self.forwardloss, self.invloss],
-            #     {self.s1: [s1], self.s2: [s2], self.asample: [asample]})
-            # print('ErrorF: ', error[0], ' ErrorI:', error[1])
-            error = sess.run(self.forwardloss,
-                {self.s1: [s1], self.s2: [s2], self.asample: [asample]})
-            # saver.save(sess, '_curiosity_model/pretrg_model/my_test_model_hcd1')
+        sess = tf.Session()#wrooooong todo
+        sess.run(tf.global_variables_initializer())
+        #todo: maybe just load curiosity for this sess from pre trg and update every now and then?
+        error = sess.run(self.forwardloss,
+                              {self.s1: [s1], self.s2: [s2], self.asample: [asample]})
             # error = error * constants['PREDICTION_BETA']
-
         return error
 
     def pred_state(self, s1, asample):

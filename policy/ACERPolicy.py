@@ -134,8 +134,10 @@ def flatten_belief(belief, domainUtil, merge=False):
 def discount(x, gamma):
     return scipy.signal.lfilter([1], [1, -gamma], x[::-1], axis=0)[::-1]
 
+
 class ACERPolicy(Policy.Policy):
-    '''Derived from :class:`Policy`
+    '''
+    Derived from :class:`Policy`
     '''
     def __init__(self, in_policy_file, out_policy_file, domainString='CamRestaurants', is_training=False):
         super(ACERPolicy, self).__init__(domainString, is_training)
@@ -654,7 +656,6 @@ class ACERPolicy(Policy.Policy):
 
             for _ in range(self.train_iters_per_episode):
 
-
                 if self.replay_type == 'vanilla' or self.replay_type == 'prioritized':
                     s_batch, s_ori_batch, a_batch, r_batch, s2_batch, s2_ori_batch, t_batch, idx_batch, v_batch, mu_policy, mask_batch = \
                         self.episodes[self.domainString].sample_batch()
@@ -668,6 +669,7 @@ class ACERPolicy(Policy.Policy):
 
                 discounted_r_batch = []
                 advantage_batch = []
+
                 def calculate_discountR_advantage(r_episode, v_episode):
                     #########################################################################
                     # Here we take the rewards and values from the rolloutv, and use them to

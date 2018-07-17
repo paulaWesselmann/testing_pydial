@@ -48,8 +48,9 @@ import numpy as np
 import cPickle as pickle
 import random
 import utils #todo why import utils and then specifics? is this part of cfg not working isssue?? i checked it's not
-# from utils.Settings import config as cfg #this does not work! TODO!
+from utils.Settings import config as cfg #this does not work! TODO!
 from utils import ContextLogger, DiaAct
+from curiosity_module import Curious
 
 import ontology.FlatOntologyManager as FlatOnt
 import tensorflow as tf
@@ -61,8 +62,8 @@ import Policy
 import SummaryAction
 from Policy import TerminalAction, TerminalState
 from policy.feudalRL.DIP_parametrisation import DIP_state
+import model_prediction_curiosity as mpc
 
-# import model_prediction_curiosity as mpc
 # from model_prediction_curiosity import constants
 
 # logger = utils.ContextLogger.getLogger('') #todo
@@ -146,10 +147,6 @@ class DQNPolicy(Policy.Policy):
         self.accum_belief = []
 
         self.prev_state_check = None
-
-        # self.prev_state = None
-        # self.predloss = None
-        self.curiosityreward = True
 
         # parameter settings
         if 0:#cfg.has_option('dqnpolicy', 'n_in'): #ic304: this was giving me a weird error, disabled it until i can check it deeper
@@ -370,6 +367,7 @@ class DQNPolicy(Policy.Policy):
             # init session
             # writer = tf.summary.FileWriter('./graphs', tf.get_default_graph()) #todo test test
             self.sess = tf.Session()
+
             with tf.device("/cpu:0"):
 
                 np.random.seed(self.randomseed)
@@ -401,14 +399,17 @@ class DQNPolicy(Policy.Policy):
                                             self.learning_rate, self.tau, action_bound, self.minibatch_size,
                                             self.architecture, self.h1_size,
                                             self.h2_size, dropout_rate=self.dropout_rate)
+                # self.predictor = mpc.StateActionPredictor(268, 16, designHead='pydial') #todo where used? what needed for
+                #do i need to make those two things very seperate? sessions and vars and evrything in all parts?todo
 
                 # when all models are defined, init all variables
                 init_op = tf.global_variables_initializer()
                 self.sess.run(init_op)
 
-                self.loadPolicy(self.in_policy_file)
+                self.loadPolicy(self.in_policy_file) #do i need to save the models together if i use same sess?
                 print 'loaded replay size: ', self.episodes[self.domainString].size()
 
+                self.curiosityFunctions = Curious()
                 self.dqn.update_target_network()
 
     def get_n_in(self, domain_string):
@@ -709,7 +710,7 @@ class DQNPolicy(Policy.Policy):
         logger.info("Sample Num so far: %s" % (self.samplecount))
         logger.info("Episode Num so far: %s" % (self.episodecount))
 
-        if self.samplecount >= self.minibatch_size * 10 and self.episodecount % self.training_frequency == 0:  # what is this condition?
+        if self.samplecount >= self.minibatch_size * 10 and self.episodecount % self.training_frequency == 0:
             logger.info('start training...')
 
             s_batch, s_ori_batch, a_batch, r_batch, s2_batch, s2_ori_batch, t_batch, idx_batch, _ = \
@@ -764,37 +765,10 @@ class DQNPolicy(Policy.Policy):
             # Update the critic given the targets
             reshaped_yi = np.vstack([np.expand_dims(x, 0) for x in y_i])
 
-            # similar approach? predicted state, optimization, predloss? run together? TODO clean up
-            # predgrads, predloss = self.dqn.curiosity_backprop(s_batch[5, :], s2_batch[5, :], a_batch_one_hot[5, :],
-            #                                                   mpc)  # in batches? or every episode? or every turn?
-            # need to add loss into policy optimization instead
-            # i'd say in batches and same fashion as other trg?
-            # print predgrads
+            if self.curiosityreward:#todo
+                curiosity_loss = self.curiosityFunctions.training(s2_batch, s_batch, a_batch_one_hot)
 
-            # reshaped_yi = np.reshape(y_i, (min(self.minibatch_size, self.episodes[self.domainString].size()), 1))
-            #print reshaped_yi.shape[0]
-            #print self.episodes[self.domainString].size()
-
-            # # opt1:
-            # start = time.time()
-            # predicted_q_value, _, currentLoss = self.dqn.train(s_batch, a_batch_one_hot, reshaped_yi) #opt1
-            # # end = time.time()
-            # # print 'dqn.train time: ', end-start
-            # # print 'pred V and loss:', predicted_q_value, currentLoss
-            #
-            # # start = time.time()
-            # pred_loss = self.dqn.train_curiosity(s_batch[5, :], s2_batch[5, :], a_batch_one_hot[5, :]) #opt1
-            # # end = time.time()
-            # # print 'dqn.train_curiosity time: ', end - start
-            #
-            # #print 'curiosity pred loss: ', pred_loss
-
-            # opt2: better (more tidy) below
-            # start = time.time()
-            if self.curiosityreward:
-                predicted_q_value, currentLoss, curiosity_loss = self.dqn.train_curious(s_batch, a_batch_one_hot, reshaped_yi, s2_batch)
-            else:
-                predicted_q_value, _, currentLoss = self.dqn.train(s_batch, a_batch_one_hot, reshaped_yi)
+            predicted_q_value, currentLoss = self.dqn.train(s_batch, a_batch_one_hot, reshaped_yi)
             # end = time.time()
 
             # print 'train time: ', end - start
@@ -824,17 +798,14 @@ class DQNPolicy(Policy.Policy):
         """
 
         if self.episodecount % self.save_step == 0:
-            #print "episode", self.episodecount
+            # print "episode", self.episodecount
             # save_path = self.saver.save(self.sess, self.out_policy_file+'.ckpt')
             self.dqn.save_network(self.out_policy_file + '.dqn.ckpt')
-            # print('saved successfully')
             f = open(self.out_policy_file + '.episode', 'wb')
-            # print('opend f')
             for obj in [self.samplecount, self.episodes[self.domainString]]:
                 pickle.dump(obj, f, protocol=pickle.HIGHEST_PROTOCOL)
             f.close()
             # logger.info("Saving model to %s and replay buffer..." % save_path)
-            # print('done saving stuff continuing normal')
 
     def loadPolicy(self, filename):
         """
