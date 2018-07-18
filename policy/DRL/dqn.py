@@ -92,35 +92,17 @@ class DeepQNetwork(object):
         #action_maxQ_one_hot = tf.one_hot(self.a_maxQ, self.a_dim, 1.0, 0.0, name='action_maxQ_one_hot')
         #self.action_maxQ_target = tf.reduce_sum(self.target_Qout * action_maxQ_one_hot, reduction_indices=1, name='a_maxQ_target')
 
-        # Define loss and optimization Op
-        with tf.variable_scope('curiosity'):
-            self.predictor = mpc.StateActionPredictor(268, 16, designHead='pydial')  # todo len state len action!
-            # self.predictor = mpc.Prediction_state(268, 16)
-            # self.predloss = constants['PREDICTION_LR_SCALE'] * (
-            #         self.predictor.invloss * (1 - constants['FORWARD_LOSS_WT']) +
-            #         self.predictor.forwardloss * constants['FORWARD_LOSS_WT'])
-            self.predloss = self.predictor.forwardloss #todo: no invloss?
-        self.optimizer2 = tf.train.AdamOptimizer(self.learning_rate)
-        self.optimize2 = self.optimizer2.minimize(self.predloss)
-        # gs2 = tf.gradients(self.predloss,tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope='curiosity'))
-        # gs2 = tf.gradients(self.predloss, self.network_params)
-        # capped_gvs2 = [(tf.clip_by_value(grad, -3., 3.), var) for grad, var in zip(gs2, self.network_params)]
-        # self.optimize2 = self.optimizer2.apply_gradients(capped_gvs2)
-        predgrads = tf.gradients(self.predloss * 20.0, self.predictor.var_list)  # todo change constant add gradients back in
-        predgrads, _ = tf.clip_by_global_norm(predgrads, constants['GRAD_NORM_CLIP'])
-        pred_grads_and_vars = list(zip(predgrads, self.predictor.var_list))
-        # self.optimizer2 = tf.train.AdamOptimizer(constants['LEARNING_RATE'])
-        self.optimize2 = self.optimizer2.apply_gradients(pred_grads_and_vars)
-
         with tf.variable_scope('policy'):
             self.diff = self.sampled_q - self.pred_q
             self.loss = tf.reduce_mean(self.clipped_error(self.diff), name='loss')
         self.optimizer = tf.train.AdamOptimizer(self.learning_rate)
         self.optimize = self.optimizer.minimize(self.loss)
-        gs = tf.gradients(self.loss, self.network_params)
-        capped_gvs = [(tf.clip_by_value(grad, -3., 3.), var) for grad, var in zip(gs, self.network_params)]
-        self.optimize = self.optimizer.apply_gradients(capped_gvs)
+        # gs = tf.gradients(self.loss, self.network_params)
+        # capped_gvs = [(tf.clip_by_value(grad, -3., 3.), var) for grad, var in zip(gs, self.network_params)]
+        # self.optimize = self.optimizer.apply_gradients(capped_gvs)
 
+        # self.saver = tf.train.Saver()
+        # self.saver.restore(self.sess, '_curiosity_model/pretrg_model/trained_curiosity100')
 
         # computing predictor loss
         # if self.unsup:
@@ -209,18 +191,23 @@ class DeepQNetwork(object):
         return inputs, action, Qout
 
     def train(self, inputs, action, sampled_q):
-        return self.sess.run([self.pred_q, self.optimize, self.loss], feed_dict={  # yes, needs to be changed too
+        writer = tf.summary.FileWriter('./graphs', tf.get_default_graph())
+        writer = tf.summary.FileWriter('./graphs', self.sess.graph)
+        pred, _, loss = self.sess.run([self.pred_q, self.optimize, self.loss], feed_dict={  # yes, needs to be changed too
             self.inputs: inputs,  # believe state
             self.action: action,
             self.sampled_q: sampled_q
         })
 
+        writer.close()
+        return pred, loss
+
     def train_curious(self, inputs, action, sampled_q, inputs2):
         # self.loss = self.loss + self.predloss
         # self.optimize = self.optimizer.minimize(self.loss + self.predloss) #this one was used for exp
         # writer = tf.summary.FileWriter('./graphs', tf.get_default_graph())
-        predicted_q_value, _,_, currentLoss, curiosity_loss = self.sess.run([self.pred_q, self.optimize, self.optimize2,
-            self.loss, self.predloss], feed_dict={
+        predicted_q_value, _, _, current_loss, curiosity_loss = self.sess.run([self.pred_q, self.optimize,
+                                                                self.optimize2, self.loss, self.predloss], feed_dict={
             self.inputs: inputs,
             self.action: action,
             self.sampled_q: sampled_q,
@@ -231,15 +218,8 @@ class DeepQNetwork(object):
         }) #self.optimize2
         # writer = tf.summary.FileWriter('./graphs', self.sess.graph)
         # writer.close()
-        return predicted_q_value, currentLoss, curiosity_loss
+        return predicted_q_value, current_loss, curiosity_loss
         #todo figure out inputs for predloss(batch vs single? s1 vs s2 is it really state and prev? )
-
-    def train_curiosity(self, prev_state_vec, state_vec, action_1hot):
-        _, predictionloss = self.sess.run([self.optimize2, self.predloss], feed_dict={self.predictor.s1: prev_state_vec,
-                     self.predictor.s2: state_vec,
-                     self.predictor.asample: action_1hot
-                     })
-        return predictionloss
 
     def predict(self, inputs):
         return self.sess.run(self.Qout, feed_dict={
@@ -286,7 +266,7 @@ class DeepQNetwork(object):
         self.sess.run(self.update_target_network_params)  # yes, but no need to change
 
     def load_network(self, load_filename):
-        self.saver = tf.train.Saver()
+        self.saver = tf.train.Saver() #should i move it to init todo eventhough not my code
         if load_filename.split('.')[-3] != '0':
             try:
                 self.saver.restore(self.sess, load_filename)
@@ -302,48 +282,6 @@ class DeepQNetwork(object):
 
     def clipped_error(self, x):
         return tf.where(tf.abs(x) < 1.0, 0.5 * tf.square(x), tf.abs(x) - 0.5)  # condition, true, false
-
-    def curiosity_backprop(self, prev_state, state, action, mpc):
-        from constants_prediction_curiosity import constants
-        predictor = mpc.StateActionPredictor(len(prev_state), len(action), designHead='pydial')
-
-        # # computing predictor loss
-        # if self.unsup:
-        #     if 'state' in unsupType:
-        #         self.predloss = constants['PREDICTION_LR_SCALE'] * predictor.forwardloss
-        #     else:
-        self.predloss = constants['PREDICTION_LR_SCALE'] * (predictor.invloss * (1 - constants['FORWARD_LOSS_WT']) +
-                                                            predictor.forwardloss * constants['FORWARD_LOSS_WT'])
-        predgrads = tf.gradients(self.predloss * 20.0,  # our batch size is?
-                                 predictor.var_list)  # batchsize=20. Factored out to make hyperparams not depend on it.
-
-        predgrads, _ = tf.clip_by_global_norm(predgrads, constants['GRAD_NORM_CLIP'])
-        pred_grads_and_vars = list(zip(predgrads, predictor.var_list))
-        grads_and_vars = pred_grads_and_vars  # prediction only here for now, do i want to combine it with policy?
-        # each worker has a different set of adam optimizer parameters
-        # make optimizer global shared, if needed
-        print("Optimizer: ADAM with lr: %f" % (constants['LEARNING_RATE']))
-        # print("Input observation shape: ", env.observation_space.shape)
-        opt = tf.train.AdamOptimizer(constants['LEARNING_RATE'])
-        # train_op = tf.group(opt.apply_gradients(grads_and_vars), inc_step)
-        with tf.variable_scope('what_goes_here', reuse=tf.AUTO_REUSE):  # why? and what goes into varscope?
-            train_op = opt.apply_gradients(grads_and_vars)
-            # next, run op session
-            sess = tf.Session()
-            sess.run(tf.global_variables_initializer())
-            feed_dict = {predictor.s1: [prev_state],
-                         predictor.s2: [state],
-                         predictor.asample: [action]
-                         }
-            sess.run(train_op, feed_dict=feed_dict)
-        #use train function to train this?
-        # def train(self, inputs, action, sampled_q):
-        #     return self.sess.run([self.pred_q, self.optimize, self.loss], feed_dict={  # yes, needs to be changed too
-        #         self.inputs: inputs,  # believe state
-        #         self.action: action,
-        #         self.sampled_q: sampled_q
-        #     })
-        return train_op, self.predloss
 
 
 class NNFDeepQNetwork(object):

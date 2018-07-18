@@ -41,6 +41,7 @@ Copyright CUED Dialogue Systems Group 2015 - 2017
 __author__ = "cued_dialogue_systems_group"
 import copy
 
+import DRL.dqn as dqn
 import Policy
 import PolicyUtils
 import SummaryUtils
@@ -65,7 +66,7 @@ class HDCPolicy(Policy.Policy):
         super(HDCPolicy, self).__init__(domainString) # inherited from Policy.Policy() is self.domainString
         
         self.use_confreq = False
-        
+
         if Settings.config.has_option('policy', 'useconfreq'):
             self.use_confreq = Settings.config.getboolean('policy', 'useconfreq')
         if Settings.config.has_option('policy_'+domainString, 'useconfreq'):
@@ -86,7 +87,6 @@ class HDCPolicy(Policy.Policy):
         logger.debug("numActions = "+str(self.numActions))
 
         self.restart()
-        
 
     def restart(self):
         super(HDCPolicy,self).restart()
