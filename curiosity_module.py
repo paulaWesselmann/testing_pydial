@@ -28,7 +28,6 @@ class Curious(object):
         self.saver = tf.train.Saver(var_list=[v for v in all_variables if "Variab" not in v.name and "beta" not in v.name])
 
     def training(self, state_vec, prev_state_vec, action_1hot):
-
         _, predictionloss = self.sess2.run([self.optimize, self.predloss],
                                           feed_dict={self.predictor.s1: prev_state_vec,
                                           self.predictor.s2: state_vec,

@@ -44,7 +44,7 @@ https://arxiv.org/abs/1606.02647
 
 ************************
 
-''' #TODO implement curiosity learning in acer
+'''
 import copy
 import os
 import json
@@ -56,6 +56,7 @@ import random
 import utils
 from utils.Settings import config as cfg
 from utils import ContextLogger, DiaAct
+from curiosity_module import Curious
 
 import ontology.FlatOntologyManager as FlatOnt
 import tensorflow as tf
@@ -68,6 +69,7 @@ import SummaryAction
 from Policy import TerminalAction, TerminalState
 
 logger = utils.ContextLogger.getLogger('')
+
 
 # --- for flattening the belief --- #
 def flatten_belief(belief, domainUtil, merge=False):
@@ -382,6 +384,9 @@ class ACERPolicy(Policy.Policy):
         if cfg.has_option('dqnpolicy_'+domainString, 'training_frequency'):
             self.training_frequency = cfg.getint('dqnpolicy_'+domainString, 'training_frequency')
 
+        if cfg.has_option('eval', 'curiosityreward'):
+            self.curiosityreward = cfg.getboolean('eval', 'curiosityreward')
+
 
         self.episode_ct = 0
 
@@ -426,6 +431,7 @@ class ACERPolicy(Policy.Policy):
             self.loadPolicy(self.in_policy_file)
             print 'loaded replay size: ', self.episodes[self.domainString].size()
 
+            self.curiosityFunctions = Curious()
             #self.acer.update_target_network()
 
     def get_n_in(self, domain_string):
@@ -711,6 +717,12 @@ class ACERPolicy(Policy.Policy):
                 batch_size = len(s_batch)
 
                 a_batch_one_hot = np.eye(self.action_dim)[np.concatenate(a_batch, axis=0).tolist()]
+
+                if self.curiosityreward:
+                    curiosity_loss = \
+                        self.curiosityFunctions.training(np.concatenate(np.array(s2_batch), axis=0).tolist(),
+                                                         np.concatenate(np.array(s_batch), axis=0).tolist(),
+                                                         a_batch_one_hot)
 
                 loss, entropy, optimize = \
                             self.acer.train(np.concatenate(np.array(s_batch), axis=0).tolist(), a_batch_one_hot,

@@ -15,9 +15,12 @@ constants = {
 
 'PREDICTION_BETA': 0.2,  # weight of prediction bonus  ... 0.01 for doom/0.2 for mario not used currently, hardcoded...
                           # set 0.5 for unsup=state
+
 'PREDICTION_LR_SCALE': 10,  # scale lr of predictor wrt to policy network (med = 0.05)
                               # set 30-50 for unsup=state
 'FORWARD_LOSS_WT': 0.2,  # should be between [0,1]
                           # predloss = ( (1-FORWARD_LOSS_WT) * inv_loss + FORWARD_LOSS_WT * forward_loss) * PREDICTION_LR_SCALE
+
+
 'POLICY_NO_BACKPROP_STEPS': 0,  # number of global steps after which we start backpropagating to policy
 }

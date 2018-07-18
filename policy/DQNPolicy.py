@@ -399,8 +399,6 @@ class DQNPolicy(Policy.Policy):
                                             self.learning_rate, self.tau, action_bound, self.minibatch_size,
                                             self.architecture, self.h1_size,
                                             self.h2_size, dropout_rate=self.dropout_rate)
-                # self.predictor = mpc.StateActionPredictor(268, 16, designHead='pydial') #todo where used? what needed for
-                #do i need to make those two things very seperate? sessions and vars and evrything in all parts?todo
 
                 # when all models are defined, init all variables
                 init_op = tf.global_variables_initializer()
@@ -765,13 +763,13 @@ class DQNPolicy(Policy.Policy):
             # Update the critic given the targets
             reshaped_yi = np.vstack([np.expand_dims(x, 0) for x in y_i])
 
-            if self.curiosityreward:#todo
+            if self.curiosityreward:
                 curiosity_loss = self.curiosityFunctions.training(s2_batch, s_batch, a_batch_one_hot)
 
             predicted_q_value, currentLoss = self.dqn.train(s_batch, a_batch_one_hot, reshaped_yi)
             # end = time.time()
 
-            # print 'train time: ', end - start
+            # print 'train time: ', end - start#todo
             #print 'y_i'
             #print y_i
             # print 'currentLoss', currentLoss

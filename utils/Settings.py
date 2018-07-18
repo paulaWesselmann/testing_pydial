@@ -63,6 +63,7 @@ randomCount = 0
 root = ''
 global_currentturn = None
 global_numiter = None
+global_sess = None
 
 #==============================================================================================================
 # Methods (for settings globals)

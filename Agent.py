@@ -166,7 +166,7 @@ class DialogueAgent(object):
         # Finally, enforce some cross module requirements:
         self._logical_requirements()
 
-        self.domainUtil = FlatOnt.FlatDomainOntology(self.topic_tracker.operatingDomain)  # todo was operating domain only before, where was this placed before error?
+        self.domainUtil = FlatOnt.FlatDomainOntology(self.topic_tracker.operatingDomain)
 
     def start_call(self, session_id, domainSimulatedUsers=None, maxNumTurnsScaling=1.0, start_domain=None):
         '''
