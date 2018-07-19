@@ -45,6 +45,7 @@ from utils import Settings, ContextLogger
 import numpy as np
 logger = ContextLogger.getLogger('')
 
+
 class MultiEvaluator(Evaluator):
     '''
     Wrapper class for combining multiple evaluators, e.g. if objective and subjective success needs to be tracked.
@@ -113,7 +114,7 @@ class MultiEvaluator(Evaluator):
         if self.num_turns > 0:
             final_reward = self._getFinalReward(finalInfo)
             
-            for i in range(0,len(final_reward)):
+            for i in range(0, len(final_reward)):
                 self.total_reward[i] += final_reward[i]
                 
             self.rewards.append(self.total_reward)

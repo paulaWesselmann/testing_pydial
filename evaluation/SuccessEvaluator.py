@@ -20,6 +20,7 @@
 #
 ###############################################################################
 from utils.dact import DactItem
+from datetime import datetime
 
 import time
 '''
@@ -46,7 +47,14 @@ from ontology import Ontology
 import numpy as np
 import copy
 
+from curiosity_module import Curious
 import model_prediction_curiosity as mpc
+
+# import matplotlib as mpl
+import os
+# mpl.use('Agg')
+
+# import matplotlib.pyplot as plt
 
 logger = ContextLogger.getLogger('')
 
@@ -59,13 +67,13 @@ class ObjectiveSuccessEvaluator(Evaluator):
     
     def __init__(self, domainString):
         super(ObjectiveSuccessEvaluator, self).__init__(domainString)
-        
+
         # only for nice prints
         self.evaluator_label = "objective success evaluator"
         self.evaluator_short_label = "suc"
-               
+
         # DEFAULTS:
-        self.curiosityreward = True  # prediction error as reward for curiosity for efficient exploring
+        self.curiosityreward = False  # prediction error as reward for curiosity for efficient exploring
         self.delayed_turn_penalty_set_in = 0  # number of batch sizes after which turn penalty is used for learning
         self.reward_venue_recommended = 0  # we dont use this. 100
         self.penalise_all_turns = True   # We give -1 each turn. Note that this is done thru this boolean
@@ -76,8 +84,18 @@ class ObjectiveSuccessEvaluator(Evaluator):
         self.failPenalty = 0
         self.user_goal = None
         self.turn_thresh = 0  # threshold, if not all turns are penalized
-        
+        self.pre_trg = False  # if pre-train curiosity, set to True
+
+        # save for curiosity pretrg
+        self.turnlist = []
+        self.actionlist = []
+        self.statelist = []
+        self.prevstatelist = []
+
         # CONFIG:
+        if Settings.config.has_option('eval', 'pretrg'):
+            self.pre_trg = Settings.config.getboolean('eval', 'pretrg')
+            if self.pre_trg: print 'curiosity training is running'
         if Settings.config.has_option('eval', 'curiosityreward'):
             self.curiosityreward = Settings.config.getboolean('eval', 'curiosityreward')
         if Settings.config.has_option('eval', 'delayed_turn_penalty_set_in'):
@@ -109,9 +127,19 @@ class ObjectiveSuccessEvaluator(Evaluator):
         sys_reqestable_slots = Ontology.global_ontology.get_system_requestable_slots(self.domainString)
         for slot in sys_reqestable_slots:
             self.mentioned_values[slot] = set(['dontcare'])
+
+        if self.curiosityreward:  # to use state prediction error as reward
+            self.curiosityFunctions = Curious()
+            self.curiosityFunctions.load_curiosity("_curiosity_model/pretrg_model/trained_curiosity2") #todo change pretrg model here
             
         self.DM_history = None
-        
+        self.predictor = mpc.StateActionPredictor(268, 16, designHead='pydial')
+
+        self.curiosity_reward = [] # stores all curiosity rewards to print in log
+        self.actions = []  # index of 1hot actions
+        self.cnt = []
+        self.counter = 0
+
     def restart(self):
         """
         Initialise variables (i.e. start dialog with: success=False, venue recommended=False, and 'dontcare' as \
@@ -131,7 +159,60 @@ class ObjectiveSuccessEvaluator(Evaluator):
             
         if self.using_tasks:
             self.DM_history = []
-        
+
+    # def plotCuriosity(self, dname, bonus, cnt, saveplot=True):  # todo this is fideldooo called in 234
+    #     # global gplotnum
+    #     # plt.figure(gplotnum)
+    #     # gplotnum += 1
+    #     if len(cnt) == 1:
+    #         num_dialogues = 1
+    #     else:
+    #         num_dialogues = len(self.outcomes) + 1
+    #
+    #     if num_dialogues % 2 == 0:
+    #         c = 'oc'
+    #     else:
+    #         c = '*g'
+    #     plt.plot(cnt[-1], bonus[-1], c)
+
+        # if self.num_turns == 1:
+        #     plt.plot(cnt[-1], 0.5, '*b')
+        #     plt.plot(cnt[-1], bonus[-1], '*g')
+        # plt.plot(cnt, bonus)
+
+        # for policy in policylist:
+        #     tab = rtab[policy]
+        #     plt.subplot(211)
+        #     if len(tab['x']) < 2:
+        #         plt.axhline(y=tab['y'][0], linestyle='--')
+        #     else:
+        #         # plt.errorbar(tab['x'],tab['y'], yerr=tab['var'], label=policy)
+        #         plt.errorbar(tab['x'], tab['y'], label=policy)
+        #     tab = stab[policy]
+        #     plt.subplot(212)
+        #     if len(tab['x']) < 2:
+        #         plt.axhline(y=tab['y'][0], linestyle='--')
+        #     else:
+        #         # plt.errorbar(tab['x'],tab['y'],yerr=tab['var'],label=policy)
+        #         plt.errorbar(tab['x'], tab['y'], label=policy)
+        # plt.subplot(211)
+        # plt.grid()
+        # plt.legend(loc='lower right', fontsize=10)
+        # plt.title(dname + " Performance vs Num Train Dialogs")
+        # plt.ylabel('Reward')
+        # plt.subplot(212)
+        # plt.grid()
+        # plt.legend(loc='lower right', fontsize=10)
+        # plt.xlabel('Num Dialogs')
+        # plt.ylabel('Success')
+        # if saveplot:
+        #     if not os.path.exists('_plots'):
+        #         os.mkdir('_plots')
+        #     plt.savefig('_plots/' + dname + '.png', bbox_inches='tight')
+        #     print 'plot saved as', dname
+        # else:
+        #     plt.show(block=block)
+
     def _getTurnReward(self, turnInfo):
         '''
         Computes the turn reward regarding turnInfo. The default turn reward is -1 unless otherwise computed. 
@@ -144,7 +225,7 @@ class ObjectiveSuccessEvaluator(Evaluator):
         # Immediate reward for each turn.
         reward = -self.penalise_all_turns
 
-        # turn threshold option
+        # turn threshold option for turn penalty
         if self.num_turns < self.turn_thresh:
             reward = 0
 
@@ -154,17 +235,40 @@ class ObjectiveSuccessEvaluator(Evaluator):
 
         if turnInfo is not None and isinstance(turnInfo, dict):
 
-            # use curiosity reward
-            if self.curiosityreward: #todo change to false for initialization ^  once changed in config file
-                start = time.time()
+            if self.pre_trg:
                 prev_state_vec = turnInfo['prev_state_vec']
                 state_vec = turnInfo['state_vec']
                 ac_1hot = turnInfo['ac_1hot']
-                predictor = mpc.StateActionPredictor(len(prev_state_vec), len(ac_1hot), designHead='pydial')
-                bonus = predictor.pred_bonus(prev_state_vec, state_vec, ac_1hot)
-                reward += bonus*20  # tune params later!!
-                end = time.time()
-                # print('bonus time: ', end-start)
+
+                self.statelist.append(state_vec)
+                self.prevstatelist.append(prev_state_vec)
+                self.actionlist.append(np.where(ac_1hot == 1)[0][0])
+                self.turnlist.append(turnInfo['turn_num'])
+
+            # use curiosity reward
+            if self.curiosityreward:
+
+                prev_state_vec = turnInfo['prev_state_vec']
+                state_vec = turnInfo['state_vec']
+                ac_1hot = turnInfo['ac_1hot']
+
+                # st2 = time.time()
+                bonus = self.curiosityFunctions.reward(prev_state_vec, state_vec, ac_1hot)  # pred_bonus
+                predbonus = bonus*15  # tune params todo :why is reward smaller see cur100 vs cur2,3 model
+
+                # self.curiosity_reward.append(bonus)  # todo +also plot losses, this is for plotting below uncomment if plot
+                # self.actions.append(np.where(ac_1hot == 1)[0][0])  # index of action
+
+                reward += predbonus
+
+                # pred_action = predictor.pred_act(prev_state_vec,state_vec)
+                # print('action: ', ac_1hot)
+                # print('predicted action: ', pred_action)
+                # print bonus
+
+                # #todo: fix and put in cur mod?
+                # state_pred, state_orig = self.predictor.pred_state(prev_state_vec, ac_1hot)
+                # print state_pred, state_orig
 
             if 'usermodel' in turnInfo and 'sys_act' in turnInfo:
                 um = turnInfo['usermodel']
@@ -340,7 +444,7 @@ class ObjectiveSuccessEvaluator(Evaluator):
         for act in self.DM_history:
             if 'inform(' in act:
                 details = act.split("(")[1].split(",")
-                details[-1] = details[-1][0:-1]  # remove the closing )
+                details[-1] = details[-1][0:-1]  # remove the closing ) remove clothing
                 if not len(details):
                     continue
                 if "name=" in act:
@@ -380,8 +484,74 @@ class ObjectiveSuccessEvaluator(Evaluator):
             tinv = 1
         else:
             tinv = stats.t.ppf(1 - 0.025, num_dialogs - 1)
-        return 'Average success = {0:0.2f} +- {1:0.2f}'.format(100 * np.mean(outcomes), \
-                                                            100 * tinv * np.std(outcomes) / np.sqrt(num_dialogs))
+
+        # if self.curiosityreward:
+        #     # plt.use('Agg') todo where put it and how put it to run in terminal?
+        #     # # save rewards and actions used TODO use as needed, also neeed to uncomment/comment lists above*************
+        #     # date_time = datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
+        #     # if not os.path.exists('_rewardlogs'):
+        #     #     os.mkdir('_rewardlogs')
+        #     # with open('_rewardlogs/reward'+date_time, 'w') as f:
+        #     #     f.write('\nrewards\n')
+        #     #     for item in self.curiosity_reward:
+        #     #         f.write('{}\n'.format(item))
+        #     #     f.write('\nactions\n')
+        #     #     for item2 in self.actions:
+        #     #         f.write('{}\n'.format(item2))
+        #     # print('Curiosity rewards and actions saved in _rewardlogs.')
+        #     #
+        #     # cheeky plot included #TODO *****************************************************************************
+        #     x_actions = self.actions[-500:-1]
+        #     y_bonus = self.curiosity_reward[-500:-1]
+        #     plt.scatter(x_actions, y_bonus)
+        #     # plt.xlim((0, 15))  # 16 actions
+        #     plt.xticks(range(16), ['request food', 'request area', 'request price', 'confirm food', 'confirm area',
+        #                            'confirm price', 'select food', 'select area', 'select price', 'inform',
+        #                            'info. name', 'info. altern', 'bye', 'repeat', 'reqmore', 'restart'],
+        #                rotation='vertical')
+        #     # plt.margins(0.3)?
+        #     plt.ylabel('Prediction error/ curiosity bonus')
+        #     time_at_save = datetime.now().strftime('%m-%d_%H:%M:%S')
+        #     plt.title('Curiosity associated with actions')
+        #     x_act = {}  # add average bonus value for each action
+        #     for i in range(16):
+        #         cnt = 0
+        #         x_act[i] = [0, 0, 0]  # num, reward sum
+        #         for action in x_actions:
+        #             if action == i:
+        #                 x_act[i][0] += 1
+        #                 x_act[i][1] += y_bonus[cnt]
+        #             cnt += 1
+        #         if x_act[i][0] != 0:
+        #             x_act[i][2] = x_act[i][1]/x_act[i][0]
+        #             plt.scatter(i, x_act[i][2], c='r')
+        #
+        #     plt.savefig('_plots/action_bonus(' + time_at_save + ')100dqn.png', bbox_inches='tight')
+        #     plt.close()
+        #     print 'action-bonus plot saved.'  # ********************************************************************
+
+        if self.pre_trg:
+            date_time = datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
+            if not os.path.exists('_curiosity_model/pretrg_data/'):
+                os.mkdir('_curiosity_model/pretrg_data/')
+            with open('_curiosity_model/pretrg_data/dqn'+date_time, 'w') as f:  # todo: include policy and seed in name?
+                # data collection for pretraining
+                for num in range(len(self.turnlist)):
+                    f.write('turn: '+str(self.turnlist[num])+' sys_action: '+str(self.actionlist[num]) +
+                            '\n') #+str(self.statelist[num][0])+' prev_state: '+str(self.statelist[num][1]))
+            with open('_curiosity_model/pretrg_data/dqn_state'+date_time, 'w') as f2:
+                np.savetxt(f2, np.array(self.statelist))
+
+            with open('_curiosity_model/pretrg_data/dqn_prev_state' + date_time, 'w') as f3:
+                np.savetxt(f3, np.array(self.prevstatelist))
+            # reset lists
+            self.turnlist = []
+            self.actionlist = []
+            self.statelist = []
+            self.prevstatelist = []
+
+        return 'Average success = {0:0.2f} +- {1:0.2f}'.format(100 * np.mean(outcomes),
+                                                        100 * tinv * np.std(outcomes) / np.sqrt(num_dialogs))
 
 
 class Sys2TextSuccessEvaluator(Evaluator):
@@ -450,7 +620,7 @@ class SubjectiveSuccessEvaluator(Evaluator):
         self.penalise_all_turns = True   # We give -1 each turn. Note that this is done thru this boolean
         self.successReward = 20
         
-        # CONFIG:
+        # CONFIG: t
         if Settings.config.has_option('eval', 'penaliseallturns'):
             self.penalise_all_turns = Settings.config.getboolean('eval', 'penaliseallturns')
         if Settings.config.has_option("eval", "successreward"):
@@ -458,7 +628,6 @@ class SubjectiveSuccessEvaluator(Evaluator):
         if Settings.config.has_option("eval_" + domainString, "successreward"):
             self.successReward = Settings.config.getint("eval_" + domainString, "successreward")
 
-        
     def restart(self):
         """
         Calls restart of parent.
