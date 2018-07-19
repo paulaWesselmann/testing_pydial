@@ -63,6 +63,7 @@ class Evaluator(object):
             
         # Recording rew,outcome,turn - over all dialogues run during a session - used for printing on hub exit.
         self.rewards = []
+        # self.curiosity_reward = []
         self.outcomes = []
         self.turns = []
         self.finalrewards = []
@@ -155,6 +156,7 @@ class Evaluator(object):
             tinv = 1
         else:
             tinv = stats.t.ppf(1 - 0.025, num_dialogs - 1)
+
         return 'Average success = {0:0.2f} +- {1:0.2f}'.format(100 * np.mean(outcomes), \
                                                             100 * tinv * np.std(outcomes) / np.sqrt(num_dialogs))
     
