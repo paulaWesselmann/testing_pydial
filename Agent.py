@@ -50,9 +50,6 @@ from ontology import Ontology
 import ontology.FlatOntologyManager as FlatOnt
 from utils.DiaAct import DiaAct, DiaActWithProb
 import numpy as np
-# import model_prediction_curiosity as mpc
-# from model_prediction_curiosity import constants
-# import tensorflow as tf
 import policy.DQNPolicy as dqnpolicy
 
 import time, re
@@ -60,6 +57,7 @@ logger = ContextLogger.getLogger('')
 
 __author__ = "cued_dialogue_systems_group"
 __version__ = Settings.__version__
+
 
 #----------------------------------------------------------------
 # DIALOGUE AGENT
@@ -191,7 +189,7 @@ class DialogueAgent(object):
         :return: string -- the system's reponse
         '''
 
-        # if self.NUM_DIALOGS > 980:  # for eval purposes researchhhhhhh todo
+        # if self.NUM_DIALOGS > 990:  # for eval purposes researchhhhhhh todo
         #     self.traceDialog = 2
 
         self._check_agent_not_on_call()
@@ -651,7 +649,7 @@ class DialogueAgent(object):
 
         :return: None
         '''
-        if self.traceDialog > 2: state.printUserActs(currentDomain)
+        if self.traceDialog > 1: state.printUserActs(currentDomain) #todo > 2?
     
     def _check_ENDING_CALL(self, state = None, sys_act = None):
         '''

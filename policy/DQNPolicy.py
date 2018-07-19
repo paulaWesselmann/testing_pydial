@@ -356,6 +356,8 @@ class DQNPolicy(Policy.Policy):
 
         self.episode_ave_max_q = []
 
+        self.curiositypred_loss = []
+
         os.environ["CUDA_VISIBLE_DEVICES"] = ""
         policytype = 'dqn'
         self.dropout_rate = 0.
@@ -364,8 +366,6 @@ class DQNPolicy(Policy.Policy):
         if utils.Settings.config.has_option('policy', 'policytype'):
             policytype = utils.Settings.config.get('policy', 'policytype')
         if policytype != 'feudal':
-            # init session
-            # writer = tf.summary.FileWriter('./graphs', tf.get_default_graph()) #todo test test
             self.sess = tf.Session()
 
             with tf.device("/cpu:0"):
@@ -404,7 +404,7 @@ class DQNPolicy(Policy.Policy):
                 init_op = tf.global_variables_initializer()
                 self.sess.run(init_op)
 
-                self.loadPolicy(self.in_policy_file) #do i need to save the models together if i use same sess?
+                self.loadPolicy(self.in_policy_file)
                 print 'loaded replay size: ', self.episodes[self.domainString].size()
 
                 self.curiosityFunctions = Curious()
@@ -765,17 +765,9 @@ class DQNPolicy(Policy.Policy):
 
             if self.curiosityreward:
                 curiosity_loss = self.curiosityFunctions.training(s2_batch, s_batch, a_batch_one_hot)
+                self.curiositypred_loss.append(curiosity_loss) #todo: plot somehow
 
             predicted_q_value, currentLoss = self.dqn.train(s_batch, a_batch_one_hot, reshaped_yi)
-            # end = time.time()
-
-            # print 'train time: ', end - start#todo
-            #print 'y_i'
-            #print y_i
-            # print 'currentLoss', currentLoss
-            #print 'predict Q'
-            #print predicted_q_value
-            # print 'curiosity loss: ', curiosity_loss
 
             if self.episodecount % 1 == 0:
                 # Update target networks

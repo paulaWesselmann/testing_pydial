@@ -3,7 +3,7 @@ import model_prediction_curiosity as mpc
 import os
 from constants_prediction_curiosity import constants
 import numpy as np
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 
 
 class Curious(object):

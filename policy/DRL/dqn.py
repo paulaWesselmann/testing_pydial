@@ -191,18 +191,18 @@ class DeepQNetwork(object):
         return inputs, action, Qout
 
     def train(self, inputs, action, sampled_q):
-        writer = tf.summary.FileWriter('./graphs', tf.get_default_graph())
-        writer = tf.summary.FileWriter('./graphs', self.sess.graph)
-        pred, _, loss = self.sess.run([self.pred_q, self.optimize, self.loss], feed_dict={  # yes, needs to be changed too
+        # writer = tf.summary.FileWriter('./graphs', tf.get_default_graph())  # TODO: why double assignment here?
+        # writer = tf.summary.FileWriter('./graphs', self.sess.graph)
+        pred, _, loss = self.sess.run([self.pred_q, self.optimize, self.loss], feed_dict={
             self.inputs: inputs,  # believe state
             self.action: action,
             self.sampled_q: sampled_q
         })
 
-        writer.close()
+        # writer.close()
         return pred, loss
 
-    def train_curious(self, inputs, action, sampled_q, inputs2):
+    def train_curious(self, inputs, action, sampled_q, inputs2): #todo if not used clean up!
         # self.loss = self.loss + self.predloss
         # self.optimize = self.optimizer.minimize(self.loss + self.predloss) #this one was used for exp
         # writer = tf.summary.FileWriter('./graphs', tf.get_default_graph())
@@ -219,7 +219,6 @@ class DeepQNetwork(object):
         # writer = tf.summary.FileWriter('./graphs', self.sess.graph)
         # writer.close()
         return predicted_q_value, current_loss, curiosity_loss
-        #todo figure out inputs for predloss(batch vs single? s1 vs s2 is it really state and prev? )
 
     def predict(self, inputs):
         return self.sess.run(self.Qout, feed_dict={

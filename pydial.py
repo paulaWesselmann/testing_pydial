@@ -29,9 +29,9 @@ import re
 import numpy as np
 
 # Uncomment for mac os users
-#import matplotlib
-#matplotlib.use('TkAgg')
-#matplotlib.use('Agg')
+import matplotlib
+matplotlib.use('TkAgg')
+matplotlib.use('Agg')
 
 import matplotlib.pyplot as plt
 
