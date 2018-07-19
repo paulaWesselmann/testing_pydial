@@ -69,6 +69,7 @@ import model_prediction_curiosity as mpc
 # logger = utils.ContextLogger.getLogger('') #todo
 logger = ContextLogger.getLogger('')
 
+
 # --- for flattening the belief --- # 
 def flatten_belief(belief, domainUtil, merge=False):
     belief = belief.getDomainState(domainUtil.domainString)
@@ -340,6 +341,7 @@ class DQNPolicy(Policy.Policy):
         if utils.Settings.config.has_option('dqnpolicy_' + domainString, 'training_frequency'):
             self.training_frequency = utils.Settings.config.getint('dqnpolicy_' + domainString, 'training_frequency')
 
+        self.curiosityreward = False
         if utils.Settings.config.has_option('eval', 'curiosityreward'):
             self.curiosityreward = utils.Settings.config.getboolean('eval', 'curiosityreward')
 
