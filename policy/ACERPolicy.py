@@ -384,6 +384,7 @@ class ACERPolicy(Policy.Policy):
         if cfg.has_option('dqnpolicy_'+domainString, 'training_frequency'):
             self.training_frequency = cfg.getint('dqnpolicy_'+domainString, 'training_frequency')
 
+        self.curiosityreward = False
         if cfg.has_option('eval', 'curiosityreward'):
             self.curiosityreward = cfg.getboolean('eval', 'curiosityreward')
 
