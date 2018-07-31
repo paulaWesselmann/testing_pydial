@@ -9,8 +9,11 @@ import matplotlib as mpl
 
 num_iterations = 5
 learning_rate = 0.001
+
+feature_size = 77 # 10 20,55,77,99,134,155,190,210,240,268
+
 with tf.variable_scope('curiosity'):
-    predictor = mpc.StateActionPredictor(268, 16, designHead='pydial')  # num belivestates, num actions
+    predictor = mpc.StateActionPredictor(268, 16, designHead='pydial', feature_size=feature_size)  # num belivestates, num actions
 
     predloss = predictor.invloss * (1 - constants['FORWARD_LOSS_WT']) + \
                predictor.forwardloss * constants['FORWARD_LOSS_WT']
@@ -56,25 +59,35 @@ sess = tf.Session()
 sess.run(tf.global_variables_initializer())
 saver = tf.train.Saver()
 
-# read data from files
-t, a = read_data1('_curiosity_model/pretrg_data/dqn2018-07-18_15:34:09')  # 2018-07-05_15:15:36
+# read data from files*************************************************************************************
+t, a = read_data1('_curiosity_model/pretrg_data/2018-07-05_15:15:36') #07-19_21:47:55 #acer-env1seed02018-07-19_21:39:45
 a = np.eye(16, 16)[a]  # convert to one-hot
-s, _s = read_data2('_curiosity_model/pretrg_data/dqn_prev_state2018-07-18_15:34:09',
-                   '_curiosity_model/pretrg_data/dqn_state2018-07-18_15:34:09')  # prev_state2018-07-05_15:15:36
+s, _s = read_data2('_curiosity_model/pretrg_data/prev_state2018-07-05_15:15:36', #acer_prev_state2018-07-19_21:39:45
+                   '_curiosity_model/pretrg_data/state2018-07-05_15:15:36')   #todo acer 77 again (its overwritten by dqn..
+#for dqn choose later one 47:55  #acer_state2018-07-19_21:39:45
+
+
+def unison_shuffled_copies(vec1, vec2, vec3, vec4):
+    assert len(vec1) == len(vec4)
+    p = np.random.permutation(len(vec1))
+    return np.array(vec1)[p], np.array(vec2)[p], np.array(vec3)[p], np.array(vec4)[p]
+
+
+t, a, s, _s = unison_shuffled_copies(t, a, s, _s)  # shuffle vectors
+
+#TODO read pre-trg dqn and acer to train new models with diff feature sizes!
 
 usable_len = len(t)/64*64
 batch_num = usable_len/64
 
-#todo : print evolution of prediction error and loss
-
-loss = [] #todo why is loss starting at 2 and not 20 anyamore???
+loss = []
 # # check if prev state vec is correct:
 # if s[:-1] == _s[1:]:
 #     print 'works'
 
-# **********************uncomment to train pre-trained model more:**********************************************
-saver.restore(sess, "_curiosity_model/pretrg_model/trained_curiosity100")
-print("Successfully loaded:_curiosity_model/pretrg_model/trained_curiosity100")
+# # **********************uncomment to train pre-trained model more:**********************************************
+# saver.restore(sess, "_curiosity_model/pretrg_model/trained_curiosity_dqn-env1_feat77")
+# print("Successfully loaded:_curiosity_model/pretrg_model/rained_curiosity_dqn-env1_feat77")
 
 # # to correct prev state error in data: first turn prev state = zeros
 # i = 0
@@ -83,7 +96,9 @@ print("Successfully loaded:_curiosity_model/pretrg_model/trained_curiosity100")
 #         _s[i] = np.zeros(268)
 #     i += 1
 
+#todo: add slot for feature size to input into mpc to not have to change manually!
 
+policy = 'hcd'   #'_acer-env1'  #'_acer-env1'  # '_dqn-env1' #TODO fil out
 for i in range(num_iterations):
     for batch in range(batch_num):
         # select batch for trg
@@ -94,18 +109,19 @@ for i in range(num_iterations):
                                      feed_dict={predictor.s1: prev_state_vec,
                                                 predictor.s2: state_vec,
                                                 predictor.asample: action_1hot})
-        if batch % 5 == 0:
-            print predictionloss
+        # if batch % 5 == 0:
+        #     print predictionloss
         loss.append(predictionloss)
+    t, a, s, _s = unison_shuffled_copies(t, a, s, _s)  # shuffle vectors, 22 means suffled in here
 
-    saver.save(sess, '_curiosity_model/pretrg_model/trained_curiosity3')
-    # 1, 100 : hdc, (error:)prev state for first not zeros?
-    # 2: dqn, prev state for first turn zeros now
-    # 3: 100+dqn, use pre trained 100 model and train with dqn data
+saver.save(sess, '_curiosity_model/pretrg_model/trained_curiosity' + policy + 'shuffle22_feat' + str(feature_size))
+# 1, 100 : hdc, (error:)prev state for first not zeros? #todo: why is first model so much lower loss? was state shit correct?
+# 2: dqn, prev state for first turn zeros now
+# 3: 100+dqn, use pre trained 100 model and train with dqn data
 
-# mpl.use('Agg')
 plt.plot(loss)
-plt.savefig('_plots/pretraining_loss_hcd100dqn.png', bbox_inches='tight')
+plt.savefig('_plots/pretraining_loss_' + policy + '_feat' + str(feature_size) + 'shuffled22.png', bbox_inches='tight')
+
 
 # def curiosity_reward(s1, s2, asample):
 #     error = sess.run(predictor.forwardloss,
