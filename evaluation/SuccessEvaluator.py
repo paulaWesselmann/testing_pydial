@@ -54,7 +54,7 @@ import model_prediction_curiosity as mpc
 import os
 # mpl.use('Agg')
 
-# import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 
 logger = ContextLogger.getLogger('')
 
@@ -130,7 +130,7 @@ class ObjectiveSuccessEvaluator(Evaluator):
 
         if self.curiosityreward:  # to use state prediction error as reward
             self.curiosityFunctions = Curious()
-            self.curiosityFunctions.load_curiosity("_curiosity_model/pretrg_model/trained_curiosity2") #todo change pretrg model here
+            self.curiosityFunctions.load_curiosity("_curiosity_model/pretrg_model/trained_curiosity100") #todo change pretrg model here
             
         self.DM_history = None
         self.predictor = mpc.StateActionPredictor(268, 16, designHead='pydial')
@@ -159,59 +159,6 @@ class ObjectiveSuccessEvaluator(Evaluator):
             
         if self.using_tasks:
             self.DM_history = []
-
-    # def plotCuriosity(self, dname, bonus, cnt, saveplot=True):  # todo this is fideldooo called in 234
-    #     # global gplotnum
-    #     # plt.figure(gplotnum)
-    #     # gplotnum += 1
-    #     if len(cnt) == 1:
-    #         num_dialogues = 1
-    #     else:
-    #         num_dialogues = len(self.outcomes) + 1
-    #
-    #     if num_dialogues % 2 == 0:
-    #         c = 'oc'
-    #     else:
-    #         c = '*g'
-    #     plt.plot(cnt[-1], bonus[-1], c)
-
-        # if self.num_turns == 1:
-        #     plt.plot(cnt[-1], 0.5, '*b')
-        #     plt.plot(cnt[-1], bonus[-1], '*g')
-        # plt.plot(cnt, bonus)
-
-        # for policy in policylist:
-        #     tab = rtab[policy]
-        #     plt.subplot(211)
-        #     if len(tab['x']) < 2:
-        #         plt.axhline(y=tab['y'][0], linestyle='--')
-        #     else:
-        #         # plt.errorbar(tab['x'],tab['y'], yerr=tab['var'], label=policy)
-        #         plt.errorbar(tab['x'], tab['y'], label=policy)
-        #     tab = stab[policy]
-        #     plt.subplot(212)
-        #     if len(tab['x']) < 2:
-        #         plt.axhline(y=tab['y'][0], linestyle='--')
-        #     else:
-        #         # plt.errorbar(tab['x'],tab['y'],yerr=tab['var'],label=policy)
-        #         plt.errorbar(tab['x'], tab['y'], label=policy)
-        # plt.subplot(211)
-        # plt.grid()
-        # plt.legend(loc='lower right', fontsize=10)
-        # plt.title(dname + " Performance vs Num Train Dialogs")
-        # plt.ylabel('Reward')
-        # plt.subplot(212)
-        # plt.grid()
-        # plt.legend(loc='lower right', fontsize=10)
-        # plt.xlabel('Num Dialogs')
-        # plt.ylabel('Success')
-        # if saveplot:
-        #     if not os.path.exists('_plots'):
-        #         os.mkdir('_plots')
-        #     plt.savefig('_plots/' + dname + '.png', bbox_inches='tight')
-        #     print 'plot saved as', dname
-        # else:
-        #     plt.show(block=block)
 
     def _getTurnReward(self, turnInfo):
         '''
@@ -254,10 +201,10 @@ class ObjectiveSuccessEvaluator(Evaluator):
 
                 # st2 = time.time()
                 bonus = self.curiosityFunctions.reward(prev_state_vec, state_vec, ac_1hot)  # pred_bonus
-                predbonus = bonus*15  # tune params todo :why is reward smaller see cur100 vs cur2,3 model
+                predbonus = bonus*5  # tune params todo :why is reward smaller see cur100 vs cur2,3 model
 
-                # self.curiosity_reward.append(bonus)  # todo +also plot losses, this is for plotting below uncomment if plot
-                # self.actions.append(np.where(ac_1hot == 1)[0][0])  # index of action
+                self.curiosity_reward.append(bonus)  # todo +also plot losses, this is for plotting below uncomment if plot
+                self.actions.append(np.where(ac_1hot == 1)[0][0])  # index of action
 
                 reward += predbonus
 
@@ -486,63 +433,64 @@ class ObjectiveSuccessEvaluator(Evaluator):
             tinv = stats.t.ppf(1 - 0.025, num_dialogs - 1)
 
         # if self.curiosityreward:
-        #     # plt.use('Agg') todo where put it and how put it to run in terminal?
-        #     # # save rewards and actions used TODO use as needed, also neeed to uncomment/comment lists above*************
-        #     # date_time = datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
-        #     # if not os.path.exists('_rewardlogs'):
-        #     #     os.mkdir('_rewardlogs')
-        #     # with open('_rewardlogs/reward'+date_time, 'w') as f:
-        #     #     f.write('\nrewards\n')
-        #     #     for item in self.curiosity_reward:
-        #     #         f.write('{}\n'.format(item))
-        #     #     f.write('\nactions\n')
-        #     #     for item2 in self.actions:
-        #     #         f.write('{}\n'.format(item2))
-        #     # print('Curiosity rewards and actions saved in _rewardlogs.')
-        #     #
-        #     # cheeky plot included #TODO *****************************************************************************
-        #     x_actions = self.actions[-500:-1]
-        #     y_bonus = self.curiosity_reward[-500:-1]
-        #     plt.scatter(x_actions, y_bonus)
-        #     # plt.xlim((0, 15))  # 16 actions
-        #     plt.xticks(range(16), ['request food', 'request area', 'request price', 'confirm food', 'confirm area',
-        #                            'confirm price', 'select food', 'select area', 'select price', 'inform',
-        #                            'info. name', 'info. altern', 'bye', 'repeat', 'reqmore', 'restart'],
-        #                rotation='vertical')
-        #     # plt.margins(0.3)?
-        #     plt.ylabel('Prediction error/ curiosity bonus')
-        #     time_at_save = datetime.now().strftime('%m-%d_%H:%M:%S')
-        #     plt.title('Curiosity associated with actions')
-        #     x_act = {}  # add average bonus value for each action
-        #     for i in range(16):
-        #         cnt = 0
-        #         x_act[i] = [0, 0, 0]  # num, reward sum
-        #         for action in x_actions:
-        #             if action == i:
-        #                 x_act[i][0] += 1
-        #                 x_act[i][1] += y_bonus[cnt]
-        #             cnt += 1
-        #         if x_act[i][0] != 0:
-        #             x_act[i][2] = x_act[i][1]/x_act[i][0]
-        #             plt.scatter(i, x_act[i][2], c='r')
-        #
-        #     plt.savefig('_plots/action_bonus(' + time_at_save + ')100dqn.png', bbox_inches='tight')
-        #     plt.close()
-        #     print 'action-bonus plot saved.'  # ********************************************************************
+
+            # # save rewards and actions used TODO use as needed, also neeed to uncomment/comment lists above*************
+            # date_time = datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
+            # if not os.path.exists('_rewardlogs'):
+            #     os.mkdir('_rewardlogs')
+            # with open('_rewardlogs/reward'+date_time, 'w') as f:
+            #     f.write('\nrewards\n')
+            #     for item in self.curiosity_reward:
+            #         f.write('{}\n'.format(item))
+            #     f.write('\nactions\n')
+            #     for item2 in self.actions:
+            #         f.write('{}\n'.format(item2))
+            # print('Curiosity rewards and actions saved in _rewardlogs.')
+            #
+            # # cheeky plot included #TODO *****************************************************************************
+            # x_actions = self.actions[-500:-1]
+            # y_bonus = self.curiosity_reward[-500:-1]
+            # plt.scatter(x_actions, y_bonus)
+            # # plt.xlim((0, 15))  # 16 actions
+            # plt.ylim(ymin=0)
+            # plt.xticks(range(16), ['request food', 'request area', 'request price', 'confirm food', 'confirm area',
+            #                        'confirm price', 'select food', 'select area', 'select price', 'inform',
+            #                        'info. name', 'info. altern', 'bye', 'repeat', 'reqmore', 'restart'],
+            #            rotation='vertical')
+            # # plt.margins(0.3)?
+            # plt.ylabel('Prediction error/ curiosity bonus')
+            # time_at_save = datetime.now().strftime('%m-%d_%H:%M:%S')
+            # plt.title('Curiosity vs. actions')
+            # x_act = {}  # add average bonus value for each action
+            # for i in range(16):
+            #     cnt = 0
+            #     x_act[i] = [0, 0, 0]  # num, reward sum
+            #     for action in x_actions:
+            #         if action == i:
+            #             x_act[i][0] += 1
+            #             x_act[i][1] += y_bonus[cnt]
+            #         cnt += 1
+            #     if x_act[i][0] != 0:
+            #         x_act[i][2] = x_act[i][1]/x_act[i][0]
+            #         plt.scatter(i, x_act[i][2], c='r')
+            #
+            # plt.savefig('_plots/action_bonus(' + time_at_save + ')100_acer_env3_s3.png', bbox_inches='tight')
+            # plt.close()
+            # print 'action-bonus plot saved.'  # ********************************************************************
 
         if self.pre_trg:
             date_time = datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
             if not os.path.exists('_curiosity_model/pretrg_data/'):
                 os.mkdir('_curiosity_model/pretrg_data/')
-            with open('_curiosity_model/pretrg_data/dqn'+date_time, 'w') as f:  # todo: include policy and seed in name?
+            with open('_curiosity_model/pretrg_data/acer-env1seed0'+date_time, 'w') as f:  # todo: include policy and seed in name?
                 # data collection for pretraining
                 for num in range(len(self.turnlist)):
                     f.write('turn: '+str(self.turnlist[num])+' sys_action: '+str(self.actionlist[num]) +
                             '\n') #+str(self.statelist[num][0])+' prev_state: '+str(self.statelist[num][1]))
-            with open('_curiosity_model/pretrg_data/dqn_state'+date_time, 'w') as f2:
+            with open('_curiosity_model/pretrg_data/acer_state'+date_time, 'w') as f2:
                 np.savetxt(f2, np.array(self.statelist))
 
-            with open('_curiosity_model/pretrg_data/dqn_prev_state' + date_time, 'w') as f3:
+            with open('_curiosity_model/pretrg_data/acer_prev_state' + date_time, 'w') as f3:
                 np.savetxt(f3, np.array(self.prevstatelist))
             # reset lists
             self.turnlist = []
@@ -649,7 +597,7 @@ class SubjectiveSuccessEvaluator(Evaluator):
         # Immediate reward for each turn.
         return -self.penalise_all_turns
         
-    def _getFinalReward(self,finalInfo):
+    def _getFinalReward(self, finalInfo):
         '''
         Computes the final reward using finalInfo's field "subjectiveSuccess".
         

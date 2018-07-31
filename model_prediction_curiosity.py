@@ -16,7 +16,7 @@ def normalized_columns_initializer(std=1.0):
 
 def cosineLoss(A, B, name):
     ''' A, B : (BatchSize, d) '''
-    dotprod = tf.reduce_sum(tf.multiply(tf.nn.l2_normalize(A,1), tf.nn.l2_normalize(B,1)), 1)
+    dotprod = tf.reduce_sum(tf.multiply(tf.nn.l2_normalize(A,1), tf.nn.l2_normalize(B, 1)), 1)
     loss = 1-tf.reduce_mean(dotprod, name=name)
     return loss
 
@@ -262,7 +262,7 @@ class LSTMPolicy(object):
 
 
 class StateActionPredictor(object):
-    def __init__(self, ob_space, ac_space, designHead='universe'):
+    def __init__(self, ob_space, ac_space, designHead='universe', feature_size='77'):
         # input: s1,s2: : [None, h, w, ch] (usually ch=1 or 4) /pydial: [None, size]
         # asample: 1-hot encoding of sampled action from policy: [None, ac_space]
         # with tf.variable_scope('curiosity'): #todo is scope needed here?!
@@ -276,7 +276,7 @@ class StateActionPredictor(object):
         self.asample = asample = tf.placeholder(tf.float32, [None, ac_space])
 
         # feature encoding: phi1, phi2: [None, LEN]
-        size = 77  # 256 for pathak et al., 268 for full believstate
+        size = feature_size  # 256 for pathak et al., 268 for full believstate
         if designHead == 'pydial':
             phi1 = pydialHead(phi1)
             with tf.variable_scope(tf.get_variable_scope(), reuse=True):

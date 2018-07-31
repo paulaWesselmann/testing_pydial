@@ -6,14 +6,14 @@ import numpy as np
 # import matplotlib.pyplot as plt
 
 
+# todo change dependend on use: feat size & pre trg!
 class Curious(object):
     def __init__(self):
         tf.reset_default_graph()
-        self.num_iterations = 5
         self.learning_rate = 0.001
 
         with tf.variable_scope('curiosity', reuse=tf.AUTO_REUSE):
-            self.predictor = mpc.StateActionPredictor(268, 16, designHead='pydial')  # num belivestates, num actions
+            self.predictor = mpc.StateActionPredictor(268, 16, designHead='pydial', feature_size=20)  # num belivestates, num actions
 
             self.predloss = self.predictor.invloss * (1 - constants['FORWARD_LOSS_WT']) + \
                             self.predictor.forwardloss * constants['FORWARD_LOSS_WT']
@@ -40,6 +40,6 @@ class Curious(object):
         return error
 
     def load_curiosity(self, load_filename):
-        self.saver.restore(self.sess2, load_filename)
-        print('Curiosity model has successfully loaded.')
-
+        # self.saver.restore(self.sess2, load_filename)
+        # print('Curiosity model has successfully loaded.')
+        print('small feat vec. and no pre-trg, curiosity used for exploration')
