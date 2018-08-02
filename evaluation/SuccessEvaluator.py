@@ -130,12 +130,14 @@ class ObjectiveSuccessEvaluator(Evaluator):
 
         if self.curiosityreward:  # to use state prediction error as reward
             self.curiosityFunctions = Curious()
-            self.curiosityFunctions.load_curiosity("_curiosity_model/pretrg_model/trained_curiosity100") #todo change pretrg model here
+            self.curiosityFunctions.load_curiosity("_curiosity_model/pretrg_model/trained_curiosity_acer-env1shuffle22_feat77") #todo change pretrg model here ex: trained_curiosity100
             
         self.DM_history = None
-        self.predictor = mpc.StateActionPredictor(268, 16, designHead='pydial')
+        self.predictor = mpc.StateActionPredictor(268, 16, designHead='pydial', feature_size=77)
 
         self.curiosity_reward = [] # stores all curiosity rewards to print in log
+        self.inverse_loss = []
+        self.predloss = []
         self.actions = []  # index of 1hot actions
         self.cnt = []
         self.counter = 0
@@ -201,10 +203,15 @@ class ObjectiveSuccessEvaluator(Evaluator):
 
                 # st2 = time.time()
                 bonus = self.curiosityFunctions.reward(prev_state_vec, state_vec, ac_1hot)  # pred_bonus
-                predbonus = bonus*5  # tune params todo :why is reward smaller see cur100 vs cur2,3 model
+                predbonus = bonus  # tune params todo :why is reward smaller see cur100 vs cur2,3 model
 
                 self.curiosity_reward.append(bonus)  # todo +also plot losses, this is for plotting below uncomment if plot
+                predloss, invloss = self.curiosityFunctions.inv_loss(prev_state_vec, state_vec, ac_1hot)
+                self.inverse_loss.append(invloss)
+                self.predloss.append(predloss)
                 self.actions.append(np.where(ac_1hot == 1)[0][0])  # index of action
+                # pred, state = self.curiosityFunctions.predictedstate(prev_state_vec, state_vec, ac_1hot)
+                # print(pred, state)
 
                 reward += predbonus
 
@@ -432,21 +439,24 @@ class ObjectiveSuccessEvaluator(Evaluator):
         else:
             tinv = stats.t.ppf(1 - 0.025, num_dialogs - 1)
 
-        # if self.curiosityreward:
+        if self.curiosityreward:
 
-            # # save rewards and actions used TODO use as needed, also neeed to uncomment/comment lists above*************
-            # date_time = datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
-            # if not os.path.exists('_rewardlogs'):
-            #     os.mkdir('_rewardlogs')
-            # with open('_rewardlogs/reward'+date_time, 'w') as f:
-            #     f.write('\nrewards\n')
-            #     for item in self.curiosity_reward:
-            #         f.write('{}\n'.format(item))
-            #     f.write('\nactions\n')
-            #     for item2 in self.actions:
-            #         f.write('{}\n'.format(item2))
-            # print('Curiosity rewards and actions saved in _rewardlogs.')
-            #
+            # save rewards and actions used TODO use as needed, also neeed to uncomment/comment lists above*************
+            date_time = datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
+            if not os.path.exists('_rewardlogs2'):
+                os.mkdir('_rewardlogs2')
+            with open('_rewardlogs2/reward_test1'+date_time, 'w') as f:
+                for item in self.curiosity_reward:
+                    f.write('{}\n'.format(item))
+            with open('_rewardlogs2/invloss_test1'+date_time, 'w') as i:
+                for item in self.inverse_loss:
+                    i.write('{}\n'.format(item))
+            with open('_rewardlogs2/predloss_test1' + date_time, 'w') as j:
+                for item in self.predloss:
+                    j.write('{}\n'.format(item))
+
+            print('Curiosity rewards and losses saved in _rewardlogs2.')
+
             # # cheeky plot included #TODO *****************************************************************************
             # x_actions = self.actions[-500:-1]
             # y_bonus = self.curiosity_reward[-500:-1]

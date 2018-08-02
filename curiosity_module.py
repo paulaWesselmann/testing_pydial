@@ -13,7 +13,7 @@ class Curious(object):
         self.learning_rate = 0.001
 
         with tf.variable_scope('curiosity', reuse=tf.AUTO_REUSE):
-            self.predictor = mpc.StateActionPredictor(268, 16, designHead='pydial', feature_size=20)  # num belivestates, num actions
+            self.predictor = mpc.StateActionPredictor(268, 16, designHead='pydial', feature_size=77)  # num belivestates, num actions
 
             self.predloss = self.predictor.invloss * (1 - constants['FORWARD_LOSS_WT']) + \
                             self.predictor.forwardloss * constants['FORWARD_LOSS_WT']
@@ -39,7 +39,16 @@ class Curious(object):
                          {self.predictor.s1: [s1], self.predictor.s2: [s2], self.predictor.asample: [asample]})
         return error
 
+    def inv_loss(self, s1, s2, asample):
+        predloss, invloss = self.sess2.run([self.predloss, self.predictor.invloss],
+                               {self.predictor.s1: [s1], self.predictor.s2: [s2], self.predictor.asample: [asample]})
+        return predloss, invloss
+
+    def predictedstate(self, s1, s2, asample):
+        pred,orig = self.sess2.run([self.predictor.predstate, self.predictor.origstate], {self.predictor.s1: [s1], self.predictor.s2: [s2], self.predictor.asample: [asample]})
+        return pred, orig
+
     def load_curiosity(self, load_filename):
-        # self.saver.restore(self.sess2, load_filename)
-        # print('Curiosity model has successfully loaded.')
-        print('small feat vec. and no pre-trg, curiosity used for exploration')
+        self.saver.restore(self.sess2, load_filename)
+        print('Curiosity model has successfully loaded.')
+        # print('small feat vec. and no pre-trg, curiosity used for exploration')
