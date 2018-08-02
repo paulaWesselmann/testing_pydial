@@ -33,7 +33,7 @@ import numpy as np
 # matplotlib.use('TkAgg')
 # matplotlib.use('Agg')
 
-# import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 
 #Uncomment for 4k screens
 # matplotlib.rcParams.update({'font.size': 22})
@@ -713,7 +713,7 @@ def tabulateTrain(dataSet):
         ttab[policy]['x'] = x
     # average results over seeds
     averaged_result_list = []
-    for result in [rtab,stab,ttab]:
+    for result in [rtab, stab, ttab]:
         averaged_result = {}
         n_seeds = {}
         for policy_key in result:
@@ -1103,7 +1103,7 @@ def plotTestLogs(logfilelist,printtab,noplot,datasetname,block=True):
 
 
 @command.fetch_all('args')
-def plot_command(args="",printtab=False,noplot=False,saveplot=False,datasetname=''):
+def plot_command(args="", printtab=False, noplot=False, saveplot=False, datasetname=''):
     """ Call plot with a list of log files and it will print train and test curves.
         For train log files it plots performance vs num dialogs.
         For test log files it plots performance vs error rate.
@@ -1117,13 +1117,13 @@ def plot_command(args="",printtab=False,noplot=False,saveplot=False,datasetname=
             trainlogs.append(fname)
         elif fname.find('eval') >= 0:
             testlogs.append(fname)
-    block=True
-    if testlogs: block=False
-    if noplot: printtab=True    # otherwise no point!
+    block = True
+    if testlogs: block = False
+    if noplot: printtab = True    # otherwise no point!
     if trainlogs:
-        plotTrainLogs(trainlogs,printtab,noplot,saveplot,datasetname,block)
+        plotTrainLogs(trainlogs, printtab, noplot, saveplot, datasetname, block)
     if testlogs:
-        plotTestLogs(testlogs,printtab,noplot,saveplot,datasetname)
+        plotTestLogs(testlogs, printtab, noplot, saveplot, datasetname)
 
 
 def chat_command(configfile, seed=None, trainerrorrate=None, trainsourceiteration=None):

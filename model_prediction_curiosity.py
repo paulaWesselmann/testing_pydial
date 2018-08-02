@@ -315,7 +315,7 @@ class StateActionPredictor(object):
         f = tf.concat([phi1, asample], 1)
         f = tf.nn.relu(linear(f, size, "f1", normalized_columns_initializer(0.01)))
         f = linear(f, phi1.get_shape()[1].value, "flast", normalized_columns_initializer(0.01))
-        self.forwardloss = 0.5 * tf.reduce_mean(tf.square(tf.subtract(f, phi2)), name='forwardloss')
+        self.forwardloss = 0.5 * tf.reduce_mean(tf.square(tf.subtract(f, phi2)), name='forwardloss') #5000 for exp
         # print('state, prediction: ', f, phi2)
         # self.forwardloss = 0.5 * tf.reduce_mean(tf.sqrt(tf.abs(tf.subtract(f, phi2))), name='forwardloss')
         # self.forwardloss = cosineLoss(f, phi2, name='forwardloss')
@@ -325,8 +325,8 @@ class StateActionPredictor(object):
         self.var_list = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, tf.get_variable_scope().name)
 
         # print(self.var_list)
-        self.predstate = phi1
-        self.origstate = f
+        self.predstate = f
+        self.origstate = phi2
 
         # self.sess = tf.Session() #todo: don't do this! feed existing session from dqn!!! else also results wrong?!
         # self.sess.run(tf.global_variables_initializer())
