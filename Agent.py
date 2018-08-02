@@ -189,8 +189,8 @@ class DialogueAgent(object):
         :return: string -- the system's reponse
         '''
 
-        if self.NUM_DIALOGS > 490:  # for eval purposes researchhhhhhh todo
-            self.traceDialog = 2
+        # if self.NUM_DIALOGS > 490:  # for eval purposes researchhhhhhh todo
+        #     self.traceDialog = 2
 
         self._check_agent_not_on_call()
         self.NUM_DIALOGS += 1
