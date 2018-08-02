@@ -130,10 +130,10 @@ class ObjectiveSuccessEvaluator(Evaluator):
 
         if self.curiosityreward:  # to use state prediction error as reward
             self.curiosityFunctions = Curious()
-            self.curiosityFunctions.load_curiosity("_curiosity_model/pretrg_model/trained_curiosity_acer-env1shuffle22_feat77") #todo change pretrg model here ex: trained_curiosity100
+            # self.curiosityFunctions.load_curiosity("_curiosity_model/pretrg_model/trained_curiosity_acer-env1shuffle22_feat77") #todo change pretrg model here ex: trained_curiosity100
             
         self.DM_history = None
-        self.predictor = mpc.StateActionPredictor(268, 16, designHead='pydial', feature_size=77)
+        self.predictor = mpc.StateActionPredictor(268, 16, designHead='pydial', feature_size=40)
 
         self.curiosity_reward = [] # stores all curiosity rewards to print in log
         self.inverse_loss = []

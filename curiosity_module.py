@@ -13,7 +13,7 @@ class Curious(object):
         self.learning_rate = 0.001
 
         with tf.variable_scope('curiosity', reuse=tf.AUTO_REUSE):
-            self.predictor = mpc.StateActionPredictor(268, 16, designHead='pydial', feature_size=77)  # num belivestates, num actions
+            self.predictor = mpc.StateActionPredictor(268, 16, designHead='pydial', feature_size=40)  # num belivestates, num actions
 
             self.predloss = self.predictor.invloss * (1 - constants['FORWARD_LOSS_WT']) + \
                             self.predictor.forwardloss * constants['FORWARD_LOSS_WT']
