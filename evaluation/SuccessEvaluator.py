@@ -133,7 +133,7 @@ class ObjectiveSuccessEvaluator(Evaluator):
             # self.curiosityFunctions.load_curiosity("_curiosity_model/pretrg_model/trained_curiosity_acer-env1shuffle22_feat77") #todo change pretrg model here ex: trained_curiosity100
             
         self.DM_history = None
-        self.predictor = mpc.StateActionPredictor(268, 16, designHead='pydial', feature_size=40)
+        self.predictor = mpc.StateActionPredictor(268, 16, designHead='pydial', feature_size=20)
 
         self.curiosity_reward = [] # stores all curiosity rewards to print in log
         self.inverse_loss = []
@@ -457,36 +457,36 @@ class ObjectiveSuccessEvaluator(Evaluator):
 
             print('Curiosity rewards and losses saved in _rewardlogs2.')
 
-            # # cheeky plot included #TODO *****************************************************************************
-            # x_actions = self.actions[-500:-1]
-            # y_bonus = self.curiosity_reward[-500:-1]
-            # plt.scatter(x_actions, y_bonus)
-            # # plt.xlim((0, 15))  # 16 actions
-            # plt.ylim(ymin=0)
-            # plt.xticks(range(16), ['request food', 'request area', 'request price', 'confirm food', 'confirm area',
-            #                        'confirm price', 'select food', 'select area', 'select price', 'inform',
-            #                        'info. name', 'info. altern', 'bye', 'repeat', 'reqmore', 'restart'],
-            #            rotation='vertical')
-            # # plt.margins(0.3)?
-            # plt.ylabel('Prediction error/ curiosity bonus')
-            # time_at_save = datetime.now().strftime('%m-%d_%H:%M:%S')
-            # plt.title('Curiosity vs. actions')
-            # x_act = {}  # add average bonus value for each action
-            # for i in range(16):
-            #     cnt = 0
-            #     x_act[i] = [0, 0, 0]  # num, reward sum
-            #     for action in x_actions:
-            #         if action == i:
-            #             x_act[i][0] += 1
-            #             x_act[i][1] += y_bonus[cnt]
-            #         cnt += 1
-            #     if x_act[i][0] != 0:
-            #         x_act[i][2] = x_act[i][1]/x_act[i][0]
-            #         plt.scatter(i, x_act[i][2], c='r')
-            #
-            # plt.savefig('_plots/action_bonus(' + time_at_save + ')100_acer_env3_s3.png', bbox_inches='tight')
-            # plt.close()
-            # print 'action-bonus plot saved.'  # ********************************************************************
+            # cheeky plot included #TODO *****************************************************************************
+            x_actions = self.actions[-500:-1]
+            y_bonus = self.curiosity_reward[-500:-1]
+            plt.scatter(x_actions, y_bonus)
+            # plt.xlim((0, 15))  # 16 actions
+            plt.ylim(ymin=0)
+            plt.xticks(range(16), ['request food', 'request area', 'request price', 'confirm food', 'confirm area',
+                                   'confirm price', 'select food', 'select area', 'select price', 'inform',
+                                   'info. name', 'info. altern', 'bye', 'repeat', 'reqmore', 'restart'],
+                       rotation='vertical')
+            # plt.margins(0.3)?
+            plt.ylabel('Prediction error/ curiosity bonus')
+            time_at_save = datetime.now().strftime('%m-%d_%H:%M:%S')
+            plt.title('Curiosity vs. actions')
+            x_act = {}  # add average bonus value for each action
+            for i in range(16):
+                cnt = 0
+                x_act[i] = [0, 0, 0]  # num, reward sum
+                for action in x_actions:
+                    if action == i:
+                        x_act[i][0] += 1
+                        x_act[i][1] += y_bonus[cnt]
+                    cnt += 1
+                if x_act[i][0] != 0:
+                    x_act[i][2] = x_act[i][1]/x_act[i][0]
+                    plt.scatter(i, x_act[i][2], c='r')
+
+            plt.savefig('_plots/action_bonus(' + time_at_save + ')acer_env4.png', bbox_inches='tight')
+            plt.close()
+            print 'action-bonus plot saved.'  # ********************************************************************
 
         if self.pre_trg:
             date_time = datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
