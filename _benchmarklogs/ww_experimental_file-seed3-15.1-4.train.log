@@ -1,0 +1,41 @@
+RESULTS:: 16:06:50: root                                   pydial.py <train_command>816 :  List of domains: CamRestaurants
+RESULTS:: 16:06:50: root                                      pydial.py <trainBatch>421 :  *** Training Iteration ww_experimental_file-seed3-15.0->ww_experimental_file-seed3-15.1: iter=0, error-rate=15, num-dialogs=1000 ***
+RESULTS:: 16:16:52: root                               EvaluationManager.py <_prstr>182 :  Results for domain: CamRestaurants --evaluated by: objective success evaluator
+RESULTS:: 16:16:52: root                               EvaluationManager.py <_prstr>182 :  # of dialogues  = 1000
+RESULTS:: 16:16:52: root                               EvaluationManager.py <_prstr>182 :  Average reward  = 9.57 +- 0.56
+RESULTS:: 16:16:52: root                               EvaluationManager.py <_prstr>182 :  Average success = 78.70 +- 2.54
+RESULTS:: 16:16:52: root                               EvaluationManager.py <_prstr>182 :  Average turns   = 9.12 +- 0.29
+RESULTS:: 16:16:52: root                                   pydial.py <setEvalConfig>482 :  *** Evaluating ww_experimental_file-seed3-15.1: error-rate=15 num-dialogs=500 ***
+RESULTS:: 16:20:57: root                               EvaluationManager.py <_prstr>182 :  Results for domain: CamRestaurants --evaluated by: objective success evaluator
+RESULTS:: 16:20:57: root                               EvaluationManager.py <_prstr>182 :  # of dialogues  = 500
+RESULTS:: 16:20:57: root                               EvaluationManager.py <_prstr>182 :  Average reward  = 11.02 +- 0.72
+RESULTS:: 16:20:57: root                               EvaluationManager.py <_prstr>182 :  Average success = 75.60 +- 3.77
+RESULTS:: 16:20:57: root                               EvaluationManager.py <_prstr>182 :  Average turns   = 7.54 +- 0.30
+RESULTS:: 16:20:57: root                                   pydial.py <train_command>816 :  List of domains: CamRestaurants
+RESULTS:: 16:20:57: root                                      pydial.py <trainBatch>421 :  *** Training Iteration ww_experimental_file-seed3-15.1->ww_experimental_file-seed3-15.2: iter=1, error-rate=15, num-dialogs=1000 ***
+ERROR  :: 16:31:08: root                              ContextLogger.py <_exceptHook>263 :  Uncaught exception: <type 'exceptions.IOError'>( [Errno 28] No space left on device )
+          Traceback (most recent call last):
+            File "pydial.py", line 1174, in <module>
+              run()
+            File "/home/dial/pw439/.local/lib/python2.7/site-packages/scriptine/command.py", line 196, in autocmds
+              add_verbosity_option=add_verbosity_option)
+            File "/home/dial/pw439/.local/lib/python2.7/site-packages/scriptine/command.py", line 105, in parse_and_run_function
+              return function(*args[:len(required_args)], **kw)
+            File "pydial.py", line 817, in train_command
+              trainBatch(domain, configId, gtrainerrorrate, gtraindialogsperbatch, i, seed=seed)
+            File "pydial.py", line 460, in trainBatch
+              simulator.run_dialogs(ndialogs)
+            File "/home/dial/pw439/pydial/Simulate.py", line 128, in run_dialogs
+              self.run(session_id='simulate_dialog'+str(i), sim_level=self.sim_level)
+            File "/home/dial/pw439/pydial/Simulate.py", line 224, in run
+              self.agent_factory.agents[agent_id].end_call(domainSimulatedUsers=self.simulator.simUserManagers)
+            File "/home/dial/pw439/pydial/Agent.py", line 356, in end_call
+              self.policy_manager.train(self.evaluation_manager.doTraining())
+            File "/home/dial/pw439/pydial/policy/PolicyManager.py", line 124, in train
+              self.domainPolicies[domain].train()
+            File "/home/dial/pw439/pydial/policy/ACERPolicy.py", line 744, in train
+              self.savePolicyInc()  # self.out_policy_file)
+            File "/home/dial/pw439/pydial/policy/ACERPolicy.py", line 767, in savePolicyInc
+              f.close()
+          IOError: [Errno 28] No space left on device
+          
