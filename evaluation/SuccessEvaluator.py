@@ -439,54 +439,54 @@ class ObjectiveSuccessEvaluator(Evaluator):
         else:
             tinv = stats.t.ppf(1 - 0.025, num_dialogs - 1)
 
-        if self.curiosityreward:
+#         if self.curiosityreward:
 
-            # save rewards and actions used TODO use as needed, also neeed to uncomment/comment lists above*************
-            date_time = datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
-            if not os.path.exists('_rewardlogs2'):
-                os.mkdir('_rewardlogs2')
-            with open('_rewardlogs2/reward_test1'+date_time, 'w') as f:
-                for item in self.curiosity_reward:
-                    f.write('{}\n'.format(item))
-            with open('_rewardlogs2/invloss_test1'+date_time, 'w') as i:
-                for item in self.inverse_loss:
-                    i.write('{}\n'.format(item))
-            with open('_rewardlogs2/predloss_test1' + date_time, 'w') as j:
-                for item in self.predloss:
-                    j.write('{}\n'.format(item))
+#             # save rewards and actions used TODO use as needed, also neeed to uncomment/comment lists above*************
+#             date_time = datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
+#             if not os.path.exists('_rewardlogs2'):
+#                 os.mkdir('_rewardlogs2')
+#             with open('_rewardlogs2/reward_test1'+date_time, 'w') as f:
+#                 for item in self.curiosity_reward:
+#                     f.write('{}\n'.format(item))
+#             with open('_rewardlogs2/invloss_test1'+date_time, 'w') as i:
+#                 for item in self.inverse_loss:
+#                     i.write('{}\n'.format(item))
+#             with open('_rewardlogs2/predloss_test1' + date_time, 'w') as j:
+#                 for item in self.predloss:
+#                     j.write('{}\n'.format(item))
 
-            print('Curiosity rewards and losses saved in _rewardlogs2.')
+#             print('Curiosity rewards and losses saved in _rewardlogs2.')
 
-            # cheeky plot included #TODO *****************************************************************************
-            x_actions = self.actions[-500:-1]
-            y_bonus = self.curiosity_reward[-500:-1]
-            plt.scatter(x_actions, y_bonus)
-            # plt.xlim((0, 15))  # 16 actions
-            plt.ylim(ymin=0)
-            plt.xticks(range(16), ['request food', 'request area', 'request price', 'confirm food', 'confirm area',
-                                   'confirm price', 'select food', 'select area', 'select price', 'inform',
-                                   'info. name', 'info. altern', 'bye', 'repeat', 'reqmore', 'restart'],
-                       rotation='vertical')
-            # plt.margins(0.3)?
-            plt.ylabel('Prediction error/ curiosity bonus')
-            time_at_save = datetime.now().strftime('%m-%d_%H:%M:%S')
-            plt.title('Curiosity vs. actions')
-            x_act = {}  # add average bonus value for each action
-            for i in range(16):
-                cnt = 0
-                x_act[i] = [0, 0, 0]  # num, reward sum
-                for action in x_actions:
-                    if action == i:
-                        x_act[i][0] += 1
-                        x_act[i][1] += y_bonus[cnt]
-                    cnt += 1
-                if x_act[i][0] != 0:
-                    x_act[i][2] = x_act[i][1]/x_act[i][0]
-                    plt.scatter(i, x_act[i][2], c='r')
+#             # cheeky plot included #TODO *****************************************************************************
+#             x_actions = self.actions[-500:-1]
+#             y_bonus = self.curiosity_reward[-500:-1]
+#             plt.scatter(x_actions, y_bonus)
+#             # plt.xlim((0, 15))  # 16 actions
+#             plt.ylim(ymin=0)
+#             plt.xticks(range(16), ['request food', 'request area', 'request price', 'confirm food', 'confirm area',
+#                                    'confirm price', 'select food', 'select area', 'select price', 'inform',
+#                                    'info. name', 'info. altern', 'bye', 'repeat', 'reqmore', 'restart'],
+#                        rotation='vertical')
+#             # plt.margins(0.3)?
+#             plt.ylabel('Prediction error/ curiosity bonus')
+#             time_at_save = datetime.now().strftime('%m-%d_%H:%M:%S')
+#             plt.title('Curiosity vs. actions')
+#             x_act = {}  # add average bonus value for each action
+#             for i in range(16):
+#                 cnt = 0
+#                 x_act[i] = [0, 0, 0]  # num, reward sum
+#                 for action in x_actions:
+#                     if action == i:
+#                         x_act[i][0] += 1
+#                         x_act[i][1] += y_bonus[cnt]
+#                     cnt += 1
+#                 if x_act[i][0] != 0:
+#                     x_act[i][2] = x_act[i][1]/x_act[i][0]
+#                     plt.scatter(i, x_act[i][2], c='r')
 
-            plt.savefig('_plots/action_bonus(' + time_at_save + ')acer_env4.png', bbox_inches='tight')
-            plt.close()
-            print 'action-bonus plot saved.'  # ********************************************************************
+#             plt.savefig('_plots/action_bonus(' + time_at_save + ')acer_env4.png', bbox_inches='tight')
+#             plt.close()
+#             print 'action-bonus plot saved.'  # ********************************************************************
 
         if self.pre_trg:
             date_time = datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
