@@ -262,7 +262,7 @@ class LSTMPolicy(object):
 
 
 class StateActionPredictor(object):
-    def __init__(self, ob_space, ac_space, designHead='universe', feature_size='40'):
+    def __init__(self, ob_space, ac_space, designHead='universe', feature_size='20'):
         # input: s1,s2: : [None, h, w, ch] (usually ch=1 or 4) /pydial: [None, size]
         # asample: 1-hot encoding of sampled action from policy: [None, ac_space]
         # with tf.variable_scope('curiosity'): #todo is scope needed here?!

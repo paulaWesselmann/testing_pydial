@@ -210,13 +210,20 @@ class ACERPolicy(Policy.Policy):
         if cfg.has_option('dqnpolicy', 'maxiter'):
             self.maxiter = cfg.getfloat('dqnpolicy', 'maxiter')
 
+        self.curiosityreward = False
+        if cfg.has_option('eval', 'curiosityreward'):
+            self.curiosityreward = cfg.getboolean('eval', 'curiosityreward')
+
         self.epsilon = 1
         if cfg.has_option('dqnpolicy', 'epsilon'):
             self.epsilon = cfg.getfloat('dqnpolicy', 'epsilon')
 
-        self.epsilon_start = 1
-        if cfg.has_option('dqnpolicy', 'epsilon_start'):
-            self.epsilon_start = cfg.getfloat('dqnpolicy', 'epsilon_start')
+        if not self.curiosityreward:
+            self.epsilon_start = 1
+            if cfg.has_option('dqnpolicy', 'epsilon_start'):
+                self.epsilon_start = cfg.getfloat('dqnpolicy', 'epsilon_start')
+        else:
+            self.epsilon_start = 0
 
         self.epsilon_end = 1
         if cfg.has_option('dqnpolicy', 'epsilon_end'):
@@ -384,9 +391,6 @@ class ACERPolicy(Policy.Policy):
         if cfg.has_option('dqnpolicy_'+domainString, 'training_frequency'):
             self.training_frequency = cfg.getint('dqnpolicy_'+domainString, 'training_frequency')
 
-        self.curiosityreward = False
-        if cfg.has_option('eval', 'curiosityreward'):
-            self.curiosityreward = cfg.getboolean('eval', 'curiosityreward')
 
 
         self.episode_ct = 0
