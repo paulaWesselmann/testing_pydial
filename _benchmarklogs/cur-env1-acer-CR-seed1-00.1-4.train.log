@@ -1,0 +1,15 @@
+RESULTS:: 13:34:47: root                                   pydial.py <train_command>816 :  List of domains: CamRestaurants
+RESULTS:: 13:34:47: root                                      pydial.py <trainBatch>421 :  *** Training Iteration cur-env1-acer-CR-seed1-00.0->cur-env1-acer-CR-seed1-00.1: iter=0, error-rate=0, num-dialogs=1000 ***
+RESULTS:: 13:40:23: root                               EvaluationManager.py <_prstr>182 :  Results for domain: CamRestaurants --evaluated by: objective success evaluator
+RESULTS:: 13:40:23: root                               EvaluationManager.py <_prstr>182 :  # of dialogues  = 1000
+RESULTS:: 13:40:23: root                               EvaluationManager.py <_prstr>182 :  Average reward  = 11.32 +- 0.48
+RESULTS:: 13:40:23: root                               EvaluationManager.py <_prstr>182 :  Average success = 88.30 +- 1.99
+RESULTS:: 13:40:23: root                               EvaluationManager.py <_prstr>182 :  Average turns   = 6.34 +- 0.17
+RESULTS:: 13:40:23: root                                   pydial.py <setEvalConfig>482 :  *** Evaluating cur-env1-acer-CR-seed1-00.1: error-rate=0 num-dialogs=500 ***
+RESULTS:: 13:42:53: root                               EvaluationManager.py <_prstr>182 :  Results for domain: CamRestaurants --evaluated by: objective success evaluator
+RESULTS:: 13:42:53: root                               EvaluationManager.py <_prstr>182 :  # of dialogues  = 500
+RESULTS:: 13:42:53: root                               EvaluationManager.py <_prstr>182 :  Average reward  = 12.67 +- 0.47
+RESULTS:: 13:42:53: root                               EvaluationManager.py <_prstr>182 :  Average success = 94.60 +- 1.99
+RESULTS:: 13:42:53: root                               EvaluationManager.py <_prstr>182 :  Average turns   = 6.25 +- 0.21
+RESULTS:: 13:42:53: root                                   pydial.py <train_command>816 :  List of domains: CamRestaurants
+RESULTS:: 13:42:53: root                                      pydial.py <trainBatch>421 :  *** Training Iteration cur-env1-acer-CR-seed1-00.1->cur-env1-acer-CR-seed1-00.2: iter=1, error-rate=0, num-dialogs=1000 ***
