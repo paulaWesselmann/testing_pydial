@@ -1,0 +1,41 @@
+RESULTS:: 11:18:36: root                                   pydial.py <train_command>816 :  List of domains: CamRestaurants
+RESULTS:: 11:18:36: root                                      pydial.py <trainBatch>421 :  *** Training Iteration env3-hdc-CR-seed4-15.0->env3-hdc-CR-seed4-15.1: iter=0, error-rate=15, num-dialogs=1000 ***
+RESULTS:: 11:30:48: root                               EvaluationManager.py <_prstr>182 :  Results for domain: CamRestaurants --evaluated by: objective success evaluator
+RESULTS:: 11:30:48: root                               EvaluationManager.py <_prstr>182 :  # of dialogues  = 1000
+RESULTS:: 11:30:48: root                               EvaluationManager.py <_prstr>182 :  Average reward  = 10.35 +- 0.41
+RESULTS:: 11:30:49: root                               EvaluationManager.py <_prstr>182 :  Average success = 94.70 +- 1.39
+RESULTS:: 11:30:49: root                               EvaluationManager.py <_prstr>182 :  Average turns   = 8.59 +- 0.22
+RESULTS:: 11:30:49: root                                   pydial.py <setEvalConfig>482 :  *** Evaluating env3-hdc-CR-seed4-15.1: error-rate=15 num-dialogs=500 ***
+RESULTS:: 11:36:58: root                               EvaluationManager.py <_prstr>182 :  Results for domain: CamRestaurants --evaluated by: objective success evaluator
+RESULTS:: 11:36:58: root                               EvaluationManager.py <_prstr>182 :  # of dialogues  = 500
+RESULTS:: 11:36:58: root                               EvaluationManager.py <_prstr>182 :  Average reward  = 10.46 +- 0.56
+RESULTS:: 11:36:59: root                               EvaluationManager.py <_prstr>182 :  Average success = 96.00 +- 1.72
+RESULTS:: 11:36:59: root                               EvaluationManager.py <_prstr>182 :  Average turns   = 8.74 +- 0.33
+RESULTS:: 11:36:59: root                                   pydial.py <train_command>816 :  List of domains: CamRestaurants
+RESULTS:: 11:36:59: root                                      pydial.py <trainBatch>421 :  *** Training Iteration env3-hdc-CR-seed4-15.1->env3-hdc-CR-seed4-15.2: iter=1, error-rate=15, num-dialogs=1000 ***
+RESULTS:: 11:48:31: root                               EvaluationManager.py <_prstr>182 :  Results for domain: CamRestaurants --evaluated by: objective success evaluator
+RESULTS:: 11:48:31: root                               EvaluationManager.py <_prstr>182 :  # of dialogues  = 1000
+RESULTS:: 11:48:31: root                               EvaluationManager.py <_prstr>182 :  Average reward  = 11.38 +- 0.29
+RESULTS:: 11:48:31: root                               EvaluationManager.py <_prstr>182 :  Average success = 97.00 +- 1.06
+RESULTS:: 11:48:31: root                               EvaluationManager.py <_prstr>182 :  Average turns   = 8.02 +- 0.18
+RESULTS:: 11:48:31: root                                   pydial.py <setEvalConfig>482 :  *** Evaluating env3-hdc-CR-seed4-15.2: error-rate=15 num-dialogs=500 ***
+RESULTS:: 11:54:24: root                               EvaluationManager.py <_prstr>182 :  Results for domain: CamRestaurants --evaluated by: objective success evaluator
+RESULTS:: 11:54:24: root                               EvaluationManager.py <_prstr>182 :  # of dialogues  = 500
+RESULTS:: 11:54:24: root                               EvaluationManager.py <_prstr>182 :  Average reward  = 11.73 +- 0.33
+RESULTS:: 11:54:24: root                               EvaluationManager.py <_prstr>182 :  Average success = 98.80 +- 0.96
+RESULTS:: 11:54:24: root                               EvaluationManager.py <_prstr>182 :  Average turns   = 8.03 +- 0.24
+RESULTS:: 11:54:24: root                                   pydial.py <train_command>816 :  List of domains: CamRestaurants
+RESULTS:: 11:54:24: root                                      pydial.py <trainBatch>421 :  *** Training Iteration env3-hdc-CR-seed4-15.2->env3-hdc-CR-seed4-15.3: iter=2, error-rate=15, num-dialogs=1000 ***
+RESULTS:: 12:05:21: root                               EvaluationManager.py <_prstr>182 :  Results for domain: CamRestaurants --evaluated by: objective success evaluator
+RESULTS:: 12:05:21: root                               EvaluationManager.py <_prstr>182 :  # of dialogues  = 1000
+RESULTS:: 12:05:21: root                               EvaluationManager.py <_prstr>182 :  Average reward  = 11.34 +- 0.27
+RESULTS:: 12:05:21: root                               EvaluationManager.py <_prstr>182 :  Average success = 98.10 +- 0.85
+RESULTS:: 12:05:21: root                               EvaluationManager.py <_prstr>182 :  Average turns   = 8.29 +- 0.20
+RESULTS:: 12:05:21: root                                   pydial.py <setEvalConfig>482 :  *** Evaluating env3-hdc-CR-seed4-15.3: error-rate=15 num-dialogs=500 ***
+RESULTS:: 12:10:40: root                               EvaluationManager.py <_prstr>182 :  Results for domain: CamRestaurants --evaluated by: objective success evaluator
+RESULTS:: 12:10:40: root                               EvaluationManager.py <_prstr>182 :  # of dialogues  = 500
+RESULTS:: 12:10:40: root                               EvaluationManager.py <_prstr>182 :  Average reward  = 10.45 +- 0.48
+RESULTS:: 12:10:40: root                               EvaluationManager.py <_prstr>182 :  Average success = 95.80 +- 1.76
+RESULTS:: 12:10:40: root                               EvaluationManager.py <_prstr>182 :  Average turns   = 8.71 +- 0.30
+RESULTS:: 12:10:40: root                                   pydial.py <train_command>816 :  List of domains: CamRestaurants
+RESULTS:: 12:10:40: root                                      pydial.py <trainBatch>421 :  *** Training Iteration env3-hdc-CR-seed4-15.3->env3-hdc-CR-seed4-15.4: iter=3, error-rate=15, num-dialogs=1000 ***

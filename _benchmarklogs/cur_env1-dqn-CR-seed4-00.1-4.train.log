@@ -1,0 +1,2 @@
+RESULTS:: 13:22:35: root                                   pydial.py <train_command>816 :  List of domains: CamRestaurants
+RESULTS:: 13:22:35: root                                      pydial.py <trainBatch>421 :  *** Training Iteration cur_env1-dqn-CR-seed4-00.0->cur_env1-dqn-CR-seed4-00.1: iter=0, error-rate=0, num-dialogs=500 ***

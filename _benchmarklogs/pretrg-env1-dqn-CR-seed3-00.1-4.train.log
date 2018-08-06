@@ -1,0 +1,185 @@
+RESULTS:: 15:15:10: root                                   pydial.py <train_command>816 :  List of domains: CamRestaurants
+RESULTS:: 15:15:10: root                                      pydial.py <trainBatch>421 :  *** Training Iteration pretrg-env1-dqn-CR-seed3-00.0->pretrg-env1-dqn-CR-seed3-00.1: iter=0, error-rate=0, num-dialogs=1000 ***
+RESULTS:: 15:24:16: root                               EvaluationManager.py <_prstr>182 :  Results for domain: CamRestaurants --evaluated by: objective success evaluator
+RESULTS:: 15:24:16: root                               EvaluationManager.py <_prstr>182 :  # of dialogues  = 1000
+RESULTS:: 15:24:16: root                               EvaluationManager.py <_prstr>182 :  Average reward  = 10.60 +- 0.46
+RESULTS:: 15:24:19: root                               EvaluationManager.py <_prstr>182 :  Average success = 89.80 +- 1.88
+RESULTS:: 15:24:19: root                               EvaluationManager.py <_prstr>182 :  Average turns   = 7.36 +- 0.19
+RESULTS:: 15:24:19: root                                   pydial.py <setEvalConfig>482 :  *** Evaluating pretrg-env1-dqn-CR-seed3-00.1: error-rate=0 num-dialogs=10 ***
+RESULTS:: 15:24:26: root                               EvaluationManager.py <_prstr>182 :  Results for domain: CamRestaurants --evaluated by: objective success evaluator
+RESULTS:: 15:24:26: root                               EvaluationManager.py <_prstr>182 :  # of dialogues  = 10
+RESULTS:: 15:24:26: root                               EvaluationManager.py <_prstr>182 :  Average reward  = 13.50 +- 2.20
+RESULTS:: 15:24:26: root                               EvaluationManager.py <_prstr>182 :  Average success = 100.00 +- 0.00
+RESULTS:: 15:24:26: root                               EvaluationManager.py <_prstr>182 :  Average turns   = 6.50 +- 2.20
+RESULTS:: 15:24:26: root                                   pydial.py <train_command>816 :  List of domains: CamRestaurants
+RESULTS:: 15:24:26: root                                      pydial.py <trainBatch>421 :  *** Training Iteration pretrg-env1-dqn-CR-seed3-00.1->pretrg-env1-dqn-CR-seed3-00.2: iter=1, error-rate=0, num-dialogs=1000 ***
+RESULTS:: 15:34:09: root                               EvaluationManager.py <_prstr>182 :  Results for domain: CamRestaurants --evaluated by: objective success evaluator
+RESULTS:: 15:34:09: root                               EvaluationManager.py <_prstr>182 :  # of dialogues  = 1000
+RESULTS:: 15:34:09: root                               EvaluationManager.py <_prstr>182 :  Average reward  = 12.10 +- 0.32
+RESULTS:: 15:34:12: root                               EvaluationManager.py <_prstr>182 :  Average success = 96.20 +- 1.19
+RESULTS:: 15:34:12: root                               EvaluationManager.py <_prstr>182 :  Average turns   = 7.14 +- 0.19
+RESULTS:: 15:34:12: root                                   pydial.py <setEvalConfig>482 :  *** Evaluating pretrg-env1-dqn-CR-seed3-00.2: error-rate=0 num-dialogs=10 ***
+RESULTS:: 15:34:19: root                               EvaluationManager.py <_prstr>182 :  Results for domain: CamRestaurants --evaluated by: objective success evaluator
+RESULTS:: 15:34:19: root                               EvaluationManager.py <_prstr>182 :  # of dialogues  = 10
+RESULTS:: 15:34:19: root                               EvaluationManager.py <_prstr>182 :  Average reward  = 14.20 +- 0.89
+RESULTS:: 15:34:19: root                               EvaluationManager.py <_prstr>182 :  Average success = 100.00 +- 0.00
+RESULTS:: 15:34:19: root                               EvaluationManager.py <_prstr>182 :  Average turns   = 5.80 +- 0.89
+RESULTS:: 15:34:19: root                                   pydial.py <train_command>816 :  List of domains: CamRestaurants
+RESULTS:: 15:34:19: root                                      pydial.py <trainBatch>421 :  *** Training Iteration pretrg-env1-dqn-CR-seed3-00.2->pretrg-env1-dqn-CR-seed3-00.3: iter=2, error-rate=0, num-dialogs=1000 ***
+ERROR  :: 15:35:16: root                              ContextLogger.py <_exceptHook>263 :  Uncaught exception: <class 'tensorflow.python.framework.errors_impl.ResourceExhaustedError'>( _benchmarkpolicies/pretrg-env1-dqn-CR-seed3-00.3.dqn.ckpt.data-00000-of-00001.tempstate4528080497845009903; Too many open files
+	 [[Node: save/SaveV2 = SaveV2[dtypes=[DT_FLOAT, DT_FLOAT, DT_FLOAT, DT_FLOAT, DT_FLOAT, DT_FLOAT, DT_FLOAT, DT_FLOAT, DT_FLOAT, DT_FLOAT, DT_FLOAT, DT_FLOAT, DT_FLOAT, DT_FLOAT, DT_FLOAT, DT_FLOAT, DT_FLOAT, DT_FLOAT, DT_FLOAT, DT_FLOAT, DT_FLOAT, DT_FLOAT, DT_FLOAT, DT_FLOAT, DT_FLOAT, DT_FLOAT], _device="/job:localhost/replica:0/task:0/device:CPU:0"](_arg_save/Const_0_0, save/SaveV2/tensor_names, save/SaveV2/shape_and_slices, Variable, Variable/Adam, Variable/Adam_1, Variable_1, Variable_1/Adam, Variable_1/Adam_1, Variable_10, Variable_11, Variable_2, Variable_2/Adam, Variable_2/Adam_1, Variable_3, Variable_3/Adam, Variable_3/Adam_1, Variable_4, Variable_4/Adam, Variable_4/Adam_1, Variable_5, Variable_5/Adam, Variable_5/Adam_1, Variable_6, Variable_7, Variable_8, Variable_9, beta1_power, beta2_power)]]
+Hint: If you want to see a list of allocated tensors when OOM happens, add report_tensor_allocations_upon_oom to RunOptions for current allocation info.
+
+
+Caused by op u'save/SaveV2', defined at:
+  File "pydial.py", line 1174, in <module>
+    run()
+  File "/home/dial/pw439/.local/lib/python2.7/site-packages/scriptine/command.py", line 196, in autocmds
+    add_verbosity_option=add_verbosity_option)
+  File "/home/dial/pw439/.local/lib/python2.7/site-packages/scriptine/command.py", line 105, in parse_and_run_function
+    return function(*args[:len(required_args)], **kw)
+  File "pydial.py", line 817, in train_command
+    trainBatch(domain, configId, gtrainerrorrate, gtraindialogsperbatch, i, seed=seed)
+  File "pydial.py", line 459, in trainBatch
+    simulator = Simulate.SimulationSystem(error_rate=error)
+  File "/home/dial/pw439/pydial/Simulate.py", line 89, in __init__
+    self.agent_factory = Agent.AgentFactory(hub_id='simulate')
+  File "/home/dial/pw439/pydial/Agent.py", line 833, in __init__
+    self.init_agents(hub_id)
+  File "/home/dial/pw439/pydial/Agent.py", line 847, in init_agents
+    self.agents['Smith'] = DialogueAgent(agent_id='Smith', hub_id=hub_id)  # primary agent, can be copied
+  File "/home/dial/pw439/pydial/Agent.py", line 164, in __init__
+    self.restart_agent(session_id=None)
+  File "/home/dial/pw439/pydial/Agent.py", line 405, in restart_agent
+    self._hand_control(domainString=self.topic_tracker.operatingDomain, previousDomainString=None)
+  File "/home/dial/pw439/pydial/Agent.py", line 480, in _hand_control
+    self._bootup(domainString, previousDomainString)
+  File "/home/dial/pw439/pydial/Agent.py", line 510, in _bootup
+    self.policy_manager.bootup(domainString)
+  File "/home/dial/pw439/pydial/policy/PolicyManager.py", line 92, in bootup
+    self._load_domains_policy(domainString)
+  File "/home/dial/pw439/pydial/policy/PolicyManager.py", line 275, in _load_domains_policy
+    self.domainPolicies[domainString] = DQNPolicy.DQNPolicy(in_policy_file, out_policy_file, domainString, learning)
+  File "/home/dial/pw439/pydial/policy/DQNPolicy.py", line 407, in __init__
+    self.loadPolicy(self.in_policy_file) #do i need to save the models together if i use same sess?
+  File "/home/dial/pw439/pydial/policy/DQNPolicy.py", line 813, in loadPolicy
+    self.dqn.load_network(filename + '.dqn.ckpt')
+  File "/home/dial/pw439/pydial/policy/DRL/dqn.py", line 269, in load_network
+  File "/usr/local/lib/python2.7/dist-packages/tensorflow/python/training/saver.py", line 1239, in __init__
+    self.build()
+  File "/usr/local/lib/python2.7/dist-packages/tensorflow/python/training/saver.py", line 1248, in build
+    self._build(self._filename, build_save=True, build_restore=True)
+  File "/usr/local/lib/python2.7/dist-packages/tensorflow/python/training/saver.py", line 1284, in _build
+    build_save=build_save, build_restore=build_restore)
+  File "/usr/local/lib/python2.7/dist-packages/tensorflow/python/training/saver.py", line 762, in _build_internal
+    save_tensor = self._AddSaveOps(filename_tensor, saveables)
+  File "/usr/local/lib/python2.7/dist-packages/tensorflow/python/training/saver.py", line 297, in _AddSaveOps
+    save = self.save_op(filename_tensor, saveables)
+  File "/usr/local/lib/python2.7/dist-packages/tensorflow/python/training/saver.py", line 240, in save_op
+    tensors)
+  File "/usr/local/lib/python2.7/dist-packages/tensorflow/python/ops/gen_io_ops.py", line 1174, in save_v2
+  File "/usr/local/lib/python2.7/dist-packages/tensorflow/python/framework/op_def_library.py", line 787, in _apply_op_helper
+  File "/usr/local/lib/python2.7/dist-packages/tensorflow/python/framework/ops.py", line 3160, in create_op
+    op_def=op_def)
+  File "/usr/local/lib/python2.7/dist-packages/tensorflow/python/framework/ops.py", line 1625, in __init__
+    self._traceback = self._graph._extract_stack()  # pylint: disable=protected-access
+
+ResourceExhaustedError (see above for traceback): _benchmarkpolicies/pretrg-env1-dqn-CR-seed3-00.3.dqn.ckpt.data-00000-of-00001.tempstate4528080497845009903; Too many open files
+	 [[Node: save/SaveV2 = SaveV2[dtypes=[DT_FLOAT, DT_FLOAT, DT_FLOAT, DT_FLOAT, DT_FLOAT, DT_FLOAT, DT_FLOAT, DT_FLOAT, DT_FLOAT, DT_FLOAT, DT_FLOAT, DT_FLOAT, DT_FLOAT, DT_FLOAT, DT_FLOAT, DT_FLOAT, DT_FLOAT, DT_FLOAT, DT_FLOAT, DT_FLOAT, DT_FLOAT, DT_FLOAT, DT_FLOAT, DT_FLOAT, DT_FLOAT, DT_FLOAT], _device="/job:localhost/replica:0/task:0/device:CPU:0"](_arg_save/Const_0_0, save/SaveV2/tensor_names, save/SaveV2/shape_and_slices, Variable, Variable/Adam, Variable/Adam_1, Variable_1, Variable_1/Adam, Variable_1/Adam_1, Variable_10, Variable_11, Variable_2, Variable_2/Adam, Variable_2/Adam_1, Variable_3, Variable_3/Adam, Variable_3/Adam_1, Variable_4, Variable_4/Adam, Variable_4/Adam_1, Variable_5, Variable_5/Adam, Variable_5/Adam_1, Variable_6, Variable_7, Variable_8, Variable_9, beta1_power, beta2_power)]]
+Hint: If you want to see a list of allocated tensors when OOM happens, add report_tensor_allocations_upon_oom to RunOptions for current allocation info.
+
+ )
+          Traceback (most recent call last):
+            File "pydial.py", line 1174, in <module>
+              run()
+            File "/home/dial/pw439/.local/lib/python2.7/site-packages/scriptine/command.py", line 196, in autocmds
+              add_verbosity_option=add_verbosity_option)
+            File "/home/dial/pw439/.local/lib/python2.7/site-packages/scriptine/command.py", line 105, in parse_and_run_function
+              return function(*args[:len(required_args)], **kw)
+            File "pydial.py", line 817, in train_command
+              trainBatch(domain, configId, gtrainerrorrate, gtraindialogsperbatch, i, seed=seed)
+            File "pydial.py", line 460, in trainBatch
+              simulator.run_dialogs(ndialogs)
+            File "/home/dial/pw439/pydial/Simulate.py", line 128, in run_dialogs
+              self.run(session_id='simulate_dialog'+str(i), sim_level=self.sim_level)
+            File "/home/dial/pw439/pydial/Simulate.py", line 224, in run
+              self.agent_factory.agents[agent_id].end_call(domainSimulatedUsers=self.simulator.simUserManagers)
+            File "/home/dial/pw439/pydial/Agent.py", line 358, in end_call
+              self.policy_manager.train(self.evaluation_manager.doTraining())
+            File "/home/dial/pw439/pydial/policy/PolicyManager.py", line 124, in train
+              self.domainPolicies[domain].train()
+            File "/home/dial/pw439/pydial/policy/DQNPolicy.py", line 784, in train
+              self.savePolicyInc()  # self.out_policy_file)
+            File "/home/dial/pw439/pydial/policy/DQNPolicy.py", line 801, in savePolicyInc
+              self.dqn.save_network(self.out_policy_file + '.dqn.ckpt')
+            File "/home/dial/pw439/pydial/policy/DRL/dqn.py", line 281, in save_network
+            File "/usr/local/lib/python2.7/dist-packages/tensorflow/python/training/saver.py", line 1593, in save
+              {self.saver_def.filename_tensor_name: checkpoint_file})
+            File "/usr/local/lib/python2.7/dist-packages/tensorflow/python/client/session.py", line 895, in run
+            File "/usr/local/lib/python2.7/dist-packages/tensorflow/python/client/session.py", line 1128, in _run
+            File "/usr/local/lib/python2.7/dist-packages/tensorflow/python/client/session.py", line 1344, in _do_run
+            File "/usr/local/lib/python2.7/dist-packages/tensorflow/python/client/session.py", line 1363, in _do_call
+          ResourceExhaustedError: _benchmarkpolicies/pretrg-env1-dqn-CR-seed3-00.3.dqn.ckpt.data-00000-of-00001.tempstate4528080497845009903; Too many open files
+          	 [[Node: save/SaveV2 = SaveV2[dtypes=[DT_FLOAT, DT_FLOAT, DT_FLOAT, DT_FLOAT, DT_FLOAT, DT_FLOAT, DT_FLOAT, DT_FLOAT, DT_FLOAT, DT_FLOAT, DT_FLOAT, DT_FLOAT, DT_FLOAT, DT_FLOAT, DT_FLOAT, DT_FLOAT, DT_FLOAT, DT_FLOAT, DT_FLOAT, DT_FLOAT, DT_FLOAT, DT_FLOAT, DT_FLOAT, DT_FLOAT, DT_FLOAT, DT_FLOAT], _device="/job:localhost/replica:0/task:0/device:CPU:0"](_arg_save/Const_0_0, save/SaveV2/tensor_names, save/SaveV2/shape_and_slices, Variable, Variable/Adam, Variable/Adam_1, Variable_1, Variable_1/Adam, Variable_1/Adam_1, Variable_10, Variable_11, Variable_2, Variable_2/Adam, Variable_2/Adam_1, Variable_3, Variable_3/Adam, Variable_3/Adam_1, Variable_4, Variable_4/Adam, Variable_4/Adam_1, Variable_5, Variable_5/Adam, Variable_5/Adam_1, Variable_6, Variable_7, Variable_8, Variable_9, beta1_power, beta2_power)]]
+          Hint: If you want to see a list of allocated tensors when OOM happens, add report_tensor_allocations_upon_oom to RunOptions for current allocation info.
+          
+          
+          Caused by op u'save/SaveV2', defined at:
+            File "pydial.py", line 1174, in <module>
+              run()
+            File "/home/dial/pw439/.local/lib/python2.7/site-packages/scriptine/command.py", line 196, in autocmds
+              add_verbosity_option=add_verbosity_option)
+            File "/home/dial/pw439/.local/lib/python2.7/site-packages/scriptine/command.py", line 105, in parse_and_run_function
+              return function(*args[:len(required_args)], **kw)
+            File "pydial.py", line 817, in train_command
+              trainBatch(domain, configId, gtrainerrorrate, gtraindialogsperbatch, i, seed=seed)
+            File "pydial.py", line 459, in trainBatch
+              simulator = Simulate.SimulationSystem(error_rate=error)
+            File "/home/dial/pw439/pydial/Simulate.py", line 89, in __init__
+              self.agent_factory = Agent.AgentFactory(hub_id='simulate')
+            File "/home/dial/pw439/pydial/Agent.py", line 833, in __init__
+              self.init_agents(hub_id)
+            File "/home/dial/pw439/pydial/Agent.py", line 847, in init_agents
+              self.agents['Smith'] = DialogueAgent(agent_id='Smith', hub_id=hub_id)  # primary agent, can be copied
+            File "/home/dial/pw439/pydial/Agent.py", line 164, in __init__
+              self.restart_agent(session_id=None)
+            File "/home/dial/pw439/pydial/Agent.py", line 405, in restart_agent
+              self._hand_control(domainString=self.topic_tracker.operatingDomain, previousDomainString=None)
+            File "/home/dial/pw439/pydial/Agent.py", line 480, in _hand_control
+              self._bootup(domainString, previousDomainString)
+            File "/home/dial/pw439/pydial/Agent.py", line 510, in _bootup
+              self.policy_manager.bootup(domainString)
+            File "/home/dial/pw439/pydial/policy/PolicyManager.py", line 92, in bootup
+              self._load_domains_policy(domainString)
+            File "/home/dial/pw439/pydial/policy/PolicyManager.py", line 275, in _load_domains_policy
+              self.domainPolicies[domainString] = DQNPolicy.DQNPolicy(in_policy_file, out_policy_file, domainString, learning)
+            File "/home/dial/pw439/pydial/policy/DQNPolicy.py", line 407, in __init__
+              self.loadPolicy(self.in_policy_file) #do i need to save the models together if i use same sess?
+            File "/home/dial/pw439/pydial/policy/DQNPolicy.py", line 813, in loadPolicy
+              self.dqn.load_network(filename + '.dqn.ckpt')
+            File "/home/dial/pw439/pydial/policy/DRL/dqn.py", line 269, in load_network
+            File "/usr/local/lib/python2.7/dist-packages/tensorflow/python/training/saver.py", line 1239, in __init__
+              self.build()
+            File "/usr/local/lib/python2.7/dist-packages/tensorflow/python/training/saver.py", line 1248, in build
+              self._build(self._filename, build_save=True, build_restore=True)
+            File "/usr/local/lib/python2.7/dist-packages/tensorflow/python/training/saver.py", line 1284, in _build
+              build_save=build_save, build_restore=build_restore)
+            File "/usr/local/lib/python2.7/dist-packages/tensorflow/python/training/saver.py", line 762, in _build_internal
+              save_tensor = self._AddSaveOps(filename_tensor, saveables)
+            File "/usr/local/lib/python2.7/dist-packages/tensorflow/python/training/saver.py", line 297, in _AddSaveOps
+              save = self.save_op(filename_tensor, saveables)
+            File "/usr/local/lib/python2.7/dist-packages/tensorflow/python/training/saver.py", line 240, in save_op
+              tensors)
+            File "/usr/local/lib/python2.7/dist-packages/tensorflow/python/ops/gen_io_ops.py", line 1174, in save_v2
+            File "/usr/local/lib/python2.7/dist-packages/tensorflow/python/framework/op_def_library.py", line 787, in _apply_op_helper
+            File "/usr/local/lib/python2.7/dist-packages/tensorflow/python/framework/ops.py", line 3160, in create_op
+              op_def=op_def)
+            File "/usr/local/lib/python2.7/dist-packages/tensorflow/python/framework/ops.py", line 1625, in __init__
+              self._traceback = self._graph._extract_stack()  # pylint: disable=protected-access
+          
+          ResourceExhaustedError (see above for traceback): _benchmarkpolicies/pretrg-env1-dqn-CR-seed3-00.3.dqn.ckpt.data-00000-of-00001.tempstate4528080497845009903; Too many open files
+          	 [[Node: save/SaveV2 = SaveV2[dtypes=[DT_FLOAT, DT_FLOAT, DT_FLOAT, DT_FLOAT, DT_FLOAT, DT_FLOAT, DT_FLOAT, DT_FLOAT, DT_FLOAT, DT_FLOAT, DT_FLOAT, DT_FLOAT, DT_FLOAT, DT_FLOAT, DT_FLOAT, DT_FLOAT, DT_FLOAT, DT_FLOAT, DT_FLOAT, DT_FLOAT, DT_FLOAT, DT_FLOAT, DT_FLOAT, DT_FLOAT, DT_FLOAT, DT_FLOAT], _device="/job:localhost/replica:0/task:0/device:CPU:0"](_arg_save/Const_0_0, save/SaveV2/tensor_names, save/SaveV2/shape_and_slices, Variable, Variable/Adam, Variable/Adam_1, Variable_1, Variable_1/Adam, Variable_1/Adam_1, Variable_10, Variable_11, Variable_2, Variable_2/Adam, Variable_2/Adam_1, Variable_3, Variable_3/Adam, Variable_3/Adam_1, Variable_4, Variable_4/Adam, Variable_4/Adam_1, Variable_5, Variable_5/Adam, Variable_5/Adam_1, Variable_6, Variable_7, Variable_8, Variable_9, beta1_power, beta2_power)]]
+          Hint: If you want to see a list of allocated tensors when OOM happens, add report_tensor_allocations_upon_oom to RunOptions for current allocation info.
+          
+          
+          
