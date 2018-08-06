@@ -1,3 +1,4 @@
+
 RESULTS:: 13:15:12: root                                   pydial.py <train_command>816 :  List of domains: CamRestaurants
 RESULTS:: 13:15:12: root                                      pydial.py <trainBatch>421 :  *** Training Iteration cur-env3-acer-CR-seed2-15.0->cur-env3-acer-CR-seed2-15.1: iter=0, error-rate=15, num-dialogs=1000 ***
 RESULTS:: 13:25:08: root                               EvaluationManager.py <_prstr>182 :  Results for domain: CamRestaurants --evaluated by: objective success evaluator
