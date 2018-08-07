@@ -1,0 +1,2 @@
+RESULTS:: 17:17:54: root                                   pydial.py <train_command>816 :  List of domains: CamRestaurants
+RESULTS:: 17:17:54: root                                      pydial.py <trainBatch>421 :  *** Training Iteration env3-hdc-CR-15.0->env3-hdc-CR-15.1: iter=0, error-rate=15, num-dialogs=1000 ***

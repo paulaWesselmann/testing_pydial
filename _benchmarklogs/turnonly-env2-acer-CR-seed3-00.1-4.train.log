@@ -1,0 +1,2 @@
+RESULTS:: 15:30:07: root                                   pydial.py <train_command>816 :  List of domains: CamRestaurants
+RESULTS:: 15:30:07: root                                      pydial.py <trainBatch>421 :  *** Training Iteration turnonly-env2-acer-CR-seed3-00.0->turnonly-env2-acer-CR-seed3-00.1: iter=0, error-rate=0, num-dialogs=1000 ***

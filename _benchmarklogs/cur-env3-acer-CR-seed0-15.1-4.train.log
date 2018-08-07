@@ -1,53 +1,55 @@
-RESULTS:: 13:01:27: root                                   pydial.py <train_command>816 :  List of domains: CamRestaurants
-RESULTS:: 13:01:27: root                                      pydial.py <trainBatch>421 :  *** Training Iteration cur-env3-acer-CR-seed0-15.0->cur-env3-acer-CR-seed0-15.1: iter=0, error-rate=15, num-dialogs=1000 ***
-RESULTS:: 13:08:03: root                               EvaluationManager.py <_prstr>182 :  Results for domain: CamRestaurants --evaluated by: objective success evaluator
-RESULTS:: 13:08:03: root                               EvaluationManager.py <_prstr>182 :  # of dialogues  = 1000
-RESULTS:: 13:08:03: root                               EvaluationManager.py <_prstr>182 :  Average reward  = 8.25 +- 0.59
-RESULTS:: 13:08:03: root                               EvaluationManager.py <_prstr>182 :  Average success = 77.00 +- 2.61
-RESULTS:: 13:08:03: root                               EvaluationManager.py <_prstr>182 :  Average turns   = 7.16 +- 0.19
-RESULTS:: 13:08:03: root                                   pydial.py <setEvalConfig>482 :  *** Evaluating cur-env3-acer-CR-seed0-15.1: error-rate=15 num-dialogs=500 ***
-RESULTS:: 13:11:07: root                               EvaluationManager.py <_prstr>182 :  Results for domain: CamRestaurants --evaluated by: objective success evaluator
-RESULTS:: 13:11:07: root                               EvaluationManager.py <_prstr>182 :  # of dialogues  = 500
-RESULTS:: 13:11:07: root                               EvaluationManager.py <_prstr>182 :  Average reward  = 9.22 +- 0.77
-RESULTS:: 13:11:07: root                               EvaluationManager.py <_prstr>182 :  Average success = 82.00 +- 3.38
-RESULTS:: 13:11:07: root                               EvaluationManager.py <_prstr>182 :  Average turns   = 7.18 +- 0.25
-RESULTS:: 13:11:07: root                                   pydial.py <train_command>816 :  List of domains: CamRestaurants
-RESULTS:: 13:11:07: root                                      pydial.py <trainBatch>421 :  *** Training Iteration cur-env3-acer-CR-seed0-15.1->cur-env3-acer-CR-seed0-15.2: iter=1, error-rate=15, num-dialogs=1000 ***
-RESULTS:: 13:17:48: root                               EvaluationManager.py <_prstr>182 :  Results for domain: CamRestaurants --evaluated by: objective success evaluator
-RESULTS:: 13:17:48: root                               EvaluationManager.py <_prstr>182 :  # of dialogues  = 1000
-RESULTS:: 13:17:48: root                               EvaluationManager.py <_prstr>182 :  Average reward  = 9.77 +- 0.53
-RESULTS:: 13:17:48: root                               EvaluationManager.py <_prstr>182 :  Average success = 83.80 +- 2.29
-RESULTS:: 13:17:48: root                               EvaluationManager.py <_prstr>182 :  Average turns   = 6.99 +- 0.18
-RESULTS:: 13:17:48: root                                   pydial.py <setEvalConfig>482 :  *** Evaluating cur-env3-acer-CR-seed0-15.2: error-rate=15 num-dialogs=500 ***
-RESULTS:: 13:20:53: root                               EvaluationManager.py <_prstr>182 :  Results for domain: CamRestaurants --evaluated by: objective success evaluator
-RESULTS:: 13:20:53: root                               EvaluationManager.py <_prstr>182 :  # of dialogues  = 500
-RESULTS:: 13:20:53: root                               EvaluationManager.py <_prstr>182 :  Average reward  = 10.14 +- 0.72
-RESULTS:: 13:20:53: root                               EvaluationManager.py <_prstr>182 :  Average success = 85.40 +- 3.10
-RESULTS:: 13:20:53: root                               EvaluationManager.py <_prstr>182 :  Average turns   = 6.94 +- 0.26
-RESULTS:: 13:20:53: root                                   pydial.py <train_command>816 :  List of domains: CamRestaurants
-RESULTS:: 13:20:53: root                                      pydial.py <trainBatch>421 :  *** Training Iteration cur-env3-acer-CR-seed0-15.2->cur-env3-acer-CR-seed0-15.3: iter=2, error-rate=15, num-dialogs=1000 ***
-RESULTS:: 13:28:08: root                               EvaluationManager.py <_prstr>182 :  Results for domain: CamRestaurants --evaluated by: objective success evaluator
-RESULTS:: 13:28:08: root                               EvaluationManager.py <_prstr>182 :  # of dialogues  = 1000
-RESULTS:: 13:28:08: root                               EvaluationManager.py <_prstr>182 :  Average reward  = 8.92 +- 0.55
-RESULTS:: 13:28:08: root                               EvaluationManager.py <_prstr>182 :  Average success = 82.30 +- 2.37
-RESULTS:: 13:28:08: root                               EvaluationManager.py <_prstr>182 :  Average turns   = 7.54 +- 0.20
-RESULTS:: 13:28:08: root                                   pydial.py <setEvalConfig>482 :  *** Evaluating cur-env3-acer-CR-seed0-15.3: error-rate=15 num-dialogs=500 ***
-RESULTS:: 13:31:27: root                               EvaluationManager.py <_prstr>182 :  Results for domain: CamRestaurants --evaluated by: objective success evaluator
-RESULTS:: 13:31:27: root                               EvaluationManager.py <_prstr>182 :  # of dialogues  = 500
-RESULTS:: 13:31:27: root                               EvaluationManager.py <_prstr>182 :  Average reward  = 10.63 +- 0.68
-RESULTS:: 13:31:27: root                               EvaluationManager.py <_prstr>182 :  Average success = 89.60 +- 2.68
-RESULTS:: 13:31:27: root                               EvaluationManager.py <_prstr>182 :  Average turns   = 7.29 +- 0.29
-RESULTS:: 13:31:27: root                                   pydial.py <train_command>816 :  List of domains: CamRestaurants
-RESULTS:: 13:31:27: root                                      pydial.py <trainBatch>421 :  *** Training Iteration cur-env3-acer-CR-seed0-15.3->cur-env3-acer-CR-seed0-15.4: iter=3, error-rate=15, num-dialogs=1000 ***
-RESULTS:: 13:38:59: root                               EvaluationManager.py <_prstr>182 :  Results for domain: CamRestaurants --evaluated by: objective success evaluator
-RESULTS:: 13:38:59: root                               EvaluationManager.py <_prstr>182 :  # of dialogues  = 1000
-RESULTS:: 13:38:59: root                               EvaluationManager.py <_prstr>182 :  Average reward  = 9.98 +- 0.52
-RESULTS:: 13:38:59: root                               EvaluationManager.py <_prstr>182 :  Average success = 88.10 +- 2.01
-RESULTS:: 13:38:59: root                               EvaluationManager.py <_prstr>182 :  Average turns   = 7.64 +- 0.23
-RESULTS:: 13:38:59: root                                   pydial.py <setEvalConfig>482 :  *** Evaluating cur-env3-acer-CR-seed0-15.4: error-rate=15 num-dialogs=500 ***
-RESULTS:: 13:42:23: root                               EvaluationManager.py <_prstr>182 :  Results for domain: CamRestaurants --evaluated by: objective success evaluator
-RESULTS:: 13:42:23: root                               EvaluationManager.py <_prstr>182 :  # of dialogues  = 500
-RESULTS:: 13:42:23: root                               EvaluationManager.py <_prstr>182 :  Average reward  = 10.67 +- 0.68
-RESULTS:: 13:42:23: root                               EvaluationManager.py <_prstr>182 :  Average success = 90.20 +- 2.61
-RESULTS:: 13:42:23: root                               EvaluationManager.py <_prstr>182 :  Average turns   = 7.37 +- 0.27
-RESULTS:: 13:42:23: root                                   pydial.py <train_command>832 :  *** Training complete. log: cur-env3-acer-CR-seed0-15.1-4.train.log - final policy is cur-env3-acer-CR-15-04
+
+RESULTS:: 16:03:36: root                                   pydial.py <train_command>816 :  List of domains: CamRestaurants
+RESULTS:: 16:03:36: root                                      pydial.py <trainBatch>421 :  *** Training Iteration cur-env3-acer-CR-seed0-15.0->cur-env3-acer-CR-seed0-15.1: iter=0, error-rate=15, num-dialogs=1000 ***
+RESULTS:: 16:14:05: root                               EvaluationManager.py <_prstr>182 :  Results for domain: CamRestaurants --evaluated by: objective success evaluator
+RESULTS:: 16:14:05: root                               EvaluationManager.py <_prstr>182 :  # of dialogues  = 1000
+RESULTS:: 16:14:05: root                               EvaluationManager.py <_prstr>182 :  Average reward  = 9.06 +- 0.58
+RESULTS:: 16:14:06: root                               EvaluationManager.py <_prstr>182 :  Average success = 80.30 +- 2.47
+RESULTS:: 16:14:06: root                               EvaluationManager.py <_prstr>182 :  Average turns   = 9.35 +- 0.31
+RESULTS:: 16:14:06: root                                   pydial.py <setEvalConfig>482 :  *** Evaluating cur-env3-acer-CR-seed0-15.1: error-rate=15 num-dialogs=500 ***
+RESULTS:: 16:18:31: root                               EvaluationManager.py <_prstr>182 :  Results for domain: CamRestaurants --evaluated by: objective success evaluator
+RESULTS:: 16:18:31: root                               EvaluationManager.py <_prstr>182 :  # of dialogues  = 500
+RESULTS:: 16:18:31: root                               EvaluationManager.py <_prstr>182 :  Average reward  = 12.72 +- 0.56
+RESULTS:: 16:18:31: root                               EvaluationManager.py <_prstr>182 :  Average success = 92.40 +- 2.33
+RESULTS:: 16:18:31: root                               EvaluationManager.py <_prstr>182 :  Average turns   = 7.39 +- 0.31
+RESULTS:: 16:18:31: root                                   pydial.py <train_command>816 :  List of domains: CamRestaurants
+RESULTS:: 16:18:31: root                                      pydial.py <trainBatch>421 :  *** Training Iteration cur-env3-acer-CR-seed0-15.1->cur-env3-acer-CR-seed0-15.2: iter=1, error-rate=15, num-dialogs=1000 ***
+RESULTS:: 16:29:03: root                               EvaluationManager.py <_prstr>182 :  Results for domain: CamRestaurants --evaluated by: objective success evaluator
+RESULTS:: 16:29:03: root                               EvaluationManager.py <_prstr>182 :  # of dialogues  = 1000
+RESULTS:: 16:29:03: root                               EvaluationManager.py <_prstr>182 :  Average reward  = 10.15 +- 0.50
+RESULTS:: 16:29:03: root                               EvaluationManager.py <_prstr>182 :  Average success = 84.60 +- 2.24
+RESULTS:: 16:29:03: root                               EvaluationManager.py <_prstr>182 :  Average turns   = 9.32 +- 0.29
+RESULTS:: 16:29:03: root                                   pydial.py <setEvalConfig>482 :  *** Evaluating cur-env3-acer-CR-seed0-15.2: error-rate=15 num-dialogs=500 ***
+RESULTS:: 16:32:42: root                               EvaluationManager.py <_prstr>182 :  Results for domain: CamRestaurants --evaluated by: objective success evaluator
+RESULTS:: 16:32:42: root                               EvaluationManager.py <_prstr>182 :  # of dialogues  = 500
+RESULTS:: 16:32:42: root                               EvaluationManager.py <_prstr>182 :  Average reward  = 10.59 +- 0.75
+RESULTS:: 16:32:43: root                               EvaluationManager.py <_prstr>182 :  Average success = 82.20 +- 3.36
+RESULTS:: 16:32:43: root                               EvaluationManager.py <_prstr>182 :  Average turns   = 7.56 +- 0.31
+RESULTS:: 16:32:43: root                                   pydial.py <train_command>816 :  List of domains: CamRestaurants
+RESULTS:: 16:32:43: root                                      pydial.py <trainBatch>421 :  *** Training Iteration cur-env3-acer-CR-seed0-15.2->cur-env3-acer-CR-seed0-15.3: iter=2, error-rate=15, num-dialogs=1000 ***
+RESULTS:: 16:40:51: root                               EvaluationManager.py <_prstr>182 :  Results for domain: CamRestaurants --evaluated by: objective success evaluator
+RESULTS:: 16:40:51: root                               EvaluationManager.py <_prstr>182 :  # of dialogues  = 1000
+RESULTS:: 16:40:51: root                               EvaluationManager.py <_prstr>182 :  Average reward  = 11.22 +- 0.46
+RESULTS:: 16:40:51: root                               EvaluationManager.py <_prstr>182 :  Average success = 89.70 +- 1.89
+RESULTS:: 16:40:51: root                               EvaluationManager.py <_prstr>182 :  Average turns   = 9.02 +- 0.28
+RESULTS:: 16:40:51: root                                   pydial.py <setEvalConfig>482 :  *** Evaluating cur-env3-acer-CR-seed0-15.3: error-rate=15 num-dialogs=500 ***
+RESULTS:: 16:44:09: root                               EvaluationManager.py <_prstr>182 :  Results for domain: CamRestaurants --evaluated by: objective success evaluator
+RESULTS:: 16:44:09: root                               EvaluationManager.py <_prstr>182 :  # of dialogues  = 500
+RESULTS:: 16:44:09: root                               EvaluationManager.py <_prstr>182 :  Average reward  = 12.02 +- 0.62
+RESULTS:: 16:44:09: root                               EvaluationManager.py <_prstr>182 :  Average success = 89.40 +- 2.70
+RESULTS:: 16:44:09: root                               EvaluationManager.py <_prstr>182 :  Average turns   = 7.37 +- 0.30
+RESULTS:: 16:44:09: root                                   pydial.py <train_command>816 :  List of domains: CamRestaurants
+RESULTS:: 16:44:09: root                                      pydial.py <trainBatch>421 :  *** Training Iteration cur-env3-acer-CR-seed0-15.3->cur-env3-acer-CR-seed0-15.4: iter=3, error-rate=15, num-dialogs=1000 ***
+RESULTS:: 16:52:46: root                               EvaluationManager.py <_prstr>182 :  Results for domain: CamRestaurants --evaluated by: objective success evaluator
+RESULTS:: 16:52:46: root                               EvaluationManager.py <_prstr>182 :  # of dialogues  = 1000
+RESULTS:: 16:52:46: root                               EvaluationManager.py <_prstr>182 :  Average reward  = 11.34 +- 0.44
+RESULTS:: 16:52:46: root                               EvaluationManager.py <_prstr>182 :  Average success = 89.40 +- 1.91
+RESULTS:: 16:52:46: root                               EvaluationManager.py <_prstr>182 :  Average turns   = 9.18 +- 0.28
+RESULTS:: 16:52:46: root                                   pydial.py <setEvalConfig>482 :  *** Evaluating cur-env3-acer-CR-seed0-15.4: error-rate=15 num-dialogs=500 ***
+RESULTS:: 16:56:22: root                               EvaluationManager.py <_prstr>182 :  Results for domain: CamRestaurants --evaluated by: objective success evaluator
+RESULTS:: 16:56:22: root                               EvaluationManager.py <_prstr>182 :  # of dialogues  = 500
+RESULTS:: 16:56:22: root                               EvaluationManager.py <_prstr>182 :  Average reward  = 12.53 +- 0.58
+RESULTS:: 16:56:22: root                               EvaluationManager.py <_prstr>182 :  Average success = 91.40 +- 2.46
+RESULTS:: 16:56:22: root                               EvaluationManager.py <_prstr>182 :  Average turns   = 7.60 +- 0.32
+RESULTS:: 16:56:22: root                                   pydial.py <train_command>832 :  *** Training complete. log: cur-env3-acer-CR-seed0-15.1-4.train.log - final policy is cur-env3-acer-CR-15-04
+

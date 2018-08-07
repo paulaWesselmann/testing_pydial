@@ -1,3 +1,0 @@
-RESULTS:: 16:25:01: root                                   pydial.py <train_command>813 :  List of domains: CamRestaurants
-RESULTS:: 16:25:01: root                                      pydial.py <trainBatch>420 :  *** Training Iteration env1-dqn-CR-seed2-00.0->env1-dqn-CR-seed2-00.1: iter=0, error-rate=0, num-dialogs=1000 ***
-ERROR  :: 16:43:34: root                       FlatOntologyManager.py <_set_ontology>98 :  No such file or directory: /home/dial/pw439/pydial/ontology/ontologies/CamRestaurants-rules.json. Probably <Settings.root> is not set/set wrong by config.
