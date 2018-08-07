@@ -31,7 +31,6 @@ optimize = optimizer.minimize(predloss)
 if not os.path.exists('_curiosity_model/pretrg_model/'):
     os.mkdir('_curiosity_model/pretrg_model/')
 
-
 def read_data1(filename):
     sys_act = []
     turn = []

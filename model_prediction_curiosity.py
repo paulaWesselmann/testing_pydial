@@ -260,7 +260,7 @@ class LSTMPolicy(object):
         sess = tf.get_default_session()
         return sess.run(self.vf, {self.x: [ob], self.state_in[0]: c, self.state_in[1]: h})[0]
 
-
+#todo read in feat size as variable
 class StateActionPredictor(object):
     def __init__(self, ob_space, ac_space, designHead='universe', feature_size='20'):
         # input: s1,s2: : [None, h, w, ch] (usually ch=1 or 4) /pydial: [None, size]

@@ -587,35 +587,43 @@ def extractEvalData(lines):
 
 
 def plotTrain(dname, rtab, stab, block=True, saveplot=False):
+    font = {
+            'weight': 'bold',
+            'size': 20}
+    plt.rc('font', **font)
+
     global gplotnum
     policylist = sorted(rtab.keys())
     ncurves = len(policylist)
     plt.figure(gplotnum)
+
     gplotnum += 1
     for policy in policylist:
         tab = rtab[policy]
         plt.subplot(211)
+        plt.xlim((800, 4200))
         if len(tab['x']) < 2:
             plt.axhline(y=tab['y'][0], linestyle='--')
         else:
-            #plt.errorbar(tab['x'],tab['y'], yerr=tab['var'], label=policy)
-            plt.errorbar(tab['x'], tab['y'], label=policy)
+            plt.errorbar(tab['x'],tab['y'], yerr=tab['var'], label=policy)
+            # plt.errorbar(tab['x'], tab['y'], label=policy)
         tab = stab[policy]
         plt.subplot(212)
+        plt.xlim((800, 4200))
         if len(tab['x']) < 2:
             plt.axhline(y=tab['y'][0], linestyle='--')
         else:
-            #plt.errorbar(tab['x'],tab['y'],yerr=tab['var'],label=policy)
-            plt.errorbar(tab['x'], tab['y'], label=policy)
+            plt.errorbar(tab['x'],tab['y'],yerr=tab['var'],label=policy)
+            # plt.errorbar(tab['x'], tab['y'], label=policy)
     plt.subplot(211)
     plt.grid()
-    plt.legend(loc='lower right', fontsize=10)
-    plt.title(dname+" Performance vs Num Train Dialogs")
+    plt.legend(loc='lower right', fontsize=14)
+    plt.title("Performance vs Num Train Dialogues")
     plt.ylabel('Reward')
     plt.subplot(212)
     plt.grid()
-    plt.legend(loc='lower right', fontsize=10)
-    plt.xlabel('Num Dialogs')
+    plt.legend(loc='lower right', fontsize=14)
+    plt.xlabel('Num Dialogues')
     plt.ylabel('Success')
     if saveplot:
         if not os.path.exists('_plots'):
@@ -1110,8 +1118,8 @@ def plot_command(args="", printtab=False, noplot=False, saveplot=False, datasetn
         Set the printtab option to print a table of results.
         A name can be given to plot via dataset name.
     """
-    trainlogs=[]
-    testlogs=[]
+    trainlogs = []
+    testlogs = []
     for fname in args:
         if fname.find('train') >= 0:
             trainlogs.append(fname)

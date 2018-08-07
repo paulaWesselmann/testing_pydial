@@ -4,6 +4,7 @@ import os
 from constants_prediction_curiosity import constants
 import numpy as np
 # import matplotlib.pyplot as plt
+from utils import Settings
 
 
 # todo change dependend on use: feat size & pre trg!
@@ -12,8 +13,12 @@ class Curious(object):
         tf.reset_default_graph()
         self.learning_rate = 0.001
 
+        self.feat_size = 77
+        if Settings.config.has_option("eval", "feat_size"):
+            self.feat_size = Settings.config.getint("eval", "feat_size")
+
         with tf.variable_scope('curiosity', reuse=tf.AUTO_REUSE):
-            self.predictor = mpc.StateActionPredictor(268, 16, designHead='pydial', feature_size=20)  # num belivestates, num actions
+            self.predictor = mpc.StateActionPredictor(268, 16, designHead='pydial', feature_size=self.feat_size)  # num belivestates, num actions
 
             self.predloss = self.predictor.invloss * (1 - constants['FORWARD_LOSS_WT']) + \
                             self.predictor.forwardloss * constants['FORWARD_LOSS_WT']
