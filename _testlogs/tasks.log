@@ -1,139 +1,139 @@
-INFO   :: 17:14:24: root                       FlatOntologyManager.py <_set_ontology>93 :  Loading ontology: ontology/ontologies/CamRestaurants-rules.json
-INFO   :: 17:14:24: root                            FlatOntologyManager.py <_set_db>108 :  Loading database: ontology/ontologies/CamRestaurants-dbase.db
-INFO   :: 17:14:24: root                       FlatOntologyManager.py <_set_ontology>93 :  Loading ontology: ontology/ontologies/CamHotels-rules.json
-INFO   :: 17:14:24: root                            FlatOntologyManager.py <_set_db>108 :  Loading database: ontology/ontologies/CamHotels-dbase.db
-INFO   :: 17:14:24: root                       FlatOntologyManager.py <_set_ontology>93 :  Loading ontology: ontology/ontologies/CamAttractions-rules.json
-INFO   :: 17:14:24: root                            FlatOntologyManager.py <_set_db>108 :  Loading database: ontology/ontologies/CamAttractions-dbase.db
-INFO   :: 17:14:24: root                       FlatOntologyManager.py <_set_ontology>93 :  Loading ontology: ontology/ontologies/CamTransport-rules.json
-INFO   :: 17:14:24: root                            FlatOntologyManager.py <_set_db>108 :  Loading database: ontology/ontologies/CamTransport-dbase.db
-INFO   :: 17:14:24: root                       FlatOntologyManager.py <_set_ontology>93 :  Loading ontology: ontology/ontologies/CamShops-rules.json
-INFO   :: 17:14:24: root                            FlatOntologyManager.py <_set_db>108 :  Loading database: ontology/ontologies/CamShops-dbase.db
-INFO   :: 17:14:24: root                       FlatOntologyManager.py <_set_ontology>93 :  Loading ontology: ontology/ontologies/SFHotels-rules.json
-INFO   :: 17:14:24: root                            FlatOntologyManager.py <_set_db>108 :  Loading database: ontology/ontologies/SFHotels-dbase.db
-INFO   :: 17:14:24: root                       FlatOntologyManager.py <_set_ontology>93 :  Loading ontology: ontology/ontologies/SFRestaurants-rules.json
-INFO   :: 17:14:24: root                            FlatOntologyManager.py <_set_db>108 :  Loading database: ontology/ontologies/SFRestaurants-dbase.db
-INFO   :: 17:14:24: root                       FlatOntologyManager.py <_set_ontology>93 :  Loading ontology: ontology/ontologies/Laptops11-rules.json
-INFO   :: 17:14:24: root                            FlatOntologyManager.py <_set_db>108 :  Loading database: ontology/ontologies/Laptops11-dbase.db
-INFO   :: 17:14:24: root                       FlatOntologyManager.py <_set_ontology>93 :  Loading ontology: ontology/ontologies/Laptops6-rules.json
-INFO   :: 17:14:24: root                            FlatOntologyManager.py <_set_db>108 :  Loading database: ontology/ontologies/Laptops6-dbase.db
-INFO   :: 17:14:24: root                       FlatOntologyManager.py <_set_ontology>93 :  Loading ontology: ontology/ontologies/TV-rules.json
-INFO   :: 17:14:24: root                            FlatOntologyManager.py <_set_db>108 :  Loading database: ontology/ontologies/TV-dbase.db
-INFO   :: 17:14:24: root                         SimulatedUsersManager.py <__init__>112 :  Simulating with error rate: ['CamRestaurants', 'CamHotels', 'CamAttractions', 'CamTransport', 'CamShops', 'SFHotels', 'SFRestaurants', 'Laptops11', 'Laptops6', 'TV']
-INFO   :: 17:14:24: root                   SimulatedUsersManager.py <sample_domains>216 :  Order sim user will execute goals:['SFRestaurants', 'Laptops11', 'Laptops6']
-INFO   :: 17:14:24: root                                     ErrorModel.py <__init__>86 :  N-best list size: 1
-INFO   :: 17:14:24: root                                     ErrorModel.py <__init__>87 :  N-best generator model: UniformNBestGenerator
-INFO   :: 17:14:24: root                                     ErrorModel.py <__init__>88 :  Confusion model: RandomConfusions
-INFO   :: 17:14:24: root                      ErrorModel.py <_set_confidence_scorer>121 :  Confidence scorer: additive
-INFO   :: 17:14:24: root                                     ErrorModel.py <__init__>86 :  N-best list size: 1
-INFO   :: 17:14:24: root                                     ErrorModel.py <__init__>87 :  N-best generator model: UniformNBestGenerator
-INFO   :: 17:14:24: root                                     ErrorModel.py <__init__>88 :  Confusion model: RandomConfusions
-INFO   :: 17:14:24: root                      ErrorModel.py <_set_confidence_scorer>121 :  Confidence scorer: additive
-INFO   :: 17:14:24: root                                     ErrorModel.py <__init__>86 :  N-best list size: 1
-INFO   :: 17:14:24: root                                     ErrorModel.py <__init__>87 :  N-best generator model: UniformNBestGenerator
-INFO   :: 17:14:24: root                                     ErrorModel.py <__init__>88 :  Confusion model: RandomConfusions
-INFO   :: 17:14:24: root                      ErrorModel.py <_set_confidence_scorer>121 :  Confidence scorer: additive
-INFO   :: 17:14:24: root                   SimulatedUsersManager.py <sample_domains>216 :  Order sim user will execute goals:['CamAttractions', 'Laptops11', 'CamShops']
-INFO   :: 17:14:24: root                                     ErrorModel.py <__init__>86 :  N-best list size: 1
-INFO   :: 17:14:24: root                                     ErrorModel.py <__init__>87 :  N-best generator model: UniformNBestGenerator
-INFO   :: 17:14:24: root                                     ErrorModel.py <__init__>88 :  Confusion model: RandomConfusions
-INFO   :: 17:14:24: root                      ErrorModel.py <_set_confidence_scorer>121 :  Confidence scorer: additive
-INFO   :: 17:14:24: root                                     ErrorModel.py <__init__>86 :  N-best list size: 1
-INFO   :: 17:14:24: root                                     ErrorModel.py <__init__>87 :  N-best generator model: UniformNBestGenerator
-INFO   :: 17:14:24: root                                     ErrorModel.py <__init__>88 :  Confusion model: RandomConfusions
-INFO   :: 17:14:24: root                      ErrorModel.py <_set_confidence_scorer>121 :  Confidence scorer: additive
-INFO   :: 17:14:24: root                   SimulatedUsersManager.py <sample_domains>216 :  Order sim user will execute goals:['CamTransport', 'CamAttractions', 'TV']
-INFO   :: 17:14:24: root                                     ErrorModel.py <__init__>86 :  N-best list size: 1
-INFO   :: 17:14:24: root                                     ErrorModel.py <__init__>87 :  N-best generator model: UniformNBestGenerator
-INFO   :: 17:14:24: root                                     ErrorModel.py <__init__>88 :  Confusion model: RandomConfusions
-INFO   :: 17:14:24: root                      ErrorModel.py <_set_confidence_scorer>121 :  Confidence scorer: additive
-INFO   :: 17:14:24: root                                     ErrorModel.py <__init__>86 :  N-best list size: 1
-INFO   :: 17:14:24: root                                     ErrorModel.py <__init__>87 :  N-best generator model: UniformNBestGenerator
-INFO   :: 17:14:24: root                                     ErrorModel.py <__init__>88 :  Confusion model: RandomConfusions
-INFO   :: 17:14:24: root                      ErrorModel.py <_set_confidence_scorer>121 :  Confidence scorer: additive
-INFO   :: 17:14:24: root                   SimulatedUsersManager.py <sample_domains>216 :  Order sim user will execute goals:['TV', 'CamTransport', 'SFRestaurants']
-INFO   :: 17:14:24: root                                     ErrorModel.py <__init__>86 :  N-best list size: 1
-INFO   :: 17:14:24: root                                     ErrorModel.py <__init__>87 :  N-best generator model: UniformNBestGenerator
-INFO   :: 17:14:24: root                                     ErrorModel.py <__init__>88 :  Confusion model: RandomConfusions
-INFO   :: 17:14:24: root                      ErrorModel.py <_set_confidence_scorer>121 :  Confidence scorer: additive
-INFO   :: 17:14:24: root                   SimulatedUsersManager.py <sample_domains>216 :  Order sim user will execute goals:['CamTransport', 'CamShops', 'CamHotels']
-INFO   :: 17:14:24: root                                     ErrorModel.py <__init__>86 :  N-best list size: 1
-INFO   :: 17:14:24: root                                     ErrorModel.py <__init__>87 :  N-best generator model: UniformNBestGenerator
-INFO   :: 17:14:24: root                                     ErrorModel.py <__init__>88 :  Confusion model: RandomConfusions
-INFO   :: 17:14:24: root                      ErrorModel.py <_set_confidence_scorer>121 :  Confidence scorer: additive
-INFO   :: 17:14:24: root                                     ErrorModel.py <__init__>86 :  N-best list size: 1
-INFO   :: 17:14:24: root                                     ErrorModel.py <__init__>87 :  N-best generator model: UniformNBestGenerator
-INFO   :: 17:14:24: root                                     ErrorModel.py <__init__>88 :  Confusion model: RandomConfusions
-INFO   :: 17:14:24: root                      ErrorModel.py <_set_confidence_scorer>121 :  Confidence scorer: additive
-INFO   :: 17:14:24: root                   SimulatedUsersManager.py <sample_domains>216 :  Order sim user will execute goals:['TV', 'CamAttractions', 'SFRestaurants']
-INFO   :: 17:14:24: root                                     ErrorModel.py <__init__>86 :  N-best list size: 1
-INFO   :: 17:14:24: root                                     ErrorModel.py <__init__>87 :  N-best generator model: UniformNBestGenerator
-INFO   :: 17:14:24: root                                     ErrorModel.py <__init__>88 :  Confusion model: RandomConfusions
-INFO   :: 17:14:24: root                      ErrorModel.py <_set_confidence_scorer>121 :  Confidence scorer: additive
-INFO   :: 17:14:24: root                                     ErrorModel.py <__init__>86 :  N-best list size: 1
-INFO   :: 17:14:24: root                                     ErrorModel.py <__init__>87 :  N-best generator model: UniformNBestGenerator
-INFO   :: 17:14:24: root                                     ErrorModel.py <__init__>88 :  Confusion model: RandomConfusions
-INFO   :: 17:14:24: root                      ErrorModel.py <_set_confidence_scorer>121 :  Confidence scorer: additive
-INFO   :: 17:14:24: root                                     ErrorModel.py <__init__>86 :  N-best list size: 1
-INFO   :: 17:14:24: root                                     ErrorModel.py <__init__>87 :  N-best generator model: UniformNBestGenerator
-INFO   :: 17:14:24: root                                     ErrorModel.py <__init__>88 :  Confusion model: RandomConfusions
-INFO   :: 17:14:24: root                      ErrorModel.py <_set_confidence_scorer>121 :  Confidence scorer: additive
-INFO   :: 17:14:24: root                   SimulatedUsersManager.py <sample_domains>216 :  Order sim user will execute goals:['CamShops', 'CamAttractions', 'CamRestaurants']
-INFO   :: 17:14:24: root                                     ErrorModel.py <__init__>86 :  N-best list size: 1
-INFO   :: 17:14:24: root                                     ErrorModel.py <__init__>87 :  N-best generator model: UniformNBestGenerator
-INFO   :: 17:14:24: root                                     ErrorModel.py <__init__>88 :  Confusion model: RandomConfusions
-INFO   :: 17:14:24: root                      ErrorModel.py <_set_confidence_scorer>121 :  Confidence scorer: additive
-INFO   :: 17:14:24: root                                     ErrorModel.py <__init__>86 :  N-best list size: 1
-INFO   :: 17:14:24: root                                     ErrorModel.py <__init__>87 :  N-best generator model: UniformNBestGenerator
-INFO   :: 17:14:24: root                                     ErrorModel.py <__init__>88 :  Confusion model: RandomConfusions
-INFO   :: 17:14:24: root                      ErrorModel.py <_set_confidence_scorer>121 :  Confidence scorer: additive
-INFO   :: 17:14:24: root                   SimulatedUsersManager.py <sample_domains>216 :  Order sim user will execute goals:['SFHotels', 'CamAttractions', 'SFRestaurants']
-INFO   :: 17:14:24: root                                     ErrorModel.py <__init__>86 :  N-best list size: 1
-INFO   :: 17:14:24: root                                     ErrorModel.py <__init__>87 :  N-best generator model: UniformNBestGenerator
-INFO   :: 17:14:24: root                                     ErrorModel.py <__init__>88 :  Confusion model: RandomConfusions
-INFO   :: 17:14:24: root                      ErrorModel.py <_set_confidence_scorer>121 :  Confidence scorer: additive
-INFO   :: 17:14:25: root                                     ErrorModel.py <__init__>86 :  N-best list size: 1
-INFO   :: 17:14:25: root                                     ErrorModel.py <__init__>87 :  N-best generator model: UniformNBestGenerator
-INFO   :: 17:14:25: root                                     ErrorModel.py <__init__>88 :  Confusion model: RandomConfusions
-INFO   :: 17:14:25: root                      ErrorModel.py <_set_confidence_scorer>121 :  Confidence scorer: additive
-INFO   :: 17:14:25: root                   SimulatedUsersManager.py <sample_domains>216 :  Order sim user will execute goals:['TV', 'CamHotels', 'Laptops6']
-INFO   :: 17:14:25: root                                     ErrorModel.py <__init__>86 :  N-best list size: 1
-INFO   :: 17:14:25: root                                     ErrorModel.py <__init__>87 :  N-best generator model: UniformNBestGenerator
-INFO   :: 17:14:25: root                                     ErrorModel.py <__init__>88 :  Confusion model: RandomConfusions
-INFO   :: 17:14:25: root                      ErrorModel.py <_set_confidence_scorer>121 :  Confidence scorer: additive
-INFO   :: 17:14:25: root                                     ErrorModel.py <__init__>86 :  N-best list size: 1
-INFO   :: 17:14:25: root                                     ErrorModel.py <__init__>87 :  N-best generator model: UniformNBestGenerator
-INFO   :: 17:14:25: root                                     ErrorModel.py <__init__>88 :  Confusion model: RandomConfusions
-INFO   :: 17:14:25: root                      ErrorModel.py <_set_confidence_scorer>121 :  Confidence scorer: additive
-INFO   :: 17:14:25: root                                     ErrorModel.py <__init__>86 :  N-best list size: 1
-INFO   :: 17:14:25: root                                     ErrorModel.py <__init__>87 :  N-best generator model: UniformNBestGenerator
-INFO   :: 17:14:25: root                                     ErrorModel.py <__init__>88 :  Confusion model: RandomConfusions
-INFO   :: 17:14:25: root                      ErrorModel.py <_set_confidence_scorer>121 :  Confidence scorer: additive
-INFO   :: 17:14:25: root                   SimulatedUsersManager.py <sample_domains>216 :  Order sim user will execute goals:['SFHotels', 'Laptops6', 'Laptops11']
-INFO   :: 17:14:25: root                                     ErrorModel.py <__init__>86 :  N-best list size: 1
-INFO   :: 17:14:25: root                                     ErrorModel.py <__init__>87 :  N-best generator model: UniformNBestGenerator
-INFO   :: 17:14:25: root                                     ErrorModel.py <__init__>88 :  Confusion model: RandomConfusions
-INFO   :: 17:14:25: root                      ErrorModel.py <_set_confidence_scorer>121 :  Confidence scorer: additive
-INFO   :: 17:14:25: root                                     ErrorModel.py <__init__>86 :  N-best list size: 1
-INFO   :: 17:14:25: root                                     ErrorModel.py <__init__>87 :  N-best generator model: UniformNBestGenerator
-INFO   :: 17:14:25: root                                     ErrorModel.py <__init__>88 :  Confusion model: RandomConfusions
-INFO   :: 17:14:25: root                      ErrorModel.py <_set_confidence_scorer>121 :  Confidence scorer: additive
-INFO   :: 17:14:25: root                       FlatOntologyManager.py <_set_ontology>93 :  Loading ontology: ontology/ontologies/CamRestaurants-rules.json
-INFO   :: 17:14:25: root                            FlatOntologyManager.py <_set_db>108 :  Loading database: ontology/ontologies/CamRestaurants-dbase.db
-INFO   :: 17:14:25: root                       FlatOntologyManager.py <_set_ontology>93 :  Loading ontology: ontology/ontologies/CamHotels-rules.json
-INFO   :: 17:14:25: root                            FlatOntologyManager.py <_set_db>108 :  Loading database: ontology/ontologies/CamHotels-dbase.db
-INFO   :: 17:14:25: root                       FlatOntologyManager.py <_set_ontology>93 :  Loading ontology: ontology/ontologies/CamAttractions-rules.json
-INFO   :: 17:14:25: root                            FlatOntologyManager.py <_set_db>108 :  Loading database: ontology/ontologies/CamAttractions-dbase.db
-INFO   :: 17:14:25: root                       FlatOntologyManager.py <_set_ontology>93 :  Loading ontology: ontology/ontologies/CamTransport-rules.json
-INFO   :: 17:14:25: root                            FlatOntologyManager.py <_set_db>108 :  Loading database: ontology/ontologies/CamTransport-dbase.db
-INFO   :: 17:14:25: root                       FlatOntologyManager.py <_set_ontology>93 :  Loading ontology: ontology/ontologies/CamShops-rules.json
-INFO   :: 17:14:25: root                            FlatOntologyManager.py <_set_db>108 :  Loading database: ontology/ontologies/CamShops-dbase.db
-INFO   :: 17:14:25: root                       FlatOntologyManager.py <_set_ontology>93 :  Loading ontology: ontology/ontologies/SFHotels-rules.json
-INFO   :: 17:14:25: root                            FlatOntologyManager.py <_set_db>108 :  Loading database: ontology/ontologies/SFHotels-dbase.db
-INFO   :: 17:14:25: root                       FlatOntologyManager.py <_set_ontology>93 :  Loading ontology: ontology/ontologies/SFRestaurants-rules.json
-INFO   :: 17:14:25: root                            FlatOntologyManager.py <_set_db>108 :  Loading database: ontology/ontologies/SFRestaurants-dbase.db
-INFO   :: 17:14:25: root                       FlatOntologyManager.py <_set_ontology>93 :  Loading ontology: ontology/ontologies/Laptops11-rules.json
-INFO   :: 17:14:25: root                            FlatOntologyManager.py <_set_db>108 :  Loading database: ontology/ontologies/Laptops11-dbase.db
-INFO   :: 17:14:25: root                       FlatOntologyManager.py <_set_ontology>93 :  Loading ontology: ontology/ontologies/Laptops6-rules.json
-INFO   :: 17:14:25: root                            FlatOntologyManager.py <_set_db>108 :  Loading database: ontology/ontologies/Laptops6-dbase.db
-INFO   :: 17:14:25: root                       FlatOntologyManager.py <_set_ontology>93 :  Loading ontology: ontology/ontologies/TV-rules.json
-INFO   :: 17:14:25: root                            FlatOntologyManager.py <_set_db>108 :  Loading database: ontology/ontologies/TV-dbase.db
+INFO   :: 16:39:58: root                       FlatOntologyManager.py <_set_ontology>93 :  Loading ontology: ontology/ontologies/CamRestaurants-rules.json
+INFO   :: 16:39:58: root                            FlatOntologyManager.py <_set_db>108 :  Loading database: ontology/ontologies/CamRestaurants-dbase.db
+INFO   :: 16:39:58: root                       FlatOntologyManager.py <_set_ontology>93 :  Loading ontology: ontology/ontologies/CamHotels-rules.json
+INFO   :: 16:39:58: root                            FlatOntologyManager.py <_set_db>108 :  Loading database: ontology/ontologies/CamHotels-dbase.db
+INFO   :: 16:39:58: root                       FlatOntologyManager.py <_set_ontology>93 :  Loading ontology: ontology/ontologies/CamAttractions-rules.json
+INFO   :: 16:39:58: root                            FlatOntologyManager.py <_set_db>108 :  Loading database: ontology/ontologies/CamAttractions-dbase.db
+INFO   :: 16:39:58: root                       FlatOntologyManager.py <_set_ontology>93 :  Loading ontology: ontology/ontologies/CamTransport-rules.json
+INFO   :: 16:39:58: root                            FlatOntologyManager.py <_set_db>108 :  Loading database: ontology/ontologies/CamTransport-dbase.db
+INFO   :: 16:39:58: root                       FlatOntologyManager.py <_set_ontology>93 :  Loading ontology: ontology/ontologies/CamShops-rules.json
+INFO   :: 16:39:58: root                            FlatOntologyManager.py <_set_db>108 :  Loading database: ontology/ontologies/CamShops-dbase.db
+INFO   :: 16:39:58: root                       FlatOntologyManager.py <_set_ontology>93 :  Loading ontology: ontology/ontologies/SFHotels-rules.json
+INFO   :: 16:39:58: root                            FlatOntologyManager.py <_set_db>108 :  Loading database: ontology/ontologies/SFHotels-dbase.db
+INFO   :: 16:39:58: root                       FlatOntologyManager.py <_set_ontology>93 :  Loading ontology: ontology/ontologies/SFRestaurants-rules.json
+INFO   :: 16:39:58: root                            FlatOntologyManager.py <_set_db>108 :  Loading database: ontology/ontologies/SFRestaurants-dbase.db
+INFO   :: 16:39:58: root                       FlatOntologyManager.py <_set_ontology>93 :  Loading ontology: ontology/ontologies/Laptops11-rules.json
+INFO   :: 16:39:58: root                            FlatOntologyManager.py <_set_db>108 :  Loading database: ontology/ontologies/Laptops11-dbase.db
+INFO   :: 16:39:58: root                       FlatOntologyManager.py <_set_ontology>93 :  Loading ontology: ontology/ontologies/Laptops6-rules.json
+INFO   :: 16:39:58: root                            FlatOntologyManager.py <_set_db>108 :  Loading database: ontology/ontologies/Laptops6-dbase.db
+INFO   :: 16:39:58: root                       FlatOntologyManager.py <_set_ontology>93 :  Loading ontology: ontology/ontologies/TV-rules.json
+INFO   :: 16:39:58: root                            FlatOntologyManager.py <_set_db>108 :  Loading database: ontology/ontologies/TV-dbase.db
+INFO   :: 16:39:58: root                         SimulatedUsersManager.py <__init__>112 :  Simulating with error rate: ['CamRestaurants', 'CamHotels', 'CamAttractions', 'CamTransport', 'CamShops', 'SFHotels', 'SFRestaurants', 'Laptops11', 'Laptops6', 'TV']
+INFO   :: 16:39:58: root                   SimulatedUsersManager.py <sample_domains>216 :  Order sim user will execute goals:['SFRestaurants', 'Laptops11', 'Laptops6']
+INFO   :: 16:39:58: root                                     ErrorModel.py <__init__>86 :  N-best list size: 1
+INFO   :: 16:39:58: root                                     ErrorModel.py <__init__>87 :  N-best generator model: UniformNBestGenerator
+INFO   :: 16:39:58: root                                     ErrorModel.py <__init__>88 :  Confusion model: RandomConfusions
+INFO   :: 16:39:58: root                      ErrorModel.py <_set_confidence_scorer>121 :  Confidence scorer: additive
+INFO   :: 16:39:59: root                                     ErrorModel.py <__init__>86 :  N-best list size: 1
+INFO   :: 16:39:59: root                                     ErrorModel.py <__init__>87 :  N-best generator model: UniformNBestGenerator
+INFO   :: 16:39:59: root                                     ErrorModel.py <__init__>88 :  Confusion model: RandomConfusions
+INFO   :: 16:39:59: root                      ErrorModel.py <_set_confidence_scorer>121 :  Confidence scorer: additive
+INFO   :: 16:39:59: root                                     ErrorModel.py <__init__>86 :  N-best list size: 1
+INFO   :: 16:39:59: root                                     ErrorModel.py <__init__>87 :  N-best generator model: UniformNBestGenerator
+INFO   :: 16:39:59: root                                     ErrorModel.py <__init__>88 :  Confusion model: RandomConfusions
+INFO   :: 16:39:59: root                      ErrorModel.py <_set_confidence_scorer>121 :  Confidence scorer: additive
+INFO   :: 16:39:59: root                   SimulatedUsersManager.py <sample_domains>216 :  Order sim user will execute goals:['CamAttractions', 'Laptops11', 'CamShops']
+INFO   :: 16:39:59: root                                     ErrorModel.py <__init__>86 :  N-best list size: 1
+INFO   :: 16:39:59: root                                     ErrorModel.py <__init__>87 :  N-best generator model: UniformNBestGenerator
+INFO   :: 16:39:59: root                                     ErrorModel.py <__init__>88 :  Confusion model: RandomConfusions
+INFO   :: 16:39:59: root                      ErrorModel.py <_set_confidence_scorer>121 :  Confidence scorer: additive
+INFO   :: 16:39:59: root                                     ErrorModel.py <__init__>86 :  N-best list size: 1
+INFO   :: 16:39:59: root                                     ErrorModel.py <__init__>87 :  N-best generator model: UniformNBestGenerator
+INFO   :: 16:39:59: root                                     ErrorModel.py <__init__>88 :  Confusion model: RandomConfusions
+INFO   :: 16:39:59: root                      ErrorModel.py <_set_confidence_scorer>121 :  Confidence scorer: additive
+INFO   :: 16:39:59: root                   SimulatedUsersManager.py <sample_domains>216 :  Order sim user will execute goals:['CamTransport', 'CamAttractions', 'TV']
+INFO   :: 16:39:59: root                                     ErrorModel.py <__init__>86 :  N-best list size: 1
+INFO   :: 16:39:59: root                                     ErrorModel.py <__init__>87 :  N-best generator model: UniformNBestGenerator
+INFO   :: 16:39:59: root                                     ErrorModel.py <__init__>88 :  Confusion model: RandomConfusions
+INFO   :: 16:39:59: root                      ErrorModel.py <_set_confidence_scorer>121 :  Confidence scorer: additive
+INFO   :: 16:39:59: root                                     ErrorModel.py <__init__>86 :  N-best list size: 1
+INFO   :: 16:39:59: root                                     ErrorModel.py <__init__>87 :  N-best generator model: UniformNBestGenerator
+INFO   :: 16:39:59: root                                     ErrorModel.py <__init__>88 :  Confusion model: RandomConfusions
+INFO   :: 16:39:59: root                      ErrorModel.py <_set_confidence_scorer>121 :  Confidence scorer: additive
+INFO   :: 16:39:59: root                   SimulatedUsersManager.py <sample_domains>216 :  Order sim user will execute goals:['TV', 'CamTransport', 'SFRestaurants']
+INFO   :: 16:39:59: root                                     ErrorModel.py <__init__>86 :  N-best list size: 1
+INFO   :: 16:39:59: root                                     ErrorModel.py <__init__>87 :  N-best generator model: UniformNBestGenerator
+INFO   :: 16:39:59: root                                     ErrorModel.py <__init__>88 :  Confusion model: RandomConfusions
+INFO   :: 16:39:59: root                      ErrorModel.py <_set_confidence_scorer>121 :  Confidence scorer: additive
+INFO   :: 16:39:59: root                   SimulatedUsersManager.py <sample_domains>216 :  Order sim user will execute goals:['CamTransport', 'CamShops', 'CamHotels']
+INFO   :: 16:39:59: root                                     ErrorModel.py <__init__>86 :  N-best list size: 1
+INFO   :: 16:39:59: root                                     ErrorModel.py <__init__>87 :  N-best generator model: UniformNBestGenerator
+INFO   :: 16:39:59: root                                     ErrorModel.py <__init__>88 :  Confusion model: RandomConfusions
+INFO   :: 16:39:59: root                      ErrorModel.py <_set_confidence_scorer>121 :  Confidence scorer: additive
+INFO   :: 16:39:59: root                                     ErrorModel.py <__init__>86 :  N-best list size: 1
+INFO   :: 16:39:59: root                                     ErrorModel.py <__init__>87 :  N-best generator model: UniformNBestGenerator
+INFO   :: 16:39:59: root                                     ErrorModel.py <__init__>88 :  Confusion model: RandomConfusions
+INFO   :: 16:39:59: root                      ErrorModel.py <_set_confidence_scorer>121 :  Confidence scorer: additive
+INFO   :: 16:39:59: root                   SimulatedUsersManager.py <sample_domains>216 :  Order sim user will execute goals:['TV', 'CamAttractions', 'SFRestaurants']
+INFO   :: 16:39:59: root                                     ErrorModel.py <__init__>86 :  N-best list size: 1
+INFO   :: 16:39:59: root                                     ErrorModel.py <__init__>87 :  N-best generator model: UniformNBestGenerator
+INFO   :: 16:39:59: root                                     ErrorModel.py <__init__>88 :  Confusion model: RandomConfusions
+INFO   :: 16:39:59: root                      ErrorModel.py <_set_confidence_scorer>121 :  Confidence scorer: additive
+INFO   :: 16:39:59: root                                     ErrorModel.py <__init__>86 :  N-best list size: 1
+INFO   :: 16:39:59: root                                     ErrorModel.py <__init__>87 :  N-best generator model: UniformNBestGenerator
+INFO   :: 16:39:59: root                                     ErrorModel.py <__init__>88 :  Confusion model: RandomConfusions
+INFO   :: 16:39:59: root                      ErrorModel.py <_set_confidence_scorer>121 :  Confidence scorer: additive
+INFO   :: 16:39:59: root                                     ErrorModel.py <__init__>86 :  N-best list size: 1
+INFO   :: 16:39:59: root                                     ErrorModel.py <__init__>87 :  N-best generator model: UniformNBestGenerator
+INFO   :: 16:39:59: root                                     ErrorModel.py <__init__>88 :  Confusion model: RandomConfusions
+INFO   :: 16:39:59: root                      ErrorModel.py <_set_confidence_scorer>121 :  Confidence scorer: additive
+INFO   :: 16:39:59: root                   SimulatedUsersManager.py <sample_domains>216 :  Order sim user will execute goals:['CamShops', 'CamAttractions', 'CamRestaurants']
+INFO   :: 16:39:59: root                                     ErrorModel.py <__init__>86 :  N-best list size: 1
+INFO   :: 16:39:59: root                                     ErrorModel.py <__init__>87 :  N-best generator model: UniformNBestGenerator
+INFO   :: 16:39:59: root                                     ErrorModel.py <__init__>88 :  Confusion model: RandomConfusions
+INFO   :: 16:39:59: root                      ErrorModel.py <_set_confidence_scorer>121 :  Confidence scorer: additive
+INFO   :: 16:39:59: root                                     ErrorModel.py <__init__>86 :  N-best list size: 1
+INFO   :: 16:39:59: root                                     ErrorModel.py <__init__>87 :  N-best generator model: UniformNBestGenerator
+INFO   :: 16:39:59: root                                     ErrorModel.py <__init__>88 :  Confusion model: RandomConfusions
+INFO   :: 16:39:59: root                      ErrorModel.py <_set_confidence_scorer>121 :  Confidence scorer: additive
+INFO   :: 16:39:59: root                   SimulatedUsersManager.py <sample_domains>216 :  Order sim user will execute goals:['SFHotels', 'CamAttractions', 'SFRestaurants']
+INFO   :: 16:39:59: root                                     ErrorModel.py <__init__>86 :  N-best list size: 1
+INFO   :: 16:39:59: root                                     ErrorModel.py <__init__>87 :  N-best generator model: UniformNBestGenerator
+INFO   :: 16:39:59: root                                     ErrorModel.py <__init__>88 :  Confusion model: RandomConfusions
+INFO   :: 16:39:59: root                      ErrorModel.py <_set_confidence_scorer>121 :  Confidence scorer: additive
+INFO   :: 16:39:59: root                                     ErrorModel.py <__init__>86 :  N-best list size: 1
+INFO   :: 16:39:59: root                                     ErrorModel.py <__init__>87 :  N-best generator model: UniformNBestGenerator
+INFO   :: 16:39:59: root                                     ErrorModel.py <__init__>88 :  Confusion model: RandomConfusions
+INFO   :: 16:39:59: root                      ErrorModel.py <_set_confidence_scorer>121 :  Confidence scorer: additive
+INFO   :: 16:39:59: root                   SimulatedUsersManager.py <sample_domains>216 :  Order sim user will execute goals:['TV', 'CamHotels', 'Laptops6']
+INFO   :: 16:39:59: root                                     ErrorModel.py <__init__>86 :  N-best list size: 1
+INFO   :: 16:39:59: root                                     ErrorModel.py <__init__>87 :  N-best generator model: UniformNBestGenerator
+INFO   :: 16:39:59: root                                     ErrorModel.py <__init__>88 :  Confusion model: RandomConfusions
+INFO   :: 16:39:59: root                      ErrorModel.py <_set_confidence_scorer>121 :  Confidence scorer: additive
+INFO   :: 16:39:59: root                                     ErrorModel.py <__init__>86 :  N-best list size: 1
+INFO   :: 16:39:59: root                                     ErrorModel.py <__init__>87 :  N-best generator model: UniformNBestGenerator
+INFO   :: 16:39:59: root                                     ErrorModel.py <__init__>88 :  Confusion model: RandomConfusions
+INFO   :: 16:39:59: root                      ErrorModel.py <_set_confidence_scorer>121 :  Confidence scorer: additive
+INFO   :: 16:39:59: root                                     ErrorModel.py <__init__>86 :  N-best list size: 1
+INFO   :: 16:39:59: root                                     ErrorModel.py <__init__>87 :  N-best generator model: UniformNBestGenerator
+INFO   :: 16:39:59: root                                     ErrorModel.py <__init__>88 :  Confusion model: RandomConfusions
+INFO   :: 16:39:59: root                      ErrorModel.py <_set_confidence_scorer>121 :  Confidence scorer: additive
+INFO   :: 16:39:59: root                   SimulatedUsersManager.py <sample_domains>216 :  Order sim user will execute goals:['SFHotels', 'Laptops6', 'Laptops11']
+INFO   :: 16:39:59: root                                     ErrorModel.py <__init__>86 :  N-best list size: 1
+INFO   :: 16:39:59: root                                     ErrorModel.py <__init__>87 :  N-best generator model: UniformNBestGenerator
+INFO   :: 16:39:59: root                                     ErrorModel.py <__init__>88 :  Confusion model: RandomConfusions
+INFO   :: 16:39:59: root                      ErrorModel.py <_set_confidence_scorer>121 :  Confidence scorer: additive
+INFO   :: 16:40:00: root                                     ErrorModel.py <__init__>86 :  N-best list size: 1
+INFO   :: 16:40:00: root                                     ErrorModel.py <__init__>87 :  N-best generator model: UniformNBestGenerator
+INFO   :: 16:40:00: root                                     ErrorModel.py <__init__>88 :  Confusion model: RandomConfusions
+INFO   :: 16:40:00: root                      ErrorModel.py <_set_confidence_scorer>121 :  Confidence scorer: additive
+INFO   :: 16:40:00: root                       FlatOntologyManager.py <_set_ontology>93 :  Loading ontology: ontology/ontologies/CamRestaurants-rules.json
+INFO   :: 16:40:00: root                            FlatOntologyManager.py <_set_db>108 :  Loading database: ontology/ontologies/CamRestaurants-dbase.db
+INFO   :: 16:40:00: root                       FlatOntologyManager.py <_set_ontology>93 :  Loading ontology: ontology/ontologies/CamHotels-rules.json
+INFO   :: 16:40:00: root                            FlatOntologyManager.py <_set_db>108 :  Loading database: ontology/ontologies/CamHotels-dbase.db
+INFO   :: 16:40:00: root                       FlatOntologyManager.py <_set_ontology>93 :  Loading ontology: ontology/ontologies/CamAttractions-rules.json
+INFO   :: 16:40:00: root                            FlatOntologyManager.py <_set_db>108 :  Loading database: ontology/ontologies/CamAttractions-dbase.db
+INFO   :: 16:40:00: root                       FlatOntologyManager.py <_set_ontology>93 :  Loading ontology: ontology/ontologies/CamTransport-rules.json
+INFO   :: 16:40:00: root                            FlatOntologyManager.py <_set_db>108 :  Loading database: ontology/ontologies/CamTransport-dbase.db
+INFO   :: 16:40:00: root                       FlatOntologyManager.py <_set_ontology>93 :  Loading ontology: ontology/ontologies/CamShops-rules.json
+INFO   :: 16:40:00: root                            FlatOntologyManager.py <_set_db>108 :  Loading database: ontology/ontologies/CamShops-dbase.db
+INFO   :: 16:40:00: root                       FlatOntologyManager.py <_set_ontology>93 :  Loading ontology: ontology/ontologies/SFHotels-rules.json
+INFO   :: 16:40:00: root                            FlatOntologyManager.py <_set_db>108 :  Loading database: ontology/ontologies/SFHotels-dbase.db
+INFO   :: 16:40:00: root                       FlatOntologyManager.py <_set_ontology>93 :  Loading ontology: ontology/ontologies/SFRestaurants-rules.json
+INFO   :: 16:40:00: root                            FlatOntologyManager.py <_set_db>108 :  Loading database: ontology/ontologies/SFRestaurants-dbase.db
+INFO   :: 16:40:00: root                       FlatOntologyManager.py <_set_ontology>93 :  Loading ontology: ontology/ontologies/Laptops11-rules.json
+INFO   :: 16:40:00: root                            FlatOntologyManager.py <_set_db>108 :  Loading database: ontology/ontologies/Laptops11-dbase.db
+INFO   :: 16:40:00: root                       FlatOntologyManager.py <_set_ontology>93 :  Loading ontology: ontology/ontologies/Laptops6-rules.json
+INFO   :: 16:40:00: root                            FlatOntologyManager.py <_set_db>108 :  Loading database: ontology/ontologies/Laptops6-dbase.db
+INFO   :: 16:40:00: root                       FlatOntologyManager.py <_set_ontology>93 :  Loading ontology: ontology/ontologies/TV-rules.json
+INFO   :: 16:40:00: root                            FlatOntologyManager.py <_set_db>108 :  Loading database: ontology/ontologies/TV-dbase.db

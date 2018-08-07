@@ -309,7 +309,7 @@ class ContextLogger:
     
     def _callLocString(self, ):
         inspected = inspect.getouterframes(inspect.currentframe())
-        frame,filename,line_number,function_name,lines,index=inspected[min(3,len(inspected)-1)]
+        frame, filename, line_number, function_name, lines, index = inspected[min(3, len(inspected)-1)]
         filename = filename.split("/")[-1]
         return filename + ":" + function_name + ">" + str(line_number)
     

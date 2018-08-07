@@ -65,10 +65,11 @@ global_currentturn = None
 global_numiter = None
 global_sess = None
 
+
 #==============================================================================================================
 # Methods (for settings globals)
 #==============================================================================================================
-def init(config_file, seed = None):
+def init(config_file, seed=None):
     '''
     Called by dialog programs (simulate, texthub, dialogueserver) to init Settings globals
     '''
