@@ -116,31 +116,34 @@ class ObjectiveSuccessEvaluator(Evaluator):
             self.successReward = Settings.config.getint("eval", "successreward")
         if Settings.config.has_option("eval_"+domainString, "failpenalty"):
             self.failPenalty = Settings.config.getint("eval_"+domainString, "failpenalty")
-
         self.feat_size = 77
         if Settings.config.has_option("eval", "feat_size"):
             self.feat_size = Settings.config.getint("eval", "feat_size")
 
-        if Settings.config.has_option("eval_"+domainString, "successreward"):
-            self.successReward = Settings.config.getint("eval_"+domainString, "successreward")
+        if Settings.config.has_option("eval_" + domainString, "successreward"):
+            self.successReward = Settings.config.getint("eval_" + domainString, "successreward")
 
         if Settings.config.has_option("dialogueserver", "tasksfile"):
-            self.using_tasks = True     # will record DM actions to deduce objective success against a given task:
-            
+            self.using_tasks = True  # will record DM actions to deduce objective success against a given task:
+
         self.venue_recommended = False
-        self.mentioned_values = {}      # {slot: set(values), ...}
+        self.mentioned_values = {}  # {slot: set(values), ...}
         sys_reqestable_slots = Ontology.global_ontology.get_system_requestable_slots(self.domainString)
         for slot in sys_reqestable_slots:
             self.mentioned_values[slot] = set(['dontcare'])
 
         if self.curiosityreward:  # to use state prediction error as reward
             self.curiosityFunctions = Curious()
-            self.curiosityFunctions.load_curiosity("_curiosity_model/pretrg_model/trained_curiosity_acer-env1shuffle22_feat77") #todo change pretrg model here ex: trained_curiosity100
-            
+            if Settings.global_numiter == 1:
+                self.curiosityFunctions.load_curiosity(
+                    "_curiosity_model/pretrg_model/trained_curiosityacershuffle22_feat20")  # todo change pretrg model here ex: trained_curiosity100
+            else:
+                self.curiosityFunctions.load_curiosity('_curiosity_model/ckpt-curiosity')
+        #  trained_curiosity_acer-env1shuffle22_feat77  trained_curiosityacershuffle22_feat20
         self.DM_history = None
         self.predictor = mpc.StateActionPredictor(268, 16, designHead='pydial', feature_size=self.feat_size)
 
-        self.curiosity_reward = [] # stores all curiosity rewards to print in log
+        self.curiosity_reward = []  # stores all curiosity rewards to print in log
         self.inverse_loss = []
         self.predloss = []
         self.actions = []  # index of 1hot actions
@@ -150,8 +153,8 @@ class ObjectiveSuccessEvaluator(Evaluator):
     def restart(self):
         """
         Initialise variables (i.e. start dialog with: success=False, venue recommended=False, and 'dontcare' as \
-        the only mentioned value in each slot)  
-    
+        the only mentioned value in each slot)
+
         :param: None
         :returns: None
 
@@ -162,15 +165,15 @@ class ObjectiveSuccessEvaluator(Evaluator):
         self.mentioned_values = {}      # {slot: set(values), ...}
         sys_reqestable_slots = Ontology.global_ontology.get_system_requestable_slots(self.domainString)
         for slot in sys_reqestable_slots:
-            self.mentioned_values[slot] = set(['dontcare'])  
-            
+            self.mentioned_values[slot] = set(['dontcare'])
+
         if self.using_tasks:
             self.DM_history = []
 
     def _getTurnReward(self, turnInfo):
         '''
-        Computes the turn reward regarding turnInfo. The default turn reward is -1 unless otherwise computed. 
-        
+        Computes the turn reward regarding turnInfo. The default turn reward is -1 unless otherwise computed.
+
         :param turnInfo: parameters necessary for computing the turn reward, eg., system act or model of the simulated user.
         :type turnInfo: dict
         :return: int -- the turn reward.
@@ -232,7 +235,7 @@ class ObjectiveSuccessEvaluator(Evaluator):
             if 'usermodel' in turnInfo and 'sys_act' in turnInfo:
                 um = turnInfo['usermodel']
                 self.user_goal = um.goal.constraints
-                
+
                 # unpack input user model um.
                 # prev_consts = um.prev_goal.constraints
                 prev_consts = copy.deepcopy(um.goal.constraints)
@@ -242,7 +245,7 @@ class ObjectiveSuccessEvaluator(Evaluator):
                 requests = um.goal.requests
                 sys_act = DiaAct.DiaAct(turnInfo['sys_act'])
                 user_act = um.lastUserAct
-                
+
                 # Check if the most recent venue satisfies constraints.
                 name = sys_act.get_value('name', negate=False)
                 lvr = self.last_venue_recomended if hasattr(self, 'last_venue_recomended') else 'not existing'
@@ -265,11 +268,11 @@ class ObjectiveSuccessEvaluator(Evaluator):
                         self.venue_recommended = False
                         logger.debug('Goal constraints: {}'.format(prev_consts))
                         reward -= self.wrong_venue_penalty
-        
+
                 # If system inform(name=none) but it was not right decision based on wrong values.
                 if name == 'none' and sys_act.has_conflicting_value(prev_consts):
                     reward -= self.wrong_venue_penalty
-        
+
                 # Check if the system used slot values previously not mentioned for 'select' and 'confirm'.
                 not_mentioned = False
                 if sys_act.act in ['select', 'confirm']:
@@ -279,15 +282,15 @@ class ObjectiveSuccessEvaluator(Evaluator):
                             # System used values which are not previously mentioned.
                             not_mentioned = True
                             break
-        
+
                 if not_mentioned:
                     reward -= self.not_mentioned_value_penalty
-                    
+
                 # If the correct venue has been recommended and all requested slots are filled,
                 # check if this dialogue is successful.
                 if self.venue_recommended and None not in requests.values():
                     reward += self.reward_venue_recommended
-                    
+
                 # Update mentioned values.
                 self._update_mentioned_value(sys_act)
                 self._update_mentioned_value(user_act)
@@ -296,7 +299,7 @@ class ObjectiveSuccessEvaluator(Evaluator):
 
         return reward
 
-    def _isValidVenue(self, name, constraints):    
+    def _isValidVenue(self, name, constraints):
         constraints2 = None
         if isinstance(constraints, list):
             constraints2 = copy.deepcopy(constraints)
@@ -330,13 +333,13 @@ class ObjectiveSuccessEvaluator(Evaluator):
 #                     if const.val == ent[const.slot]:
 #                         is_valid = False
 #             is_valid_list.append(is_valid)
-        
+
         return any(entities)
 
     def _getFinalReward(self, finalInfo):
         '''
         Computes the final reward using finalInfo. Should be overridden by sub-class if values others than 0 should be returned.
-        
+
         :param finalInfo: parameters necessary for computing the final reward, eg., task description or subjective feedback.
         :type finalInfo: dict
         :return: int -- the final reward, default 0.
@@ -377,10 +380,10 @@ class ObjectiveSuccessEvaluator(Evaluator):
                     if informs is not None:
                         for ent in informs.keys():
                             if task is None:
-                                self.outcome = True   # since there are no goals, lets go with this ... 
+                                self.outcome = True   # since there are no goals, lets go with this ...
                             elif self.domainString not in task:
                                 logger.warning("This task doesn't contain the domain: %s" % self.domainString)
-                                logger.debug("task was: " + str(task))  # note the way tasks currently are, we dont have 
+                                logger.debug("task was: " + str(task))  # note the way tasks currently are, we dont have
                                 # the task_id at this point ...
                                 self.outcome = True   # This is arbitary, since there are no goals ... lets say true?
                             elif ent in str(task[self.domainString]["Ents"]):
@@ -390,11 +393,11 @@ class ObjectiveSuccessEvaluator(Evaluator):
                                 for req in required:
                                     if req.strip(" ") == 'name':
                                         continue
-                                    if req.strip(" ") not in ','.join(informs[ent]): 
+                                    if req.strip(" ") not in ','.join(informs[ent]):
                                         self.outcome = False
 
         return self.outcome * self.successReward - (not self.outcome) * self.failPenalty
-    
+
     def _get_informs_against_each_entity(self):
         if len(self.DM_history) == 0:
             return None
@@ -412,7 +415,7 @@ class ObjectiveSuccessEvaluator(Evaluator):
                             currentEnt = detail.split("=")[1].strip('"')
                             details.remove(detail)
                             break  # assumes only 1 name= in act -- seems solid assumption
-                    
+
                     if currentEnt in informs.keys():
                         informs[currentEnt] += details
                     else:
@@ -423,14 +426,14 @@ class ObjectiveSuccessEvaluator(Evaluator):
                     logger.warning('assuming inform() that does not mention a name refers to last entity mentioned')
                     informs[currentEnt] += details
         return informs
-    
+
     def _update_mentioned_value(self, act):
         # internal, called by :func:`RewardComputer.get_reward` for both sys and user acts to update values mentioned in dialog
         #
         # :param act: sys or user dialog act
         # :type act: :class:`DiaAct.DiaAct`
         # :return: None
-        
+
         sys_requestable_slots = Ontology.global_ontology.get_system_requestable_slots(self.domainString)
         for item in act.items:
             if item.slot in sys_requestable_slots and item.val not in [None, '**NONE**', 'none']:
@@ -444,23 +447,23 @@ class ObjectiveSuccessEvaluator(Evaluator):
         else:
             tinv = stats.t.ppf(1 - 0.025, num_dialogs - 1)
 
-        # if self.curiosityreward:
-        #
-        #     # save rewards and actions used TODO use as needed, also neeed to uncomment/comment lists above*************
-        #     date_time = datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
-        #     if not os.path.exists('_rewardlogs2'):
-        #         os.mkdir('_rewardlogs2')
-        #     with open('_rewardlogs2/reward_test1'+date_time, 'w') as f:
-        #         for item in self.curiosity_reward:
-        #             f.write('{}\n'.format(item))
-        #     with open('_rewardlogs2/invloss_test1'+date_time, 'w') as i:
-        #         for item in self.inverse_loss:
-        #             i.write('{}\n'.format(item))
-        #     with open('_rewardlogs2/predloss_test1' + date_time, 'w') as j:
-        #         for item in self.predloss:
-        #             j.write('{}\n'.format(item))
-        #
-        #     print('Curiosity rewards and losses saved in _rewardlogs2.')
+        if self.curiosityreward:
+
+            # save rewards and actions used TODO use as needed, also neeed to uncomment/comment lists above*************
+            date_time = datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
+            if not os.path.exists('_rewardlogs2'):
+                os.mkdir('_rewardlogs2')
+            with open('_rewardlogs2/reward_test1'+date_time, 'w') as f:
+                for item in self.curiosity_reward:
+                    f.write('{}\n'.format(item))
+            with open('_rewardlogs2/invloss_test1'+date_time, 'w') as i:
+                for item in self.inverse_loss:
+                    i.write('{}\n'.format(item))
+            with open('_rewardlogs2/predloss_test1' + date_time, 'w') as j:
+                for item in self.predloss:
+                    j.write('{}\n'.format(item))
+
+            print('Curiosity rewards and losses saved in _rewardlogs2.')
 
             # # cheeky plot included #TODO *****************************************************************************
             # x_actions = self.actions[-500:-1]
@@ -489,7 +492,7 @@ class ObjectiveSuccessEvaluator(Evaluator):
             #         x_act[i][2] = x_act[i][1]/x_act[i][0]
             #         plt.scatter(i, x_act[i][2], c='r')
             #
-            # plt.savefig('_plots/action_bonus(' + time_at_save + ')acer_env4.png', bbox_inches='tight')
+            # plt.savefig('_plots/action_bonus(' + time_at_save + ')acer_env4.png', bbox_inches='tight') #todo change name!!
             # plt.close()
             # print 'action-bonus plot saved.'  # ********************************************************************
 

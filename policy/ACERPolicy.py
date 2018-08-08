@@ -392,7 +392,6 @@ class ACERPolicy(Policy.Policy):
             self.training_frequency = cfg.getint('dqnpolicy_'+domainString, 'training_frequency')
 
 
-
         self.episode_ct = 0
 
         self.episode_ave_max_q = []
@@ -747,6 +746,7 @@ class ACERPolicy(Policy.Policy):
 
             self.savePolicyInc()  # self.out_policy_file)
 
+
             end = time.time()
             #print >> sys.stderr, 'training took %s' % str(end - start)
 
@@ -764,6 +764,8 @@ class ACERPolicy(Policy.Policy):
         if self.episodecount % self.save_step == 0:
             #save_path = self.saver.save(self.sess, self.out_policy_file+'.ckpt')
             self.acer.save_network(self.out_policy_file+'.acer.ckpt')
+            if self.curiosityreward:
+                self.curiosityFunctions.save_ICM('_curiosity_model/ckpt-curiosity') #todo
 
             f = open(self.out_policy_file+'.episode', 'wb')
             for obj in [self.samplecount, self.episodes[self.domainString], self.global_mu]:
@@ -777,7 +779,6 @@ class ACERPolicy(Policy.Policy):
         """
         # load models
         self.acer.load_network(filename+'.acer.ckpt')
-
         # load replay buffer
         try:
             print 'laod from: ', filename
