@@ -57,3 +57,7 @@ class Curious(object):
         self.saver.restore(self.sess2, load_filename)
         print('Curiosity model has successfully loaded.')
         # print('small feat vec. and no pre-trg, curiosity used for exploration')
+
+    def save_ICM(self, save_filename):
+        self.saver.save(self.sess2, save_filename)
+        print('Curiosity model saved.')

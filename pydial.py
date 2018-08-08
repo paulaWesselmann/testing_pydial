@@ -617,7 +617,7 @@ def plotTrain(dname, rtab, stab, block=True, saveplot=False):
             # plt.errorbar(tab['x'], tab['y'], label=policy)
     plt.subplot(211)
     plt.grid()
-    plt.legend(loc='lower right', fontsize=14)
+    plt.legend(loc='lower right', fontsize=14)  # loc='lower right', best,
     plt.title("Performance vs Num Train Dialogues")
     plt.ylabel('Reward')
     plt.subplot(212)
