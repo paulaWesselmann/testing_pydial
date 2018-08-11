@@ -1,2 +1,2 @@
-model_checkpoint_path: "cur20-env1-acer-CR-seed8-00.3.acer.ckpt"
-all_model_checkpoint_paths: "cur20-env1-acer-CR-seed8-00.3.acer.ckpt"
+model_checkpoint_path: "env1-dqn-CR-seed4-00.4.dqn.ckpt"
+all_model_checkpoint_paths: "env1-dqn-CR-seed4-00.4.dqn.ckpt"
