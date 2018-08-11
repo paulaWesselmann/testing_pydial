@@ -13,18 +13,19 @@ class Curious(object):
         tf.reset_default_graph()
         self.learning_rate = 0.001
 
-        self.feat_size = 77
+        self.feat_size = 536
         if Settings.config.has_option("eval", "feat_size"):
             self.feat_size = Settings.config.getint("eval", "feat_size")
 
         with tf.variable_scope('curiosity', reuse=tf.AUTO_REUSE):
             self.predictor = mpc.StateActionPredictor(268, 16, designHead='pydial', feature_size=self.feat_size)  # num belivestates, num actions
 
-            self.predloss = self.predictor.invloss * (1 - constants['FORWARD_LOSS_WT']) + \
-                            self.predictor.forwardloss * constants['FORWARD_LOSS_WT']
+            # self.predloss = self.predictor.invloss * (1 - constants['FORWARD_LOSS_WT']) + \
+            #                 self.predictor.forwardloss * constants['FORWARD_LOSS_WT']
 
         self.optimizer = tf.train.AdamOptimizer(self.learning_rate)
-        self.optimize = self.optimizer.minimize(self.predloss)
+        # self.optimize = self.optimizer.minimize(self.predloss)
+        self.optimize = self.optimizer.minimize(self.predictor.forwardloss)
         self.cnt = 1
 
         self.sess2 = tf.Session()
@@ -33,7 +34,7 @@ class Curious(object):
         self.saver = tf.train.Saver(var_list=[v for v in all_variables if "Variab" not in v.name and "beta" not in v.name])
 
     def training(self, state_vec, prev_state_vec, action_1hot):
-        _, predictionloss = self.sess2.run([self.optimize, self.predloss],
+        _, predictionloss = self.sess2.run([self.optimize, self.predictor.forwardloss],  #self.predloss
                                           feed_dict={self.predictor.s1: prev_state_vec,
                                           self.predictor.s2: state_vec,
                                           self.predictor.asample: action_1hot})

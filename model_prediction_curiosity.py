@@ -260,6 +260,7 @@ class LSTMPolicy(object):
         sess = tf.get_default_session()
         return sess.run(self.vf, {self.x: [ob], self.state_in[0]: c, self.state_in[1]: h})[0]
 
+
 #todo read in feat size as variable
 class StateActionPredictor(object):
     def __init__(self, ob_space, ac_space, designHead='universe', feature_size='77'):
@@ -275,40 +276,40 @@ class StateActionPredictor(object):
         self.s2 = phi2 = tf.placeholder(tf.float32, input_shape)
         self.asample = asample = tf.placeholder(tf.float32, [None, ac_space])
 
-        # feature encoding: phi1, phi2: [None, LEN]
+        # # feature encoding: phi1, phi2: [None, LEN]#todo uncomment this is for no inv experiment
         size = feature_size  # 256 for pathak et al., 268 for full believstate
-        if designHead == 'pydial':
-            phi1 = pydialHead(phi1)
-            with tf.variable_scope(tf.get_variable_scope(), reuse=True):
-                phi2 = pydialHead(phi2)
-        elif designHead == 'nips':
-            phi1 = nipsHead(phi1)
-            with tf.variable_scope(tf.get_variable_scope(), reuse=True):
-                phi2 = nipsHead(phi2)
-        elif designHead == 'nature':
-            phi1 = natureHead(phi1)
-            with tf.variable_scope(tf.get_variable_scope(), reuse=True):
-                phi2 = natureHead(phi2)
-        elif designHead == 'doom':
-            phi1 = doomHead(phi1)
-            with tf.variable_scope(tf.get_variable_scope(), reuse=True):
-                phi2 = doomHead(phi2)
-        elif 'tile' in designHead:
-            phi1 = universeHead(phi1, nConvs=2)
-            with tf.variable_scope(tf.get_variable_scope(), reuse=True):
-                phi2 = universeHead(phi2, nConvs=2)
-        else:
-            phi1 = universeHead(phi1)
-            with tf.variable_scope(tf.get_variable_scope(), reuse=True):
-                phi2 = universeHead(phi2)
+        # if designHead == 'pydial':
+        #     phi1 = pydialHead(phi1)
+        #     with tf.variable_scope(tf.get_variable_scope(), reuse=True):
+        #         phi2 = pydialHead(phi2)
+        # elif designHead == 'nips':
+        #     phi1 = nipsHead(phi1)
+        #     with tf.variable_scope(tf.get_variable_scope(), reuse=True):
+        #         phi2 = nipsHead(phi2)
+        # elif designHead == 'nature':
+        #     phi1 = natureHead(phi1)
+        #     with tf.variable_scope(tf.get_variable_scope(), reuse=True):
+        #         phi2 = natureHead(phi2)
+        # elif designHead == 'doom':
+        #     phi1 = doomHead(phi1)
+        #     with tf.variable_scope(tf.get_variable_scope(), reuse=True):
+        #         phi2 = doomHead(phi2)
+        # elif 'tile' in designHead:
+        #     phi1 = universeHead(phi1, nConvs=2)
+        #     with tf.variable_scope(tf.get_variable_scope(), reuse=True):
+        #         phi2 = universeHead(phi2, nConvs=2)
+        # else:
+        #     phi1 = universeHead(phi1)
+        #     with tf.variable_scope(tf.get_variable_scope(), reuse=True):
+        #         phi2 = universeHead(phi2)
 
-        # inverse model: g(phi1,phi2) -> a_inv: [None, ac_space]  TODO reactivate inverse model (now includes new feat enc to 77)
-        g = tf.concat([phi1, phi2], 1)   # changed place of 1
-        g = tf.nn.relu(linear(g, size, "g1", normalized_columns_initializer(0.01)))
-        aindex = tf.argmax(asample, axis=1)  # aindex: [batch_size,]
-        logits = linear(g, ac_space, "glast", normalized_columns_initializer(0.01))
-        self.invloss = tf.reduce_mean(tf.nn.sparse_softmax_cross_entropy_with_logits(logits=logits, labels=aindex), name="invloss")
-        self.ainvprobs = tf.nn.softmax(logits, axis=-1)
+        # # inverse model: g(phi1,phi2) -> a_inv: [None, ac_space]  TODO reactivate inverse model (now includes new feat enc to 77)
+        # g = tf.concat([phi1, phi2], 1)   # changed place of 1
+        # g = tf.nn.relu(linear(g, size, "g1", normalized_columns_initializer(0.01)))
+        # aindex = tf.argmax(asample, axis=1)  # aindex: [batch_size,]
+        # logits = linear(g, ac_space, "glast", normalized_columns_initializer(0.01))
+        # self.invloss = tf.reduce_mean(tf.nn.sparse_softmax_cross_entropy_with_logits(logits=logits, labels=aindex), name="invloss")
+        # self.ainvprobs = tf.nn.softmax(logits, axis=-1)
 
         # forward model: f(phi1,asample) -> phi2
         # Note: no backprop to asample of policy: it is treated as fixed for predictor training

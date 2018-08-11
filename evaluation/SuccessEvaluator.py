@@ -116,7 +116,7 @@ class ObjectiveSuccessEvaluator(Evaluator):
             self.successReward = Settings.config.getint("eval", "successreward")
         if Settings.config.has_option("eval_"+domainString, "failpenalty"):
             self.failPenalty = Settings.config.getint("eval_"+domainString, "failpenalty")
-        self.feat_size = 77
+        self.feat_size = 536
         if Settings.config.has_option("eval", "feat_size"):
             self.feat_size = Settings.config.getint("eval", "feat_size")
 
@@ -136,7 +136,7 @@ class ObjectiveSuccessEvaluator(Evaluator):
             self.curiosityFunctions = Curious()
             if Settings.global_numiter == 1:
                 self.curiosityFunctions.load_curiosity(
-                    "_curiosity_model/pretrg_model/trained_curiosityacer-shuffle22_feat120")  # todo change pretrg model here ex: trained_curiosity100
+                    "_curiosity_model/pretrg_model/trained_curiosityacer-shuffle22_feat536")  # todo change pretrg model here ex: trained_curiosity100
             else:
                 self.curiosityFunctions.load_curiosity('_curiosity_model/ckpt-curiosity')
         #  trained_curiosity_acer-env1shuffle22_feat77  trained_curiosityacershuffle22_feat20
@@ -214,9 +214,9 @@ class ObjectiveSuccessEvaluator(Evaluator):
                 predbonus = bonus  # tune params todo :why is reward smaller see cur100 vs cur2,3 model
 
                 self.curiosity_reward.append(bonus)  # todo +also plot losses, this is for plotting below uncomment if plot
-                predloss, invloss = self.curiosityFunctions.inv_loss(prev_state_vec, state_vec, ac_1hot)
-                self.inverse_loss.append(invloss)
-                self.predloss.append(predloss)
+                # predloss, invloss = self.curiosityFunctions.inv_loss(prev_state_vec, state_vec, ac_1hot)
+                # self.inverse_loss.append(invloss)
+                # self.predloss.append(predloss)
                 self.actions.append(np.where(ac_1hot == 1)[0][0])  # index of action
                 # pred, state = self.curiosityFunctions.predictedstate(prev_state_vec, state_vec, ac_1hot)
                 # print(pred, state)
