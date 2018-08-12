@@ -218,12 +218,12 @@ class ACERPolicy(Policy.Policy):
         if cfg.has_option('dqnpolicy', 'epsilon'):
             self.epsilon = cfg.getfloat('dqnpolicy', 'epsilon')
 
-        if not self.curiosityreward:
-            self.epsilon_start = 1
-            if cfg.has_option('dqnpolicy', 'epsilon_start'):
-                self.epsilon_start = cfg.getfloat('dqnpolicy', 'epsilon_start')
-        else:
-            self.epsilon_start = 0
+        # if not self.curiosityreward: #todo enable again after experiment
+        self.epsilon_start = 1
+        if cfg.has_option('dqnpolicy', 'epsilon_start'):
+            self.epsilon_start = cfg.getfloat('dqnpolicy', 'epsilon_start')
+        # else:
+        #     self.epsilon_start = 0
 
         self.epsilon_end = 1
         if cfg.has_option('dqnpolicy', 'epsilon_end'):

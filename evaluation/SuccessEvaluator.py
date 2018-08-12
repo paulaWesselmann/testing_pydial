@@ -136,7 +136,7 @@ class ObjectiveSuccessEvaluator(Evaluator):
             self.curiosityFunctions = Curious()
             if Settings.global_numiter == 1:
                 self.curiosityFunctions.load_curiosity(
-                    "_curiosity_model/pretrg_model/trained_curiosityacer-shuffle22_feat536")  # todo change pretrg model here ex: trained_curiosity100
+                    "_curiosity_model/pretrg_model/trained_curiosityacer-shuffle22_feat200")  # todo change pretrg model here ex: trained_curiosity100
             else:
                 self.curiosityFunctions.load_curiosity('_curiosity_model/ckpt-curiosity')
         #  trained_curiosity_acer-env1shuffle22_feat77  trained_curiosityacershuffle22_feat20
