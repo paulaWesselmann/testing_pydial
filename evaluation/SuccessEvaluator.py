@@ -217,7 +217,7 @@ class ObjectiveSuccessEvaluator(Evaluator):
                 # predloss, invloss = self.curiosityFunctions.inv_loss(prev_state_vec, state_vec, ac_1hot)
                 # self.inverse_loss.append(invloss)
                 # self.predloss.append(predloss)
-                self.actions.append(np.where(ac_1hot == 1)[0][0])  # index of action
+                # self.actions.append(np.where(ac_1hot == 1)[0][0])  # index of action
                 # pred, state = self.curiosityFunctions.predictedstate(prev_state_vec, state_vec, ac_1hot)
                 # print(pred, state)
 
@@ -447,23 +447,23 @@ class ObjectiveSuccessEvaluator(Evaluator):
         else:
             tinv = stats.t.ppf(1 - 0.025, num_dialogs - 1)
 
-        if self.curiosityreward:
+        # if self.curiosityreward:
 
-            # save rewards and actions used TODO use as needed, also neeed to uncomment/comment lists above*************
-            date_time = datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
-            if not os.path.exists('_rewardlogs2'):
-                os.mkdir('_rewardlogs2')
-            with open('_rewardlogs2/reward_test1'+date_time, 'w') as f:
-                for item in self.curiosity_reward:
-                    f.write('{}\n'.format(item))
-            with open('_rewardlogs2/invloss_test1'+date_time, 'w') as i:
-                for item in self.inverse_loss:
-                    i.write('{}\n'.format(item))
-            with open('_rewardlogs2/predloss_test1' + date_time, 'w') as j:
-                for item in self.predloss:
-                    j.write('{}\n'.format(item))
-
-            print('Curiosity rewards and losses saved in _rewardlogs2.')
+            # # save rewards and actions used TODO use as needed, also neeed to uncomment/comment lists above*************
+            # date_time = datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
+            # if not os.path.exists('_rewardlogs2'):
+            #     os.mkdir('_rewardlogs2')
+            # with open('_rewardlogs2/reward_test1'+date_time, 'w') as f:
+            #     for item in self.curiosity_reward:
+            #         f.write('{}\n'.format(item))
+            # with open('_rewardlogs2/invloss_test1'+date_time, 'w') as i:
+            #     for item in self.inverse_loss:
+            #         i.write('{}\n'.format(item))
+            # with open('_rewardlogs2/predloss_test1' + date_time, 'w') as j:
+            #     for item in self.predloss:
+            #         j.write('{}\n'.format(item))
+            #
+            # print('Curiosity rewards and losses saved in _rewardlogs2.')
 
             # # cheeky plot included #TODO *****************************************************************************
             # x_actions = self.actions[-500:-1]
