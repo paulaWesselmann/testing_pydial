@@ -136,7 +136,7 @@ class ObjectiveSuccessEvaluator(Evaluator):
             self.curiosityFunctions = Curious()
             if Settings.global_numiter == 1:
                 self.curiosityFunctions.load_curiosity(
-                    "_curiosity_model/pretrg_model/trained_curiosityacer-shuffle22_feat200")  # todo change pretrg model here ex: trained_curiosity100
+                    "_curiosity_model/pretrg_model/trained_curiosityacershuffle22_feat20")  # todo change pretrg model here ex: trained_curiosity100
             else:
                 self.curiosityFunctions.load_curiosity('_curiosity_model/ckpt-curiosity')
         #  trained_curiosity_acer-env1shuffle22_feat77  trained_curiosityacershuffle22_feat20
@@ -211,7 +211,7 @@ class ObjectiveSuccessEvaluator(Evaluator):
 
                 # st2 = time.time()
                 bonus = self.curiosityFunctions.reward(prev_state_vec, state_vec, ac_1hot)  # pred_bonus
-                predbonus = bonus  # tune params todo :why is reward smaller see cur100 vs cur2,3 model
+                predbonus = bonus*0.1  # tune params todo :why is reward smaller see cur100 vs cur2,3 model
 
                 self.curiosity_reward.append(bonus)  # todo +also plot losses, this is for plotting below uncomment if plot
                 # predloss, invloss = self.curiosityFunctions.inv_loss(prev_state_vec, state_vec, ac_1hot)
