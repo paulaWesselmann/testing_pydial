@@ -144,7 +144,7 @@ def pydialHead(x):
     '''
     # print('Using pydial head design')
     # x = tf.nn.elu(x) #todo need elu/relu or only linear?
-    x = tf.nn.elu(linear(x, 200, 'fc', normalized_columns_initializer(0.01)))
+    x = tf.nn.elu(linear(x, 77, 'fc', normalized_columns_initializer(0.01)))
     # print(x.get_shape())
     # x = flatten(x)
     # print(x.get_shape())
