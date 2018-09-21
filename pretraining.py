@@ -11,14 +11,15 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 
-# settings             !before running: make sure names of files are correct to not overwrite data!
-model_name = ''
+# settings             **before running: make sure model_name is specified to not accidentally overwrite data**
+model_name = ''  # name for new model: specify!
 num_actions = 16
 num_belief_states = 268
 num_iterations = 3
 learning_rate = 0.001
 forward_loss_wt = 0.2
 feature_size = 200
+# file names pre-trg data: fill out!
 action_pre_trg = ''
 state_pre_trg = ''
 prevstate_pre_trg = ''
@@ -68,15 +69,10 @@ sess = tf.Session()
 sess.run(tf.global_variables_initializer())
 saver = tf.train.Saver()
 
-# '_curiosity_model/pretrg_data/2018-07-05_15:15:36' todo check on salamca which one to include!
 # read data from files
-t, a = read_data1(action_pre_trg) #todo: 07-19_21:47:55 #acer-env1seed02018-07-19_21:39:45acer-env1seed02018-07-19_21:39:45
-# todo#2018-07-05_15:15:36
+t, a = read_data1(action_pre_trg)
 a = np.eye(16, 16)[a]  # convert to one-hot
 s, _s = read_data2(prevstate_pre_trg, state_pre_trg)
-#todo'_curiosity_model/pretrg_data/prev_state2018-07-05_15:15:36', #acer_prev_state2018-07-19_21:39:45 prev_state2018-07-05_15:15:36
-                   #'_curiosity_model/pretrg_data/state2018-07-05_15:15:36')   #todo acer 77 again (its overwritten by dqn..  state2018-07-05_15:15:36
-  #acer_state2018-07-19_21:39:45
 
 # shuffle vectors
 t, a, s, _s = unison_shuffled_copies(t, a, s, _s)
