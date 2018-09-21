@@ -1,0 +1,56 @@
+RL with Curiosity Rewards for DM
+
+by Paula
+==================================================================
+
+The curiosity reward option enables to use belief-state prediction error as an additional reward for
+policy learning via RL.
+
+Following files are affected by the curiosity reward option:
+    1) SuccessEvaluator.py
+    2) ACERpolicy.py or DQNpolicy.py (other policies do not include curiosity model training option yet)
+
+    additional files:
+    3) model_prediction_curiosity.py
+    4) curiosity_module.py
+    5) pretraining.py
+
+Configuration:
+The curiosityreward option can be chosen in the evaluation section in the configuration file.
+Curiosity rewards are used when curiosityreward = True. This option overwrites any epsilon-greedy exploration settings
+and the policy is used greedily at all times with no random exploration.
+Feature size belief-state feature encoding can be chosen as feat_size (by default it is set to 200 if not specified in
+the configuration file). #Todo: option to choose layer2 size?
+The name of the pre-training model to be used is to be specified under the variable model_name in the config file.
+Always make sure that the pre-traing model has the same feature size as the model to be trained,
+else dimensions will not fit when reading in the model.
+Reward scale is default set to be 1, which is determined to work best for environment 3 and 4.
+The reward scale can be set using variable rew_scale in the configuration.
+
+Example from configuration file:
+
+    ###### Evaluation parameters ######
+    [eval]
+    rewardvenuerecommended = 0
+    penaliseallturns = True
+    wrongvenuepenalty = 0
+    notmentionedvaluepenalty = 0
+    successmeasure = objective
+    successreward = 20
+    curiosityreward = True
+    feat_size = 200
+    rew_scale = 1
+    model_name = trained_curiosityacer-shuffle22_feat200
+    pre_trg = False
+
+Pre-training:
+1) Pre-training data collection is done by setting pre_trg = True in the config file.
+Note for pre-training data collection: Only about 100 dialogues are needed for pre-training,
+no need to run training for longer.
+The dialogues for pre-training should be simple and do not have to match the policy used later on.
+Further pre-training dialogues do not have to be successful for pre-training.
+2) To run pre-training and build an initial curiosity model the script pretraining.py is used.
+Settings for pre-traing are changed in the script directly. Before running make sure pre-training data file names
+and model_name are specified.
+After running the new model can be used, specifying model_name in the config file for training new policies.
+
