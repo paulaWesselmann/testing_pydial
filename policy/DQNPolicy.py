@@ -47,8 +47,8 @@ import json
 import numpy as np
 import cPickle as pickle
 import random
-import utils #todo why import utils and then specifics? is this part of cfg not working isssue?? i checked it's not
-from utils.Settings import config as cfg #this does not work! TODO!
+import utils
+from utils.Settings import config as cfg  # this does not work! TODO
 from utils import ContextLogger, DiaAct
 from curiosity_module import Curious
 
@@ -66,7 +66,7 @@ import model_prediction_curiosity as mpc
 
 # from model_prediction_curiosity import constants
 
-# logger = utils.ContextLogger.getLogger('') #todo
+# logger = utils.ContextLogger.getLogger('')
 logger = ContextLogger.getLogger('')
 
 
@@ -195,9 +195,12 @@ class DQNPolicy(Policy.Policy):
         if utils.Settings.config.has_option('dqnpolicy', 'epsilon'):
             self.epsilon = utils.Settings.config.getfloat('dqnpolicy', 'epsilon')
 
-        self.epsilon_start = 1
-        if utils.Settings.config.has_option('dqnpolicy', 'epsilon_start'):
-            self.epsilon_start = utils.Settings.config.getfloat('dqnpolicy', 'epsilon_start')
+        if not self.curiosityreward:  # no eps-greedy exploration when curious expl. is used
+            self.epsilon_start = 1
+            if cfg.has_option('dqnpolicy', 'epsilon_start'):
+                self.epsilon_start = cfg.getfloat('dqnpolicy', 'epsilon_start')
+        else:
+            self.epsilon_start = 0
 
         self.epsilon_end = 1
         if utils.Settings.config.has_option('dqnpolicy', 'epsilon_end'):
@@ -357,7 +360,6 @@ class DQNPolicy(Policy.Policy):
         """
 
         self.episode_ave_max_q = []
-
         self.curiositypred_loss = []
 
         os.environ["CUDA_VISIBLE_DEVICES"] = ""
@@ -460,7 +462,7 @@ class DQNPolicy(Policy.Policy):
         else:
             cState, cAction = self.convertDIPStateAction(state, action)
         # normalising total return to -1~1
-        reward /= 20.0 #whut?
+        reward /= 20.0
 
         cur_cState = np.vstack([np.expand_dims(x, 0) for x in [cState]])
         Action_idx = np.eye(self.action_dim, self.action_dim)[[cAction]]
@@ -616,8 +618,6 @@ class DQNPolicy(Policy.Policy):
             dip_state = DIP_state(beliefstate.domainStates[beliefstate.currentdomain], self.domainString)
         execMask = self.summaryaction.getExecutableMask(beliefstate, self.lastSystemAction)
 
-        # self.epsilon = 0 #todo this is for curiosity purpose
-
         if self.exploration_type == 'e-greedy':
             # epsilon greedy
             if self.is_training and utils.Settings.random.rand() < self.epsilon:
@@ -720,8 +720,9 @@ class DQNPolicy(Policy.Policy):
             s_batch = np.vstack([np.expand_dims(x, 0) for x in s_batch])
             s2_batch = np.vstack([np.expand_dims(x, 0) for x in s2_batch])
 
-
+            # change index-based a_batch to one-hot-based a_batch
             a_batch_one_hot = np.eye(self.action_dim, self.action_dim)[a_batch]
+
             # target_q = self.dqn.predict_target_with_action_maxQ(s2_batch)
             if self.architecture != 'dip':
                 action_q = self.dqn.predict(s2_batch)
@@ -759,15 +760,12 @@ class DQNPolicy(Policy.Policy):
                     error = abs(currentQ_s_a_ - Q_bootstrap_label)
                     self.episodes[self.domainString].update(idx_batch[k], error)
 
-            # change index-based a_batch to one-hot-based a_batch
-            #a_batch_one_hot = np.eye(self.action_dim, self.action_dim)[a_batch]
-
             # Update the critic given the targets
             reshaped_yi = np.vstack([np.expand_dims(x, 0) for x in y_i])
 
             if self.curiosityreward:
                 curiosity_loss = self.curiosityFunctions.training(s2_batch, s_batch, a_batch_one_hot)
-                self.curiositypred_loss.append(curiosity_loss) #todo: plot somehow
+                # self.curiositypred_loss.append(curiosity_loss)  # for plotting
 
             predicted_q_value, currentLoss = self.dqn.train(s_batch, a_batch_one_hot, reshaped_yi)
 
