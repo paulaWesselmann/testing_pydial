@@ -45,28 +45,28 @@ https://arxiv.org/abs/1606.02647
 ************************
 
 '''
+import cPickle as pickle
 import copy
-import os
 import json
 import numpy as np
+import os
+import random
 import scipy
 import scipy.signal
-import cPickle as pickle
-import random
-import utils
-from utils.Settings import config as cfg
-from utils import ContextLogger, DiaAct
-from curiosity_module import Curious
-
-import ontology.FlatOntologyManager as FlatOnt
 import tensorflow as tf
-from DRL.replay_buffer_episode_acer import ReplayBufferEpisode
-from DRL.replay_prioritised_episode import ReplayPrioritisedEpisode
-import DRL.utils as drlutils
+
 import DRL.acer as acer
+import DRL.utils as drlutils
 import Policy
 import SummaryAction
+import ontology.FlatOntologyManager as FlatOnt
+import utils
+from DRL.replay_buffer_episode_acer import ReplayBufferEpisode
+from DRL.replay_prioritised_episode import ReplayPrioritisedEpisode
 from Policy import TerminalAction, TerminalState
+from curiosity.curiosity_module import Curious
+from utils import ContextLogger, DiaAct
+from utils.Settings import config as cfg
 
 logger = utils.ContextLogger.getLogger('')
 

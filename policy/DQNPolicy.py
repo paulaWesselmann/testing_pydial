@@ -39,30 +39,30 @@ Copyright CUED Dialogue Systems Group 2015 - 2017
 
 '''
 
-import time
+import cPickle as pickle
 import copy
-import os
-import sys
 import json
 import numpy as np
-import cPickle as pickle
+import os
 import random
-import utils
-from utils.Settings import config as cfg  # this does not work! TODO
-from utils import ContextLogger, DiaAct
-from curiosity_module import Curious
-
-import ontology.FlatOntologyManager as FlatOnt
+import sys
 import tensorflow as tf
-from DRL.replay_buffer import ReplayBuffer
-from DRL.replay_prioritised import ReplayPrioritised
-import DRL.utils as drlutils
+import time
+
 import DRL.dqn as dqn
+import DRL.utils as drlutils
 import Policy
 import SummaryAction
+import ontology.FlatOntologyManager as FlatOnt
+import utils
+from DRL.replay_buffer import ReplayBuffer
+from DRL.replay_prioritised import ReplayPrioritised
 from Policy import TerminalAction, TerminalState
+from curiosity import model_prediction_curiosity as mpc
+from curiosity.curiosity_module import Curious
 from policy.feudalRL.DIP_parametrisation import DIP_state
-import model_prediction_curiosity as mpc
+from utils import ContextLogger, DiaAct
+from utils.Settings import config as cfg  # this does not work! TODO
 
 # from model_prediction_curiosity import constants
 

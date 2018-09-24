@@ -19,10 +19,11 @@
 # limitations under the License.
 #
 ###############################################################################
-from utils.dact import DactItem
+import time
 from datetime import datetime
 
-import time
+from utils.dact import DactItem
+
 '''
 SuccessEvaluator.py - module for determining objective and subjective dialogue success 
 ======================================================================================
@@ -47,8 +48,8 @@ from ontology import Ontology
 import numpy as np
 import copy
 
-from curiosity_module import Curious
-import model_prediction_curiosity as mpc
+from curiosity.curiosity_module import Curious
+from curiosity import model_prediction_curiosity as mpc
 
 # import matplotlib as mpl
 import os
@@ -85,7 +86,7 @@ class ObjectiveSuccessEvaluator(Evaluator):
         self.curiosityreward = False  # prediction error as reward for curiosity for efficient exploring
         self.delayed_turn_penalty_set_in = 0  # number of batch sizes after which turn penalty is used for learning
         self.turn_thresh = 0  # threshold, if not all turns are penalized
-        self.pre_trg = False  # if pre-train curiosity, set to True
+        self.pre_trg = False  # if pre-train data collection, set to True
         self.curio_plot = False  # if required uncomment and alter plotting code as needed
         self.num_actions = 16
         self.num_belief_states = 268
