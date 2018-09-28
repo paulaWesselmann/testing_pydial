@@ -27,10 +27,9 @@ The algorithm is developed with tflearn + Tensorflow
 
 Author: Pei-Hao Su
 """
-import tensorflow as tf
-import model_prediction_curiosity as mpc
 import os
-from constants_prediction_curiosity import constants
+import tensorflow as tf
+
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
 

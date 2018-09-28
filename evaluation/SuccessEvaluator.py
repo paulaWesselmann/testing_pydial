@@ -151,9 +151,9 @@ class ObjectiveSuccessEvaluator(Evaluator):
         if self.curiosityreward:  # to use state prediction error as reward
             self.curiosityFunctions = Curious()
             if Settings.global_numiter == 1:
-                self.curiosityFunctions.load_curiosity("_curiosity_model/pretrg_model/" + self.model_name)
+                self.curiosityFunctions.load_curiosity("curiosity/_curiosity_model/pretrg_model/" + self.model_name)
             else:
-                self.curiosityFunctions.load_curiosity('_curiosity_model/ckpt-curiosity')
+                self.curiosityFunctions.load_curiosity('curiosity/_curiosity_model/ckpt-curiosity')
             self.predictor = mpc.StateActionPredictor(self.num_belief_states, self.num_actions,
                                                       feature_size=self.feat_size, layer2=self.layer2)
 

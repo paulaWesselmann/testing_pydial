@@ -26,6 +26,13 @@ def flatten(x):
     return tf.reshape(x, [-1, np.prod(x.get_shape().as_list()[1:])])
 
 
+def cosineLoss(A, B, name):
+    ''' A, B : (BatchSize, d) '''
+    dotprod = tf.reduce_sum(tf.multiply(tf.nn.l2_normalize(A, 1), tf.nn.l2_normalize(B, 1)), 1)
+    loss = 1-tf.reduce_mean(dotprod, name=name)
+    return loss
+
+
 def linear(x, size, name, initializer=None, bias_init=0):
     with tf.variable_scope(name, reuse=tf.AUTO_REUSE):
         w = tf.get_variable("w", [x.get_shape()[1], size], initializer=initializer) # error in second turn, reuse variable?
@@ -93,10 +100,10 @@ class StateActionPredictor(object):
         f = tf.concat([phi1, asample], 1)
         f = tf.nn.relu(linear(f, size, "f1", normalized_columns_initializer(0.01)))
         f = linear(f, phi1.get_shape()[1].value, "flast", normalized_columns_initializer(0.01))
-        self.forwardloss = 0.5 * tf.reduce_mean(tf.square(tf.subtract(f, phi2)), name='forwardloss')
+        # self.forwardloss = 0.5 * tf.reduce_mean(tf.square(tf.subtract(f, phi2)), name='forwardloss')
 
         # self.forwardloss = 0.5 * tf.reduce_mean(tf.sqrt(tf.abs(tf.subtract(f, phi2))), name='forwardloss')
-        # self.forwardloss = cosineLoss(f, phi2, name='forwardloss')
+        self.forwardloss = cosineLoss(f, phi2, name='forwardloss')
         # self.forwardloss = self.forwardloss * 268.0  # lenFeatures=268. Factored out to make hyperparams not depend on it.
 
         # prediction and original
