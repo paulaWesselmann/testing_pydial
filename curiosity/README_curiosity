@@ -7,13 +7,15 @@ The curiosity reward option enables to use belief-state prediction error as an a
 policy learning via RL.
 
 Following files are affected by the curiosity reward option:
-    1) SuccessEvaluator.py
-    2) ACERpolicy.py or DQNpolicy.py (other policies do not include curiosity model training option yet)
+    1) pydial.py
+    2) utils/Settings.py
+    3) evaluation/SuccessEvaluator.py
+    4) policy/ACERpolicy.py or DQNpolicy.py (other policies do not include curiosity model training option yet)
 
     additional files (included in the curiosity directory):
-    3) model_prediction_curiosity.py
-    4) curiosity_module.py
-    5) pretraining.py
+    5) model_prediction_curiosity.py
+    6) curiosity_module.py
+    7) pretraining.py
 
 Configuration:
 The curiosityreward option can be chosen in the evaluation section in the configuration file.
