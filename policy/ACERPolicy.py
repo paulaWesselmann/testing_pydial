@@ -761,7 +761,7 @@ class ACERPolicy(Policy.Policy):
                 self.curiosityFunctions.save_ICM('_curiosity_model/ckpt-curiosity')
 
             f = open(self.out_policy_file+'.episode', 'wb')
-            for obj in [self.samplecount, self.episodes[self.domainString], self.global_mu]:
+            for obj in [self.episodecount, self.episodes[self.domainString], self.global_mu]:
                 pickle.dump(obj, f, protocol=pickle.HIGHEST_PROTOCOL)
             f.close()
             # logger.info("Saving model to %s and replay buffer..." % save_path)
@@ -779,7 +779,7 @@ class ACERPolicy(Policy.Policy):
             loaded_objects = []
             for i in range(2):  # load nn params and collected data
                 loaded_objects.append(pickle.load(f))
-            self.samplecount = int(loaded_objects[0])
+            self.episodecount = int(loaded_objects[0])
             self.episodes[self.domainString] = copy.deepcopy(loaded_objects[1])
             self.global_mu = loaded_objects[2]
             logger.info("Loading both model from %s and replay buffer..." % filename)
